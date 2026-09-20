@@ -119,7 +119,7 @@ export function intrinsicSizeMeasure(
   return { width: measuredWidth, height: measuredHeight };
 }
 
-export function longestWordWidth(text: string, widthPerChar: number): number {
+function longestWordWidth(text: string, widthPerChar: number): number {
   let maxLength = 0;
   let currentLength = 0;
   for (const c of text) {
@@ -133,7 +133,7 @@ export function longestWordWidth(text: string, widthPerChar: number): number {
   return Math.max(currentLength, maxLength) * widthPerChar;
 }
 
-export function calculateHeight(
+function calculateHeight(
   text: string,
   measuredWidth: number,
   widthPerChar: number,

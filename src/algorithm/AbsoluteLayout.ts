@@ -269,7 +269,7 @@ function hasBothInsets(child: Node, axis: FlexDirection, direction: Direction): 
   );
 }
 
-export function layoutAbsoluteChild(
+function layoutAbsoluteChild(
   containingNode: Node,
   node: Node,
   child: Node,

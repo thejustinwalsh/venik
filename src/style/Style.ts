@@ -662,25 +662,12 @@ export class Style {
     return maxOrDefined(gap.resolveValue(ownerSize), 0);
   }
 
-  computeGapForDimension(dimension: Dimension, ownerSize: number): number {
-    const gap = dimension === Dimension.Width ? this.computeColumnGap() : this.computeRowGap();
-    return maxOrDefined(gap.resolveValue(ownerSize), 0);
-  }
-
   flexStartMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
     return computeEdge(this.margin_, flexStartEdge(axis), direction).isAuto();
   }
 
   flexEndMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
     return computeEdge(this.margin_, flexEndEdge(axis), direction).isAuto();
-  }
-
-  inlineStartMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.margin_, inlineStartEdge(axis, direction), direction).isAuto();
-  }
-
-  inlineEndMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.margin_, inlineEndEdge(axis, direction), direction).isAuto();
   }
 
   /** Allocation-free `resolvedMinDimension` for the layout algorithm: NaN when undefined. */

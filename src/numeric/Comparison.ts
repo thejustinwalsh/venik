@@ -6,19 +6,6 @@
 // The `FloatOptional` overloads of `maxOrDefined`/`inexactEquals` live in
 // `./FloatOptional.ts`.
 
-export function isUndefined(value: number): boolean {
-  return value !== value;
-}
-
-export function isDefined(value: number): boolean {
-  return value === value;
-}
-
-/** Named `isinf` in C++. True for +Infinity and -Infinity. */
-export function isinf(value: number): boolean {
-  return value === Infinity || value === -Infinity;
-}
-
 /** max(a, b) if both are defined, otherwise whichever one is defined (NaN if neither). */
 export function maxOrDefined(a: number, b: number): number {
   if (a === a && b === b) {

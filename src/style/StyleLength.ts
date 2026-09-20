@@ -69,10 +69,6 @@ export class StyleLength {
     return this.unit_ !== Unit.Undefined;
   }
 
-  isPoints(): boolean {
-    return this.unit_ === Unit.Point;
-  }
-
   isPercent(): boolean {
     return this.unit_ === Unit.Percent;
   }
@@ -113,8 +109,4 @@ export class StyleLength {
   inexactEquals(other: StyleLength): boolean {
     return this.unit_ === other.unit_ && inexactEqualsNumber(this.value_, other.value_);
   }
-}
-
-export function inexactEquals(a: StyleLength, b: StyleLength): boolean {
-  return a.inexactEquals(b);
 }

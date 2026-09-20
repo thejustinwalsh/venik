@@ -11,15 +11,10 @@
 //   lhs >= rhs   -> lhs.greaterThanOrEquals(rhs)
 //   lhs <= rhs   -> lhs.lessThanOrEquals(rhs)
 //
-// The free functions overloaded for FloatOptional in C++ (`maxOrDefined`,
-// `inexactEquals`) are free functions of the same name in this module; the
-// plain-number versions live in `./Comparison.ts` (alias one on import if a
-// module needs both).
+// `maxOrDefined` for FloatOptional is a free function of the same name in this
+// module; the plain-number version lives in `./Comparison.ts`.
 //
-import {
-  inexactEquals as inexactEqualsNumber,
-  maxOrDefined as maxOrDefinedNumber,
-} from "./Comparison.ts";
+import { maxOrDefined as maxOrDefinedNumber } from "./Comparison.ts";
 
 export class FloatOptional {
   private readonly value_: number;
@@ -80,8 +75,4 @@ export class FloatOptional {
 
 export function maxOrDefined(lhs: FloatOptional, rhs: FloatOptional): FloatOptional {
   return new FloatOptional(maxOrDefinedNumber(lhs.unwrap(), rhs.unwrap()));
-}
-
-export function inexactEquals(lhs: FloatOptional, rhs: FloatOptional): boolean {
-  return inexactEqualsNumber(lhs.unwrap(), rhs.unwrap());
 }

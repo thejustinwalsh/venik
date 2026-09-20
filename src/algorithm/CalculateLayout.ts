@@ -695,7 +695,7 @@ function resetLayout(node: Node): void {
   node.setLayoutDimension(0, Dimension.Height);
 }
 
-export function zeroOutLayoutRecursively(node: Node): void {
+function zeroOutLayoutRecursively(node: Node): void {
   resetLayout(node);
   node.setHasNewLayout(true);
 
@@ -726,7 +726,7 @@ export function cleanupContentsNodesRecursively(node: Node, didPerformLayout: bo
 /** Largest finite float32, kept so results match C++. */
 const FLT_MAX = 3.4028234663852886e38;
 
-export function calculateAvailableInnerDimension(
+function calculateAvailableInnerDimension(
   node: Node,
   direction: Direction,
   dimension: Dimension,

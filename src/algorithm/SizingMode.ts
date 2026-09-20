@@ -46,16 +46,3 @@ export function measureMode(mode: SizingMode): MeasureMode {
       fatalWithMessage("Invalid SizingMode");
   }
 }
-
-export function sizingMode(mode: MeasureMode): SizingMode {
-  switch (mode) {
-    case MeasureMode.Exactly:
-      return SizingMode.StretchFit;
-    case MeasureMode.Undefined:
-      return SizingMode.MaxContent;
-    case MeasureMode.AtMost:
-      return SizingMode.FitContent;
-    default:
-      fatalWithMessage("Invalid MeasureMode");
-  }
-}
