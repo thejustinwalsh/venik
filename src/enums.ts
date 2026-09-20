@@ -81,16 +81,6 @@ export const Justify = {
 } as const;
 export type Justify = (typeof Justify)[keyof typeof Justify];
 
-export const LogLevel = {
-  Error: 0,
-  Warn: 1,
-  Info: 2,
-  Debug: 3,
-  Verbose: 4,
-  Fatal: 5,
-} as const;
-export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
-
 export const MeasureMode = {
   Undefined: 0,
   Exactly: 1,

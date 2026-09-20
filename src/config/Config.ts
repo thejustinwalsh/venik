@@ -1,15 +1,12 @@
-import { assertFatalWithConfig } from "../debug/AssertFatal.ts";
-import { getDefaultLogger } from "../debug/Log.ts";
-import type { LogLevel } from "../enums.ts";
+import { assertFatal } from "../debug/AssertFatal.ts";
 import type { Node } from "../node/Node.ts";
-import type { CloneNodeFunction, Logger } from "../types.ts";
+import type { CloneNodeFunction } from "../types.ts";
 
 /**
  * Layout configuration shared between nodes.
  */
 export class Config {
   private cloneNodeCallback_: CloneNodeFunction | null = null;
-  private logger_: Logger = getDefaultLogger();
 
 
   private version_: number = 0;
@@ -28,9 +25,7 @@ export class Config {
   }
 
   setPointScaleFactor(pixelsInPoint: number): void {
-    assertFatalWithConfig(
-      this,
-      pixelsInPoint >= 0.0,
+    assertFatal(pixelsInPoint >= 0.0,
       "Scale factor should not be less than zero",
     );
 
@@ -41,10 +36,6 @@ export class Config {
   }
   getPointScaleFactor(): number {
     return this.pointScaleFactor_;
-  }
-
-  setLogger(logger: Logger | null): void {
-    this.logger_ = logger ?? getDefaultLogger();
   }
 
   setContext(context: unknown): void {
@@ -68,11 +59,6 @@ export class Config {
       clone = node.clone();
     }
     return clone;
-  }
-
-  /** @internal */
-  log(node: Node | null, level: LogLevel, message: string): void {
-    this.logger_(this, node, level, message);
   }
 
   /** @internal Bumped whenever a change to the config invalidates existing layouts. */

@@ -138,7 +138,6 @@ test("dirty_propagation_changing_benign_config", () => {
   expect(root_child0_child0.isDirty()).toBe(false);
 
   const newConfig = new Config();
-  newConfig.setLogger((_config, _node, _level, _message) => {});
   root_child0.setConfig(newConfig);
 
   expect(root.isDirty()).toBe(false);

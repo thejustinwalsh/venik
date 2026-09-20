@@ -9,8 +9,7 @@ import {
   resolveDirection,
 } from "../algorithm/FlexDirection.ts";
 import { Config, configUpdateInvalidatesLayout } from "../config/Config.ts";
-import { assertFatal, assertFatalWithNode } from "../debug/AssertFatal.ts";
-import { logWithNode } from "../debug/Log.ts";
+import { assertFatal } from "../debug/AssertFatal.ts";
 import {
   Align,
   BoxSizing,
@@ -21,7 +20,6 @@ import {
   FlexDirection,
   type Gutter,
   type Justify,
-  LogLevel,
   type MeasureMode,
   type Overflow,
   PositionType,
@@ -134,14 +132,10 @@ export class Node {
     this.free();
   }
   reset(): void {
-    assertFatalWithNode(
-      this,
-      this.children_.length === 0,
+    assertFatal(this.children_.length === 0,
       "Cannot reset a node which still has children attached",
     );
-    assertFatalWithNode(
-      this,
-      this.owner_ === null,
+    assertFatal(this.owner_ === null,
       "Cannot reset a node still attached to a owner",
     );
 
@@ -185,9 +179,7 @@ export class Node {
     return this.isDirty_;
   }
   markDirty(): void {
-    assertFatalWithNode(
-      this,
-      this.hasMeasureFunc(),
+    assertFatal(this.hasMeasureFunc(),
       "Only leaf nodes with custom measure functions should manually mark themselves as dirty",
     );
 
@@ -202,15 +194,11 @@ export class Node {
 
   // Tree
   insertChild(child: Node, index: number): void {
-    assertFatalWithNode(
-      this,
-      child.getOwner() === null,
+    assertFatal(child.getOwner() === null,
       "Child already has a owner, it must be removed first.",
     );
 
-    assertFatalWithNode(
-      this,
-      !this.hasMeasureFunc(),
+    assertFatal(!this.hasMeasureFunc(),
       "Cannot add child: Nodes with measure functions cannot have children.",
     );
 
@@ -328,9 +316,7 @@ export class Node {
   }
   setMeasureFunc(measureFunc: MeasureFunction | null): void {
     if (measureFunc !== null) {
-      assertFatalWithNode(
-        this,
-        this.children_.length === 0,
+      assertFatal(this.children_.length === 0,
         "Cannot set measure function: Nodes with measure functions cannot have children.",
       );
     }
@@ -832,11 +818,7 @@ export class Node {
   private sanitizeMeasuredSize(size: Size, what: string): Size {
     const { width, height } = size;
     if (height !== height || height < 0 || width !== width || width < 0) {
-      logWithNode(
-        this,
-        LogLevel.Warn,
-        `${what} returned an invalid dimension to Yoga: [width=${width}, height=${height}]`,
-      );
+      console.warn(`${what} returned an invalid dimension: [width=${width}, height=${height}]`);
       return { width: maxOrDefined(0, width), height: maxOrDefined(0, height) };
     }
 
@@ -1183,9 +1165,7 @@ export class Node {
   }
 
   private resolveLayoutEdge(edge: Edge): PhysicalEdge {
-    assertFatalWithNode(
-      this,
-      edge <= Edge.End,
+    assertFatal(edge <= Edge.End,
       "Cannot get layout properties of multi-edge shorthands",
     );
 

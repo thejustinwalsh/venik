@@ -1,5 +1,4 @@
-import type { Config } from "./config/Config.ts";
-import type { LogLevel, MeasureMode, Unit } from "./enums.ts";
+import type { MeasureMode, Unit } from "./enums.ts";
 import type { Node } from "./node/Node.ts";
 
 /** Equivalent of `YGUndefined`. Setters also accept `undefined`. */
@@ -46,10 +45,3 @@ export type DirtiedFunction = (node: Node) => void;
 /** Returns the clone that should replace `oldNode`, or null to use the default `oldNode.clone()`. */
 export type CloneNodeFunction = (oldNode: Node, owner: Node, childIndex: number) => Node | null;
 
-/** The C API passes a printf format + va_list; here the message arrives already formatted. */
-export type Logger = (
-  config: Config | null,
-  node: Node | null,
-  level: LogLevel,
-  message: string,
-) => void;

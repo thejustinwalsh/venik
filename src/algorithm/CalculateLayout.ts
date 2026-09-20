@@ -1,7 +1,7 @@
 // `FloatOptional` values are plain numbers here (NaN is undefined). C++
 // in/out pointer parameters are replaced by return values.
 
-import { assertFatalWithNode } from "../debug/AssertFatal.ts";
+import { assertFatal } from "../debug/AssertFatal.ts";
 import {
   Align,
   BoxSizing,
@@ -491,7 +491,7 @@ function measureNodeWithMeasureFunc(
   layoutMarkerData: LayoutData | null,
   reason: LayoutPassReason,
 ): void {
-  assertFatalWithNode(node, node.hasMeasureFunc(), "Expected node to have custom measure function");
+  assertFatal(node.hasMeasureFunc(), "Expected node to have custom measure function");
 
   if (widthSizingMode === SizingMode.MaxContent) {
     availableWidth = NaN;
@@ -1754,14 +1754,10 @@ function calculateLayoutImpl(
   depth: number,
   generationCount: number,
 ): void {
-  assertFatalWithNode(
-    node,
-    availableWidth !== availableWidth ? widthSizingMode === SizingMode.MaxContent : true,
+  assertFatal(availableWidth !== availableWidth ? widthSizingMode === SizingMode.MaxContent : true,
     "availableWidth is indefinite so widthSizingMode must be SizingMode::MaxContent",
   );
-  assertFatalWithNode(
-    node,
-    availableHeight !== availableHeight ? heightSizingMode === SizingMode.MaxContent : true,
+  assertFatal(availableHeight !== availableHeight ? heightSizingMode === SizingMode.MaxContent : true,
     "availableHeight is indefinite so heightSizingMode must be SizingMode::MaxContent",
   );
 
