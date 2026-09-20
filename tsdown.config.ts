@@ -7,6 +7,7 @@ export default defineConfig({
   target: "es2023",
   dts: true,
   sourcemap: true,
+  minify: true,
   clean: true,
   // Strips the event system from the bundle; see src/globals.d.ts.
   define: { __EVENTS__: "false" },
