@@ -100,12 +100,6 @@ export const MeasureMode = {
 } as const;
 export type MeasureMode = (typeof MeasureMode)[keyof typeof MeasureMode];
 
-export const NodeType = {
-  Default: 0,
-  Text: 1,
-} as const;
-export type NodeType = (typeof NodeType)[keyof typeof NodeType];
-
 export const Overflow = {
   Visible: 0,
   Hidden: 1,
@@ -192,8 +186,6 @@ export const LOG_LEVEL_FATAL = LogLevel.Fatal;
 export const MEASURE_MODE_UNDEFINED = MeasureMode.Undefined;
 export const MEASURE_MODE_EXACTLY = MeasureMode.Exactly;
 export const MEASURE_MODE_AT_MOST = MeasureMode.AtMost;
-export const NODE_TYPE_DEFAULT = NodeType.Default;
-export const NODE_TYPE_TEXT = NodeType.Text;
 export const OVERFLOW_VISIBLE = Overflow.Visible;
 export const OVERFLOW_HIDDEN = Overflow.Hidden;
 export const OVERFLOW_SCROLL = Overflow.Scroll;

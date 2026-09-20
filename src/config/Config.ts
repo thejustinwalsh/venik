@@ -20,14 +20,6 @@ export class Config {
 
   private static default_: Config | null = null;
 
-  // yoga-layout compatible factories
-  static create(): Config {
-    return new Config();
-  }
-  static destroy(config: Config): void {
-    config.free();
-  }
-
   /** The config used by nodes created without one. Equivalent of `YGConfigGetDefault`. */
   static getDefault(): Config {
     return (Config.default_ ??= new Config());

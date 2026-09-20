@@ -2640,11 +2640,7 @@ function calculateLayoutImpl(
 
     // STEP 11: SIZING AND POSITIONING ABSOLUTE CHILDREN
     // Let the containing block layout its absolute descendants.
-    if (
-      style.positionType() !== PositionType.Static ||
-      node.getAlwaysFormsContainingBlock() ||
-      depth === 1
-    ) {
+    if (style.positionType() !== PositionType.Static || depth === 1) {
       layoutAbsoluteDescendants(
         node,
         node,

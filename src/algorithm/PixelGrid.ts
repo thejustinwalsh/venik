@@ -1,6 +1,6 @@
 // Port of yoga-cpp/yoga/algorithm/PixelGrid.{h,cpp}
 
-import { Dimension, NodeType } from "../enums.ts";
+import { Dimension } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { inexactEquals } from "../numeric/Comparison.ts";
 import { PhysicalEdge } from "./FlexDirection.ts";
@@ -85,7 +85,7 @@ export function roundLayoutResultsToPixelGrid(
   if (pointScaleFactor !== 0.0) {
     // If a node has a custom measure function we never want to round down its
     // size as this could lead to unwanted text truncation.
-    const textRounding = node.getNodeType() === NodeType.Text;
+    const textRounding = node.hasMeasureFunc();
 
     layout.setPosition(
       PhysicalEdge.Left,

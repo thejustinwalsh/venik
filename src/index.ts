@@ -7,6 +7,6 @@ export * from "./enums.ts";
 export * from "./types.ts";
 export { Config, Node };
 
-/** Drop-in for the default export of `yoga-layout`: `Yoga.Node.create()`, `Yoga.ALIGN_CENTER`, ... */
+/** Namespace-style default export: `new Yoga.Node()`, `Yoga.ALIGN_CENTER`, ... */
 const Yoga = { Config, Node, ...enums };
 export default Yoga;

@@ -13,9 +13,10 @@ root.calculateLayout(undefined, undefined, Direction.LTR);
 root.getComputedLayout();
 ```
 
-The API follows the `yoga-layout` npm package (`Node.create()`, `Config.create()`
-and the flat `ALIGN_CENTER`-style constants are kept, and the default export is
-a `Yoga` object) so it can be swapped in.
+Method names follow the `yoga-layout` npm package, and the flat
+`ALIGN_CENTER`-style constants and a default `Yoga` export are kept, but it is
+not a drop-in: nodes and configs are made with `new Node()` / `new Config()`
+(there is no static `create`/`destroy`), and the defaults differ (see below).
 
 ## Status
 

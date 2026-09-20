@@ -527,10 +527,7 @@ export function layoutAbsoluteDescendants(
 
       childLayout.setPosition(PhysicalEdge.Left, childLeftOffsetFromParent);
       childLayout.setPosition(PhysicalEdge.Top, childTopOffsetFromParent);
-    } else if (
-      childStyle.positionType() === PositionType.Static &&
-      !child.getAlwaysFormsContainingBlock()
-    ) {
+    } else if (childStyle.positionType() === PositionType.Static) {
       // We may write new layout results for absolute descendants of "child"
       // which are positioned relative to the current containing block instead
       // of their parent. "child" may not be dirty, or have new constraints, so

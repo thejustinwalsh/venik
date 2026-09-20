@@ -23,7 +23,6 @@ import {
   type Justify,
   LogLevel,
   type MeasureMode,
-  NodeType,
   type Overflow,
   PositionType,
   type Wrap,
@@ -62,8 +61,6 @@ export class Node {
   private hasNewLayout_: boolean = true;
   private isReferenceBaseline_: boolean = false;
   private isDirty_: boolean = true;
-  private alwaysFormsContainingBlock_: boolean = false;
-  private nodeType_: NodeType = NodeType.Default;
   private context_: unknown = null;
   private measureFunc_: MeasureFunction | null = null;
   private minContentMeasureFunc_: MeasureFunction | null = null;
@@ -89,20 +86,6 @@ export class Node {
     if (__EVENTS__) Event.publish(this, Event.NodeAllocation, { config });
   }
 
-  // yoga-layout compatible factories
-  static create(config?: Config): Node {
-    return new Node(config);
-  }
-  static createDefault(): Node {
-    return new Node();
-  }
-  static createWithConfig(config: Config): Node {
-    return new Node(config);
-  }
-  static destroy(node: Node): void {
-    node.free();
-  }
-
 
   // Lifecycle
   clone(): Node {
@@ -111,8 +94,6 @@ export class Node {
     node.hasNewLayout_ = this.hasNewLayout_;
     node.isReferenceBaseline_ = this.isReferenceBaseline_;
     node.isDirty_ = this.isDirty_;
-    node.alwaysFormsContainingBlock_ = this.alwaysFormsContainingBlock_;
-    node.nodeType_ = this.nodeType_;
     node.context_ = this.context_;
     node.measureFunc_ = this.measureFunc_;
     node.minContentMeasureFunc_ = this.minContentMeasureFunc_;
@@ -175,8 +156,6 @@ export class Node {
     this.hasNewLayout_ = true;
     this.isReferenceBaseline_ = false;
     this.isDirty_ = true;
-    this.alwaysFormsContainingBlock_ = false;
-    this.nodeType_ = NodeType.Default;
     this.context_ = null;
     this.measureFunc_ = null;
     this.minContentMeasureFunc_ = null;
@@ -209,9 +188,6 @@ export class Node {
   }
   setHasNewLayout(hasNewLayout: boolean): void {
     this.hasNewLayout_ = hasNewLayout;
-  }
-  markLayoutSeen(): void {
-    this.hasNewLayout_ = false;
   }
   isDirty(): boolean {
     return this.isDirty_;
@@ -359,19 +335,12 @@ export class Node {
     return this.context_;
   }
   setMeasureFunc(measureFunc: MeasureFunction | null): void {
-    if (measureFunc === null) {
-      // TODO: t18095186 Move nodeType to opt-in function and mark appropriate
-      // places in Litho
-      this.setNodeType(NodeType.Default);
-    } else {
+    if (measureFunc !== null) {
       assertFatalWithNode(
         this,
         this.children_.length === 0,
         "Cannot set measure function: Nodes with measure functions cannot have children.",
       );
-      // TODO: t18095186 Move nodeType to opt-in function and mark appropriate
-      // places in Litho
-      this.setNodeType(NodeType.Text);
     }
 
     this.measureFunc_ = measureFunc;
@@ -414,18 +383,6 @@ export class Node {
   }
   isReferenceBaseline(): boolean {
     return this.isReferenceBaseline_;
-  }
-  setNodeType(nodeType: NodeType): void {
-    this.nodeType_ = nodeType;
-  }
-  getNodeType(): NodeType {
-    return this.nodeType_;
-  }
-  setAlwaysFormsContainingBlock(alwaysFormsContainingBlock: boolean): void {
-    this.alwaysFormsContainingBlock_ = alwaysFormsContainingBlock;
-  }
-  getAlwaysFormsContainingBlock(): boolean {
-    return this.alwaysFormsContainingBlock_;
   }
 
   // Computed layout (YGNodeLayoutGet*)
