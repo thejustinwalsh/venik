@@ -2,20 +2,21 @@
 // (upstream fixture: gentest/fixtures/YGFlexBasisFitContentTest.html).
 
 import { expect, test } from "vitest";
-import { Config, Direction, FlexDirection, Node, Overflow, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Config, Direction, FlexDirection, Overflow, PositionType } from "../../src/index.ts";
 
 test("container_child_overflows_definite_parent_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(300);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(500);
   root_child0_child0.setWidth(50);
   root_child0.insertChild(root_child0_child0, 0);
@@ -61,16 +62,16 @@ test("container_child_overflows_definite_parent_column", () => {
 test("container_child_overflows_definite_parent_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(300);
   root.setHeight(200);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(500);
   root_child0_child0.setHeight(50);
   root_child0.insertChild(root_child0_child0, 0);
@@ -116,15 +117,15 @@ test("container_child_overflows_definite_parent_row", () => {
 test("container_child_within_bounds_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(300);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(50);
   root_child0.insertChild(root_child0_child0, 0);
@@ -170,22 +171,22 @@ test("container_child_within_bounds_column", () => {
 test("multiple_container_children_overflow_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(300);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(400);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root.insertChild(root_child1, 1);
 
-  const root_child1_child0 = new Node(config);
+  const root_child1_child0 = newFixtureNode(config);
   root_child1_child0.setHeight(500);
   root_child1.insertChild(root_child1_child0, 0);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -250,16 +251,16 @@ test("multiple_container_children_overflow_column", () => {
 test("scroll_container_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(300);
   root.setOverflow(Overflow.Scroll);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(500);
   root_child0.insertChild(root_child0_child0, 0);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -304,19 +305,19 @@ test("scroll_container_column", () => {
 test("explicit_and_container_children_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(300);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(100);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root.insertChild(root_child1, 1);
 
-  const root_child1_child0 = new Node(config);
+  const root_child1_child0 = newFixtureNode(config);
   root_child1_child0.setHeight(500);
   root_child1.insertChild(root_child1_child0, 0);
   root.calculateLayout(undefined, undefined, Direction.LTR);

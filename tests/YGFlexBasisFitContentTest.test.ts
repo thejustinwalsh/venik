@@ -1,6 +1,7 @@
 // Port of yoga-cpp/tests/YGFlexBasisFitContentTest.cpp
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { newFixtureNode } from "./util/testUtil.ts";
 import {
   Config,
   Direction,
@@ -49,14 +50,14 @@ describe("YGFlexBasisFitContentTest", () => {
   // layout regardless of feature state, because Check 3 preserves percentage
   // resolution when availableInnerHeight is NaN.
   test("percentage_height_converges", () => {
-    root = new Node(config);
+    root = newFixtureNode(config);
     root.setHeight(300);
     root.setWidth(100);
 
-    const container = new Node(config);
+    const container = newFixtureNode(config);
     root.insertChild(container, 0);
 
-    const child = new Node(config);
+    const child = newFixtureNode(config);
     child.setHeightPercent(50);
     container.insertChild(child, 0);
 
@@ -69,23 +70,23 @@ describe("YGFlexBasisFitContentTest", () => {
   // Two auto-height containers with percentage children and flexGrow:1 produce
   // the same layout regardless of feature state.
   test("percentage_with_flex_grow_converges", () => {
-    root = new Node(config);
+    root = newFixtureNode(config);
     root.setHeight(400);
     root.setWidth(100);
 
-    const containerA = new Node(config);
+    const containerA = newFixtureNode(config);
     containerA.setFlexGrow(1);
     root.insertChild(containerA, 0);
 
-    const childA = new Node(config);
+    const childA = newFixtureNode(config);
     childA.setHeightPercent(25);
     containerA.insertChild(childA, 0);
 
-    const containerB = new Node(config);
+    const containerB = newFixtureNode(config);
     containerB.setFlexGrow(1);
     root.insertChild(containerB, 1);
 
-    const childB = new Node(config);
+    const childB = newFixtureNode(config);
     childB.setHeightPercent(50);
     containerB.insertChild(childB, 0);
 
@@ -98,19 +99,19 @@ describe("YGFlexBasisFitContentTest", () => {
   // Auto-height container with flexShrink and a percentage child causing
   // overflow produces the same layout regardless of feature state.
   test("flex_shrink_overflow_converges", () => {
-    root = new Node(config);
+    root = newFixtureNode(config);
     root.setHeight(200);
     root.setWidth(100);
 
-    const container = new Node(config);
+    const container = newFixtureNode(config);
     container.setFlexShrink(1);
     root.insertChild(container, 0);
 
-    const child = new Node(config);
+    const child = newFixtureNode(config);
     child.setHeightPercent(100);
     container.insertChild(child, 0);
 
-    const fixed = new Node(config);
+    const fixed = newFixtureNode(config);
     fixed.setHeight(150);
     root.insertChild(fixed, 1);
 
@@ -130,22 +131,22 @@ describe("YGFlexBasisFitContentTest", () => {
 
     measureCount = 0;
 
-    root = new Node(config);
+    root = newFixtureNode(config);
     root.setOverflow(Overflow.Scroll);
     root.setWidth(100);
     root.setHeight(500);
 
-    const sibling = new Node(config);
+    const sibling = newFixtureNode(config);
     sibling.setHeight(100);
     root.insertChild(sibling, 0);
 
-    const wrapper = new Node(config);
+    const wrapper = newFixtureNode(config);
     root.insertChild(wrapper, 1);
 
-    const inner = new Node(config);
+    const inner = newFixtureNode(config);
     wrapper.insertChild(inner, 0);
 
-    const leaf = new Node(config);
+    const leaf = newFixtureNode(config);
     leaf.setMeasureFunc(measureFunc);
     inner.insertChild(leaf, 0);
 
@@ -164,14 +165,14 @@ describe("YGFlexBasisFitContentTest", () => {
   // Row direction is unaffected by the optimization. Width FitContent is always
   // preserved to support text wrapping through container nodes.
   test("row_direction_unchanged", () => {
-    root = new Node(config);
+    root = newFixtureNode(config);
     root.setWidth(100);
     root.setHeight(100);
 
-    const container = new Node(config);
+    const container = newFixtureNode(config);
     root.insertChild(container, 0);
 
-    const text = new Node(config);
+    const text = newFixtureNode(config);
     text.setMeasureFunc(measureTextLike);
     container.insertChild(text, 0);
 
@@ -183,13 +184,13 @@ describe("YGFlexBasisFitContentTest", () => {
   // Scroll container in row direction: width FitContent is skipped for the
   // main axis (row) in scroll containers, matching legacy behavior.
   test("row_scroll_skips_width", () => {
-    root = new Node(config);
+    root = newFixtureNode(config);
     root.setFlexDirection(FlexDirection.Row);
     root.setOverflow(Overflow.Scroll);
     root.setWidth(100);
     root.setHeight(100);
 
-    const text = new Node(config);
+    const text = newFixtureNode(config);
     text.setMeasureFunc(measureTextLike);
     root.insertChild(text, 0);
 

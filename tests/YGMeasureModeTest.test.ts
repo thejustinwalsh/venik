@@ -1,13 +1,13 @@
 // Port of yoga-cpp/tests/YGMeasureModeTest.cpp
 
 import { expect, test } from "vitest";
+import { newFixtureNode } from "./util/testUtil.ts";
 import {
   Align,
   Direction,
   FlexDirection,
   type MeasureFunction,
   MeasureMode,
-  Node,
   Overflow,
 } from "../src/index.ts";
 
@@ -33,11 +33,11 @@ const _measure: MeasureFunction = (width, widthMode, height, heightMode, node) =
 test("exactly_measure_stretched_child_column", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
@@ -54,12 +54,12 @@ test("exactly_measure_stretched_child_column", () => {
 test("exactly_measure_stretched_child_row", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
@@ -76,11 +76,11 @@ test("exactly_measure_stretched_child_row", () => {
 test("at_most_main_axis_column", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
@@ -97,12 +97,12 @@ test("at_most_main_axis_column", () => {
 test("at_most_cross_axis_column", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
@@ -119,12 +119,12 @@ test("at_most_cross_axis_column", () => {
 test("at_most_main_axis_row", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
@@ -141,13 +141,13 @@ test("at_most_main_axis_row", () => {
 test("at_most_cross_axis_row", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
@@ -164,10 +164,10 @@ test("at_most_cross_axis_row", () => {
 test("flex_child", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setFlexGrow(1);
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
@@ -192,10 +192,10 @@ test("flex_child", () => {
 test("flex_child_with_flex_basis", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(0);
   root_child0.setContext(constraintList);
@@ -218,13 +218,13 @@ test("flex_child_with_flex_basis", () => {
 test("overflow_scroll_column", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setOverflow(Overflow.Scroll);
   root.setHeight(100);
   root.setWidth(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
@@ -244,14 +244,14 @@ test("overflow_scroll_column", () => {
 test("overflow_scroll_row", () => {
   const constraintList: MeasureConstraint[] = [];
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setFlexDirection(FlexDirection.Row);
   root.setOverflow(Overflow.Scroll);
   root.setHeight(100);
   root.setWidth(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setContext(constraintList);
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);

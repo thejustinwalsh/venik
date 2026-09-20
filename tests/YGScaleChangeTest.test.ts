@@ -1,29 +1,29 @@
 // Port of yoga-cpp/tests/YGScaleChangeTest.cpp
 
 import { expect, test } from "vitest";
+import { newFixtureNode } from "./util/testUtil.ts";
 import {
   Config,
   Direction,
   FlexDirection,
-  Node,
   type MeasureFunction,
 } from "../src/index.ts";
 
 test("scale_change_invalidates_layout", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   config.setPointScaleFactor(1);
 
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(50);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
@@ -53,20 +53,20 @@ test("setting_compatible_config_maintains_layout_cache", () => {
 
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   config.setPointScaleFactor(1);
 
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(50);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   expect(measureCallCount).toBe(0);
 
   root_child0.setMeasureFunc(measureCustom);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 

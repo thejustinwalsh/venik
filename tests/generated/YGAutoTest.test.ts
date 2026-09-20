@@ -2,28 +2,29 @@
 // (upstream fixture: gentest/fixtures/YGAutoTest.html).
 
 import { expect, test } from "vitest";
-import { Config, Direction, Edge, FlexDirection, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";
 
 test("auto_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidthAuto();
   root.setHeight(50);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root_child1.setHeight(50);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(50);
   root_child2.setHeight(50);
   root.insertChild(root_child2, 2);
@@ -79,22 +80,22 @@ test("auto_width", () => {
 test("auto_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(50);
   root.setHeightAuto();
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root_child1.setHeight(50);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(50);
   root_child2.setHeight(50);
   root.insertChild(root_child2, 2);
@@ -150,22 +151,22 @@ test("auto_height", () => {
 test("auto_flex_basis", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(50);
   root.setFlexBasisAuto();
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root_child1.setHeight(50);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(50);
   root_child2.setHeight(50);
   root.insertChild(root_child2, 2);
@@ -221,12 +222,12 @@ test("auto_flex_basis", () => {
 test("auto_position", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(50);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(25);
   root_child0.setHeight(25);
   root_child0.setPositionAuto(Edge.Right);
@@ -263,12 +264,12 @@ test("auto_position", () => {
 test("auto_margin", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(50);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(25);
   root_child0.setHeight(25);
   root_child0.setMarginAuto(Edge.Left);

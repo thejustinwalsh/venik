@@ -2,33 +2,34 @@
 // (upstream fixture: gentest/fixtures/YGFlexWrapTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, FlexDirection, Justify, Node, PositionType, Wrap } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, FlexDirection, Justify, PositionType, Wrap } from "../../src/index.ts";
 
 test("wrap_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.Wrap);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(30);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(30);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(30);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
@@ -94,29 +95,29 @@ test("wrap_row", () => {
 test("wrap_row_align_items_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.Wrap);
   root.setAlignItems(Align.FlexEnd);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(30);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
@@ -182,29 +183,29 @@ test("wrap_row_align_items_flex_end", () => {
 test("wrap_row_align_items_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.Wrap);
   root.setAlignItems(Align.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(30);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
@@ -270,19 +271,19 @@ test("wrap_row_align_items_center", () => {
 test("flex_wrap_children_with_min_main_overriding_flex_basis", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexWrap(Wrap.Wrap);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(50);
   root_child0.setHeight(50);
   root_child0.setMinWidth(55);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexBasis(50);
   root_child1.setHeight(50);
   root_child1.setMinWidth(55);
@@ -329,25 +330,25 @@ test("flex_wrap_children_with_min_main_overriding_flex_basis", () => {
 test("flex_wrap_wrap_to_child_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setAlignItems(Align.FlexStart);
   root_child0.setFlexWrap(Wrap.Wrap);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(100);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(100);
   root_child0_child0_child0.setWidth(100);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(100);
   root_child1.setHeight(100);
   root.insertChild(root_child1, 1);
@@ -413,18 +414,18 @@ test("flex_wrap_wrap_to_child_height", () => {
 test("flex_wrap_align_stretch_fits_one_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(150);
   root.setHeight(100);
   root.setFlexWrap(Wrap.Wrap);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root.insertChild(root_child1, 1);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -469,33 +470,33 @@ test("flex_wrap_align_stretch_fits_one_row", () => {
 test("wrap_reverse_row_align_content_flex_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.WrapReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(40);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
 
-  const root_child4 = new Node(config);
+  const root_child4 = newFixtureNode(config);
   root_child4.setHeight(50);
   root_child4.setWidth(30);
   root.insertChild(root_child4, 4);
@@ -571,34 +572,34 @@ test("wrap_reverse_row_align_content_flex_start", () => {
 test("wrap_reverse_row_align_content_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.WrapReverse);
   root.setAlignContent(Align.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(40);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
 
-  const root_child4 = new Node(config);
+  const root_child4 = newFixtureNode(config);
   root_child4.setHeight(50);
   root_child4.setWidth(30);
   root.insertChild(root_child4, 4);
@@ -674,33 +675,33 @@ test("wrap_reverse_row_align_content_center", () => {
 test("wrap_reverse_row_single_line_different_size", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(300);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.WrapReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(40);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
 
-  const root_child4 = new Node(config);
+  const root_child4 = newFixtureNode(config);
   root_child4.setHeight(50);
   root_child4.setWidth(30);
   root.insertChild(root_child4, 4);
@@ -776,34 +777,34 @@ test("wrap_reverse_row_single_line_different_size", () => {
 test("wrap_reverse_row_align_content_stretch", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.WrapReverse);
   root.setAlignContent(Align.Stretch);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(40);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
 
-  const root_child4 = new Node(config);
+  const root_child4 = newFixtureNode(config);
   root_child4.setHeight(50);
   root_child4.setWidth(30);
   root.insertChild(root_child4, 4);
@@ -879,34 +880,34 @@ test("wrap_reverse_row_align_content_stretch", () => {
 test("wrap_reverse_row_align_content_space_around", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.WrapReverse);
   root.setAlignContent(Align.SpaceAround);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(40);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
 
-  const root_child4 = new Node(config);
+  const root_child4 = newFixtureNode(config);
   root_child4.setHeight(50);
   root_child4.setWidth(30);
   root.insertChild(root_child4, 4);
@@ -982,34 +983,34 @@ test("wrap_reverse_row_align_content_space_around", () => {
 test("wrap_reverse_column_fixed_size", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(100);
   root.setFlexWrap(Wrap.WrapReverse);
   root.setAlignItems(Align.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(30);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(20);
   root_child1.setWidth(30);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(30);
   root_child2.setWidth(30);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setHeight(40);
   root_child3.setWidth(30);
   root.insertChild(root_child3, 3);
 
-  const root_child4 = new Node(config);
+  const root_child4 = newFixtureNode(config);
   root_child4.setHeight(50);
   root_child4.setWidth(30);
   root.insertChild(root_child4, 4);
@@ -1085,23 +1086,23 @@ test("wrap_reverse_column_fixed_size", () => {
 test("wrapped_row_within_align_items_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setAlignItems(Align.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setFlexWrap(Wrap.Wrap);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(150);
   root_child0_child0.setHeight(80);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setWidth(80);
   root_child0_child1.setHeight(80);
   root_child0.insertChild(root_child0_child1, 1);
@@ -1157,23 +1158,23 @@ test("wrapped_row_within_align_items_center", () => {
 test("wrapped_row_within_align_items_flex_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setAlignItems(Align.FlexStart);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setFlexWrap(Wrap.Wrap);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(150);
   root_child0_child0.setHeight(80);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setWidth(80);
   root_child0_child1.setHeight(80);
   root_child0.insertChild(root_child0_child1, 1);
@@ -1229,23 +1230,23 @@ test("wrapped_row_within_align_items_flex_start", () => {
 test("wrapped_row_within_align_items_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setAlignItems(Align.FlexEnd);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setFlexWrap(Wrap.Wrap);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(150);
   root_child0_child0.setHeight(80);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setWidth(80);
   root_child0_child1.setHeight(80);
   root_child0.insertChild(root_child0_child1, 1);
@@ -1301,7 +1302,7 @@ test("wrapped_row_within_align_items_flex_end", () => {
 test("wrapped_column_max_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(500);
   root.setWidth(700);
@@ -1310,19 +1311,19 @@ test("wrapped_column_max_height", () => {
   root.setAlignContent(Align.Center);
   root.setFlexWrap(Wrap.Wrap);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root_child0.setHeight(500);
   root_child0.setMaxHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(200);
   root_child1.setHeight(200);
   root_child1.setMargin(Edge.All, 20);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(100);
   root_child2.setHeight(100);
   root.insertChild(root_child2, 2);
@@ -1378,7 +1379,7 @@ test("wrapped_column_max_height", () => {
 test("wrapped_column_max_height_flex", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(500);
   root.setWidth(700);
@@ -1387,7 +1388,7 @@ test("wrapped_column_max_height_flex", () => {
   root.setAlignContent(Align.Center);
   root.setFlexWrap(Wrap.Wrap);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root_child0.setHeight(500);
   root_child0.setMaxHeight(200);
@@ -1396,7 +1397,7 @@ test("wrapped_column_max_height_flex", () => {
   root_child0.setFlexBasisPercent(0);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(200);
   root_child1.setHeight(200);
   root_child1.setMargin(Edge.All, 20);
@@ -1405,7 +1406,7 @@ test("wrapped_column_max_height_flex", () => {
   root_child1.setFlexBasisPercent(0);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(100);
   root_child2.setHeight(100);
   root.insertChild(root_child2, 2);
@@ -1461,30 +1462,30 @@ test("wrapped_column_max_height_flex", () => {
 test("wrap_nodes_with_content_sizing_overflowing_margin", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(500);
   root.setHeight(500);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setFlexWrap(Wrap.Wrap);
   root_child0.setWidth(85);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(40);
   root_child0_child0_child0.setWidth(40);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setMargin(Edge.Right, 10);
   root_child0.insertChild(root_child0_child1, 1);
 
-  const root_child0_child1_child0 = new Node(config);
+  const root_child0_child1_child0 = newFixtureNode(config);
   root_child0_child1_child0.setHeight(40);
   root_child0_child1_child0.setWidth(40);
   root_child0_child1.insertChild(root_child0_child1_child0, 0);
@@ -1560,30 +1561,30 @@ test("wrap_nodes_with_content_sizing_overflowing_margin", () => {
 test("wrap_nodes_with_content_sizing_margin_cross", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(500);
   root.setHeight(500);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setFlexWrap(Wrap.Wrap);
   root_child0.setWidth(70);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(40);
   root_child0_child0_child0.setWidth(40);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setMargin(Edge.Top, 10);
   root_child0.insertChild(root_child0_child1, 1);
 
-  const root_child0_child1_child0 = new Node(config);
+  const root_child0_child1_child0 = newFixtureNode(config);
   root_child0_child1_child0.setHeight(40);
   root_child0_child1_child0.setWidth(40);
   root_child0_child1.insertChild(root_child0_child1_child0, 0);
@@ -1659,19 +1660,19 @@ test("wrap_nodes_with_content_sizing_margin_cross", () => {
 test("wrap_with_min_cross_axis", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(500);
   root.setMinHeight(500);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.Wrap);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(400);
   root_child1.setHeight(200);
   root.insertChild(root_child1, 1);
@@ -1717,19 +1718,19 @@ test("wrap_with_min_cross_axis", () => {
 test("wrap_with_max_cross_axis", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(500);
   root.setMaxHeight(500);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.Wrap);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(400);
   root_child1.setHeight(200);
   root.insertChild(root_child1, 1);
@@ -1775,12 +1776,12 @@ test("wrap_with_max_cross_axis", () => {
 test("nowrap_expands_flexline_box_to_min_cross", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMinHeight(400);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexShrink(1);
   root_child0.setFlexBasisPercent(0);
@@ -1817,13 +1818,13 @@ test("nowrap_expands_flexline_box_to_min_cross", () => {
 test("wrap_does_not_impose_min_cross_onto_single_flexline", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMinHeight(400);
   root.setFlexDirection(FlexDirection.Row);
   root.setFlexWrap(Wrap.Wrap);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexShrink(1);
   root_child0.setFlexBasisPercent(0);

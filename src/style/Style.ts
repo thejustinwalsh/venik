@@ -37,24 +37,23 @@ import { StyleSizeLength } from "./StyleSizeLength.ts";
  * Port of `yoga::Style`. Accessor names are kept identical to C++
  * (`style.flexDirection()` / `style.setFlexDirection(v)`).
  *
- * Defaults of a new Style: direction Inherit, flexDirection Column,
+ * Defaults of a new Style follow CSS: direction Inherit, flexDirection Row,
  * justifyContent FlexStart, justifyItems Stretch, justifySelf Auto,
- * alignContent FlexStart, alignItems Stretch, alignSelf Auto, positionType
+ * alignContent Stretch, alignItems Stretch, alignSelf Auto, positionType
  * Relative, flexWrap NoWrap, overflow Visible, display Flex, boxSizing
  * BorderBox, flexBasis auto, dimensions auto, every other number/length
  * undefined, grid track lists empty and grid lines auto.
  */
 export class Style {
   static readonly DefaultFlexGrow: number = 0.0;
-  static readonly DefaultFlexShrink: number = 0.0;
-  static readonly WebDefaultFlexShrink: number = 1.0;
+  static readonly DefaultFlexShrink: number = 1.0;
 
   private direction_: Direction = Direction.Inherit;
-  private flexDirection_: FlexDirection = FlexDirection.Column;
+  private flexDirection_: FlexDirection = FlexDirection.Row;
   private justifyContent_: Justify = Justify.FlexStart;
   private justifyItems_: Justify = Justify.Stretch;
   private justifySelf_: Justify = Justify.Auto;
-  private alignContent_: Align = Align.FlexStart;
+  private alignContent_: Align = Align.Stretch;
   private alignItems_: Align = Align.Stretch;
   private alignSelf_: Align = Align.Auto;
   private positionType_: PositionType = PositionType.Relative;

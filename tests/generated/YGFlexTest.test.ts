@@ -2,22 +2,23 @@
 // (upstream fixture: gentest/fixtures/YGFlexTest.html).
 
 import { expect, test } from "vitest";
-import { Config, Direction, FlexDirection, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Config, Direction, FlexDirection, PositionType } from "../../src/index.ts";
 
 test("flex_basis_flex_grow_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(50);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -62,19 +63,19 @@ test("flex_basis_flex_grow_column", () => {
 test("flex_shrink_flex_grow_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(500);
   root.setHeight(500);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(500);
   root_child0.setHeight(100);
   root_child0.setFlexShrink(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(500);
   root_child1.setHeight(100);
   root_child1.setFlexShrink(1);
@@ -121,19 +122,19 @@ test("flex_shrink_flex_grow_row", () => {
 test("flex_shrink_flex_grow_child_flex_shrink_other_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(500);
   root.setHeight(500);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(500);
   root_child0.setHeight(100);
   root_child0.setFlexShrink(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(500);
   root_child1.setHeight(100);
   root_child1.setFlexGrow(1);
@@ -181,18 +182,18 @@ test("flex_shrink_flex_grow_child_flex_shrink_other_child", () => {
 test("flex_basis_flex_grow_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(50);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -237,17 +238,17 @@ test("flex_basis_flex_grow_row", () => {
 test("flex_basis_flex_shrink_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(100);
   root_child0.setFlexShrink(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexBasis(50);
   root.insertChild(root_child1, 1);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -292,18 +293,18 @@ test("flex_basis_flex_shrink_column", () => {
 test("flex_basis_flex_shrink_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(100);
   root_child0.setFlexShrink(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexBasis(50);
   root.insertChild(root_child1, 1);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -348,22 +349,22 @@ test("flex_basis_flex_shrink_row", () => {
 test("flex_shrink_to_zero", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(75);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root_child1.setHeight(50);
   root_child1.setFlexShrink(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(50);
   root_child2.setHeight(50);
   root.insertChild(root_child2, 2);
@@ -419,23 +420,23 @@ test("flex_shrink_to_zero", () => {
 test("flex_basis_overrides_main_size", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -491,15 +492,15 @@ test("flex_basis_overrides_main_size", () => {
 test("flex_grow_shrink_at_most", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setFlexGrow(1);
   root_child0_child0.setFlexShrink(1);
   root_child0.insertChild(root_child0_child0, 0);
@@ -545,21 +546,21 @@ test("flex_grow_shrink_at_most", () => {
 test("flex_grow_less_than_factor_one", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(500);
   root.setWidth(200);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(0.2);
   root_child0.setFlexBasis(40);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(0.2);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setFlexGrow(0.4);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);

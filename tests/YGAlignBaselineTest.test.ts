@@ -1,6 +1,7 @@
 // Port of yoga-cpp/tests/YGAlignBaselineTest.cpp
 
 import { expect, test } from "vitest";
+import { newFixtureNode } from "./util/testUtil.ts";
 import { Align, Config, Direction, Edge, FlexDirection, Node, type Size } from "../src/index.ts";
 
 function _baselineFunc(_width: number, height: number): number {
@@ -22,7 +23,7 @@ function createYGNode(
   height: number,
   alignBaseline: boolean,
 ): Node {
-  const node = new Node(config);
+  const node = newFixtureNode(config);
   node.setFlexDirection(direction);
   if (alignBaseline) {
     node.setAlignItems(Align.Baseline);
@@ -36,7 +37,7 @@ function createYGNode(
 test("align_baseline_parent_ht_not_specified", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignContent(Align.Stretch);
   root.setAlignItems(Align.Baseline);
@@ -44,13 +45,13 @@ test("align_baseline_parent_ht_not_specified", () => {
   root.setMaxHeight(170);
   root.setMinHeight(0);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(0);
   root_child0.setFlexShrink(1);
   root_child0.setMeasureFunc(_measure1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(0);
   root_child1.setFlexShrink(1);
   root_child1.setMeasureFunc(_measure2);
@@ -81,17 +82,17 @@ test("align_baseline_parent_ht_not_specified", () => {
 test("align_baseline_with_no_parent_ht", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.Baseline);
   root.setWidth(150);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root_child1.setHeight(40);
   root_child1.setBaselineFunc(_baselineFunc);
@@ -122,17 +123,17 @@ test("align_baseline_with_no_parent_ht", () => {
 test("align_baseline_with_no_baseline_func_and_no_parent_ht", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.Baseline);
   root.setWidth(150);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(80);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root_child1.setHeight(50);
   root.insertChild(root_child1, 1);
@@ -564,7 +565,7 @@ test("align_baseline_parent_using_child_in_row_as_reference_with_no_baseline_fun
 test("align_baseline_parent_using_child_in_column_as_reference_with_height_not_specified", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.Baseline);
   root.setWidth(1000);
@@ -572,7 +573,7 @@ test("align_baseline_parent_using_child_in_column_as_reference_with_height_not_s
   const root_child0 = createYGNode(config, FlexDirection.Column, 500, 600, false);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexDirection(FlexDirection.Column);
   root_child1.setWidth(500);
   root.insertChild(root_child1, 1);
@@ -610,7 +611,7 @@ test("align_baseline_parent_using_child_in_column_as_reference_with_height_not_s
 test("align_baseline_parent_using_child_in_row_as_reference_with_height_not_specified", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.Baseline);
   root.setWidth(1000);
@@ -618,7 +619,7 @@ test("align_baseline_parent_using_child_in_row_as_reference_with_height_not_spec
   const root_child0 = createYGNode(config, FlexDirection.Column, 500, 600, false);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexDirection(FlexDirection.Row);
   root_child1.setWidth(500);
   root.insertChild(root_child1, 1);
@@ -656,7 +657,7 @@ test("align_baseline_parent_using_child_in_row_as_reference_with_height_not_spec
 test("align_baseline_parent_using_child_in_column_as_reference_with_no_baseline_func_and_height_not_specified", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.Baseline);
   root.setWidth(1000);
@@ -664,7 +665,7 @@ test("align_baseline_parent_using_child_in_column_as_reference_with_no_baseline_
   const root_child0 = createYGNode(config, FlexDirection.Column, 500, 600, false);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexDirection(FlexDirection.Column);
   root_child1.setWidth(500);
   root.insertChild(root_child1, 1);
@@ -701,7 +702,7 @@ test("align_baseline_parent_using_child_in_column_as_reference_with_no_baseline_
 test("align_baseline_parent_using_child_in_row_as_reference_with_no_baseline_func_and_height_not_specified", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.Baseline);
   root.setWidth(1000);
@@ -709,7 +710,7 @@ test("align_baseline_parent_using_child_in_row_as_reference_with_no_baseline_fun
   const root_child0 = createYGNode(config, FlexDirection.Column, 500, 600, false);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexDirection(FlexDirection.Row);
   root_child1.setWidth(500);
   root.insertChild(root_child1, 1);

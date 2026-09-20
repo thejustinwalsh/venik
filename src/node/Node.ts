@@ -11,7 +11,6 @@ import {
 import { Config, configUpdateInvalidatesLayout } from "../config/Config.ts";
 import {
   assertFatal,
-  assertFatalWithConfig,
   assertFatalWithNode,
   fatalWithMessage,
 } from "../debug/AssertFatal.ts";
@@ -94,9 +93,6 @@ export class Node {
   constructor(config: Config = Config.getDefault()) {
     assertFatal(config != null, "Tried to construct YGNode with null config");
     this.config_ = config;
-    if (config.useWebDefaults()) {
-      this.useWebDefaults();
-    }
     Event.publish(this, Event.NodeAllocation, { config });
   }
 
@@ -200,9 +196,6 @@ export class Node {
     this.lineIndex_ = 0;
     this.contentsChildrenCount_ = 0;
     this.processedDimensions_ = [StyleSizeLength.undefined(), StyleSizeLength.undefined()];
-    if (this.config_.useWebDefaults()) {
-      this.useWebDefaults();
-    }
   }
 
   // Layout
@@ -351,11 +344,6 @@ export class Node {
   // Config, context and callbacks
   setConfig(config: Config | null): void {
     assertFatal(config !== null, "Attempting to set a null config on a Node");
-    assertFatalWithConfig(
-      config,
-      config.useWebDefaults() === this.config_.useWebDefaults(),
-      "UseWebDefaults may not be changed after constructing a Node",
-    );
 
     if (configUpdateInvalidatesLayout(this.config_, config)) {
       this.markDirtyAndPropagate();
@@ -650,11 +638,7 @@ export class Node {
     }
   }
   getFlexShrink(): number {
-    return this.style_
-      .flexShrink()
-      .unwrapOrDefault(
-        this.config_.useWebDefaults() ? Style.WebDefaultFlexShrink : Style.DefaultFlexShrink,
-      );
+    return this.style_.flexShrink().unwrapOrDefault(Style.DefaultFlexShrink);
   }
   setAspectRatio(aspectRatio: number | undefined): void {
     const value = new FloatOptional(aspectRatio ?? NaN);
@@ -1304,8 +1288,9 @@ export class Node {
     if (!flexBasis.isAuto() && !flexBasis.isUndefined()) {
       return flexBasis;
     }
+    // `flex: <positive number>` is `<number> 1 0` in CSS
     if (this.style_.flex().unwrap() > 0) {
-      return this.config_.useWebDefaults() ? StyleSizeLength.ofAuto() : StyleSizeLength.points(0);
+      return StyleSizeLength.points(0);
     }
     return StyleSizeLength.ofAuto();
   }
@@ -1462,11 +1447,7 @@ export class Node {
     if (flexShrink === flexShrink) {
       return flexShrink;
     }
-    const flex = this.style_.flex().unwrap();
-    if (!this.config_.useWebDefaults() && flex < 0) {
-      return -flex;
-    }
-    return this.config_.useWebDefaults() ? Style.WebDefaultFlexShrink : Style.DefaultFlexShrink;
+    return Style.DefaultFlexShrink;
   }
 
   /** @internal */
@@ -1475,11 +1456,6 @@ export class Node {
       this.style_.positionType() !== PositionType.Absolute &&
       (this.resolveFlexGrow() !== 0 || this.resolveFlexShrink() !== 0)
     );
-  }
-
-  private useWebDefaults(): void {
-    this.style_.setFlexDirection(FlexDirection.Row);
-    this.style_.setAlignContent(Align.Stretch);
   }
 
   /** The layout of a node removed from its exclusive owner is no longer valid. */

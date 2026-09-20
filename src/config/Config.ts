@@ -13,7 +13,6 @@ export class Config {
   private cloneNodeCallback_: CloneNodeFunction | null = null;
   private logger_: Logger = getDefaultLogger();
 
-  private useWebDefaults_: boolean = false;
 
   private version_: number = 0;
   private pointScaleFactor_: number = 1.0;
@@ -36,13 +35,6 @@ export class Config {
 
   free(): void {
     // Nothing to release: configs are garbage collected.
-  }
-
-  setUseWebDefaults(useWebDefaults: boolean): void {
-    this.useWebDefaults_ = useWebDefaults;
-  }
-  useWebDefaults(): boolean {
-    return this.useWebDefaults_;
   }
 
   setPointScaleFactor(pixelsInPoint: number): void {
@@ -102,7 +94,6 @@ export class Config {
 /** @internal Whether layouts computed under `oldConfig` must be recomputed under `newConfig`. */
 export function configUpdateInvalidatesLayout(oldConfig: Config, newConfig: Config): boolean {
   return (
-    oldConfig.getPointScaleFactor() !== newConfig.getPointScaleFactor() ||
-    oldConfig.useWebDefaults() !== newConfig.useWebDefaults()
+    oldConfig.getPointScaleFactor() !== newConfig.getPointScaleFactor()
   );
 }

@@ -1,7 +1,31 @@
 // Port of yoga-cpp/tests/util/TestUtil.{h,cpp}
 
 import { Event, type Subscriber } from "../../src/event/event.ts";
-import { FlexDirection, MeasureMode, type Node, type Size } from "../../src/index.ts";
+import {
+  Align,
+  type Config,
+  FlexDirection,
+  MeasureMode,
+  Node,
+  type Size,
+} from "../../src/index.ts";
+
+/**
+ * A node carrying the base style the layout fixtures were recorded with:
+ * `flex-direction: column; align-content: flex-start; flex-shrink: 0`.
+ *
+ * The expected values in those tests come from a browser rendering that
+ * stylesheet, so it is spelled out here rather than being an engine default
+ * (a plain `new Node()` has the CSS initial values). Setters called by the
+ * test afterwards override it as usual.
+ */
+export function newFixtureNode(config?: Config): Node {
+  const node = config === undefined ? new Node() : new Node(config);
+  node.setFlexDirection(FlexDirection.Column);
+  node.setAlignContent(Align.FlexStart);
+  node.setFlexShrink(0);
+  return node;
+}
 
 let nodeInstanceCount = 0;
 

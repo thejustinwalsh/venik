@@ -2,15 +2,16 @@
 // (upstream fixture: gentest/fixtures/YGStaticPositionTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, FlexDirection, Justify, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, FlexDirection, Justify, PositionType } from "../../src/index.ts";
 
 test("static_position_insets_have_no_effect_left_top", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root_child0.setHeight(100);
   root_child0.setPositionType(PositionType.Static);
@@ -49,10 +50,10 @@ test("static_position_insets_have_no_effect_left_top", () => {
 test("static_position_insets_have_no_effect_right_bottom", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root_child0.setHeight(100);
   root_child0.setPositionType(PositionType.Static);
@@ -91,22 +92,22 @@ test("static_position_insets_have_no_effect_right_bottom", () => {
 test("static_position_absolute_child_insets_relative_to_positioned_ancestor", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setMargin(Edge.Left, 100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -165,22 +166,22 @@ test("static_position_absolute_child_insets_relative_to_positioned_ancestor", ()
 test("static_position_absolute_child_insets_relative_to_positioned_ancestor_row_reverse", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setFlexDirection(FlexDirection.RowReverse);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -239,23 +240,23 @@ test("static_position_absolute_child_insets_relative_to_positioned_ancestor_row_
 test("column_reverse_static_position_absolute_child_insets_relative_to_positioned_ancestor_row_reverse", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setFlexDirection(FlexDirection.RowReverse);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setFlexDirection(FlexDirection.ColumnReverse);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -314,22 +315,22 @@ test("column_reverse_static_position_absolute_child_insets_relative_to_positione
 test("static_position_absolute_child_insets_relative_to_positioned_ancestor_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setFlexDirection(FlexDirection.Row);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -388,23 +389,23 @@ test("static_position_absolute_child_insets_relative_to_positioned_ancestor_row"
 test("column_reverse_static_position_absolute_child_insets_relative_to_positioned_ancestor_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setFlexDirection(FlexDirection.Row);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setFlexDirection(FlexDirection.ColumnReverse);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -463,22 +464,22 @@ test("column_reverse_static_position_absolute_child_insets_relative_to_positione
 test("static_position_absolute_child_insets_relative_to_positioned_ancestor_column_reverse", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setFlexDirection(FlexDirection.ColumnReverse);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -537,23 +538,23 @@ test("static_position_absolute_child_insets_relative_to_positioned_ancestor_colu
 test("column_reverse_static_position_absolute_child_insets_relative_to_positioned_ancestor_column_reverse", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setFlexDirection(FlexDirection.ColumnReverse);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setFlexDirection(FlexDirection.ColumnReverse);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -612,43 +613,43 @@ test("column_reverse_static_position_absolute_child_insets_relative_to_positione
 test("static_position_absolute_child_insets_relative_to_positioned_ancestor_deep", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setMargin(Edge.Left, 100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(100);
   root_child0_child0_child0.setWidth(100);
   root_child0_child0_child0.setMargin(Edge.Left, 100);
   root_child0_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setHeight(100);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setMargin(Edge.Left, 100);
   root_child0_child0_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0_child0.setHeight(100);
   root_child0_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0_child0.setMargin(Edge.Left, 100);
   root_child0_child0_child0_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0_child0_child0.insertChild(root_child0_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0_child0_child0.setWidth(50);
   root_child0_child0_child0_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -737,21 +738,21 @@ test("static_position_absolute_child_insets_relative_to_positioned_ancestor_deep
 test("static_position_absolute_child_width_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidthPercent(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -808,21 +809,21 @@ test("static_position_absolute_child_width_percentage", () => {
 test("static_position_relative_child_width_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidthPercent(50);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
@@ -878,21 +879,21 @@ test("static_position_relative_child_width_percentage", () => {
 test("static_position_static_child_width_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidthPercent(50);
   root_child0_child0_child0.setPositionType(PositionType.Static);
@@ -949,21 +950,21 @@ test("static_position_static_child_width_percentage", () => {
 test("static_position_absolute_child_height_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -1020,21 +1021,21 @@ test("static_position_absolute_child_height_percentage", () => {
 test("static_position_relative_child_height_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
@@ -1090,21 +1091,21 @@ test("static_position_relative_child_height_percentage", () => {
 test("static_position_static_child_height_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Static);
@@ -1161,21 +1162,21 @@ test("static_position_static_child_height_percentage", () => {
 test("static_position_absolute_child_left_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Left, 50);
@@ -1233,21 +1234,21 @@ test("static_position_absolute_child_left_percentage", () => {
 test("static_position_relative_child_left_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Left, 50);
@@ -1304,21 +1305,21 @@ test("static_position_relative_child_left_percentage", () => {
 test("static_position_static_child_left_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Left, 50);
@@ -1376,21 +1377,21 @@ test("static_position_static_child_left_percentage", () => {
 test("static_position_absolute_child_right_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Right, 50);
@@ -1448,21 +1449,21 @@ test("static_position_absolute_child_right_percentage", () => {
 test("static_position_relative_child_right_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Right, 50);
@@ -1519,21 +1520,21 @@ test("static_position_relative_child_right_percentage", () => {
 test("static_position_static_child_right_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Right, 50);
@@ -1591,21 +1592,21 @@ test("static_position_static_child_right_percentage", () => {
 test("static_position_absolute_child_top_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Top, 50);
@@ -1663,21 +1664,21 @@ test("static_position_absolute_child_top_percentage", () => {
 test("static_position_relative_child_top_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Top, 50);
@@ -1734,21 +1735,21 @@ test("static_position_relative_child_top_percentage", () => {
 test("static_position_static_child_top_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Top, 50);
@@ -1806,21 +1807,21 @@ test("static_position_static_child_top_percentage", () => {
 test("static_position_absolute_child_bottom_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Bottom, 50);
@@ -1878,21 +1879,21 @@ test("static_position_absolute_child_bottom_percentage", () => {
 test("static_position_relative_child_bottom_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Bottom, 50);
@@ -1949,21 +1950,21 @@ test("static_position_relative_child_bottom_percentage", () => {
 test("static_position_static_child_bottom_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionPercent(Edge.Bottom, 50);
@@ -2021,21 +2022,21 @@ test("static_position_static_child_bottom_percentage", () => {
 test("static_position_absolute_child_margin_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setMarginPercent(Edge.All, 50);
@@ -2093,21 +2094,21 @@ test("static_position_absolute_child_margin_percentage", () => {
 test("static_position_relative_child_margin_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setMarginPercent(Edge.All, 50);
@@ -2164,21 +2165,21 @@ test("static_position_relative_child_margin_percentage", () => {
 test("static_position_static_child_margin_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setMarginPercent(Edge.All, 50);
@@ -2236,21 +2237,21 @@ test("static_position_static_child_margin_percentage", () => {
 test("static_position_absolute_child_padding_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPaddingPercent(Edge.All, 50);
@@ -2308,21 +2309,21 @@ test("static_position_absolute_child_padding_percentage", () => {
 test("static_position_relative_child_padding_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPaddingPercent(Edge.All, 50);
@@ -2379,21 +2380,21 @@ test("static_position_relative_child_padding_percentage", () => {
 test("static_position_static_child_padding_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPaddingPercent(Edge.All, 50);
@@ -2451,21 +2452,21 @@ test("static_position_static_child_padding_percentage", () => {
 test("static_position_absolute_child_border_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -2522,21 +2523,21 @@ test("static_position_absolute_child_border_percentage", () => {
 test("static_position_relative_child_border_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
@@ -2592,21 +2593,21 @@ test("static_position_relative_child_border_percentage", () => {
 test("static_position_static_child_border_percentage", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setPositionType(PositionType.Static);
@@ -2663,22 +2664,22 @@ test("static_position_static_child_border_percentage", () => {
 test("static_position_absolute_child_containing_block_padding_box", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.All, 100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidthPercent(50);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -2735,22 +2736,22 @@ test("static_position_absolute_child_containing_block_padding_box", () => {
 test("static_position_relative_child_containing_block_padding_box", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.All, 100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidthPercent(50);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
@@ -2806,22 +2807,22 @@ test("static_position_relative_child_containing_block_padding_box", () => {
 test("static_position_static_child_containing_block_padding_box", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.All, 100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidthPercent(50);
   root_child0_child0_child0.setPositionType(PositionType.Static);
@@ -2878,16 +2879,16 @@ test("static_position_static_child_containing_block_padding_box", () => {
 test("static_position_absolute_child_containing_block_content_box", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.All, 100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(50);
   root_child0_child0.setWidthPercent(50);
   root_child0_child0.setPositionType(PositionType.Absolute);
@@ -2934,16 +2935,16 @@ test("static_position_absolute_child_containing_block_content_box", () => {
 test("static_position_relative_child_containing_block_content_box", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.All, 100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(50);
   root_child0_child0.setWidthPercent(50);
   root_child0.insertChild(root_child0_child0, 0);
@@ -2989,16 +2990,16 @@ test("static_position_relative_child_containing_block_content_box", () => {
 test("static_position_static_child_containing_block_content_box", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.All, 100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(50);
   root_child0_child0.setWidthPercent(50);
   root_child0_child0.setPositionType(PositionType.Static);
@@ -3045,10 +3046,10 @@ test("static_position_static_child_containing_block_content_box", () => {
 test("static_position_containing_block_padding_and_border", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.Top, 8);
@@ -3061,13 +3062,13 @@ test("static_position_containing_block_padding_and_border", () => {
   root_child0.setBorder(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(61);
   root_child0_child0_child0.setWidthPercent(41);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -3124,10 +3125,10 @@ test("static_position_containing_block_padding_and_border", () => {
 test("static_position_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(500);
   root_child0.setHeight(500);
   root_child0.setMargin(Edge.Top, 5);
@@ -3144,7 +3145,7 @@ test("static_position_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(200);
   root_child0_child0.setWidth(200);
   root_child0_child0.setPositionType(PositionType.Static);
@@ -3162,7 +3163,7 @@ test("static_position_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(63);
   root_child0_child0_child0.setWidthPercent(41);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -3233,10 +3234,10 @@ test("static_position_amalgamation", () => {
 test("static_position_no_position_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(500);
   root_child0.setHeight(500);
   root_child0.setMargin(Edge.Top, 5);
@@ -3253,7 +3254,7 @@ test("static_position_no_position_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(200);
   root_child0_child0.setWidth(200);
   root_child0_child0.setPositionType(PositionType.Static);
@@ -3271,7 +3272,7 @@ test("static_position_no_position_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(63);
   root_child0_child0_child0.setWidthPercent(41);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -3340,10 +3341,10 @@ test("static_position_no_position_amalgamation", () => {
 test("static_position_zero_for_inset_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(500);
   root_child0.setHeight(500);
   root_child0.setMargin(Edge.Top, 5);
@@ -3360,7 +3361,7 @@ test("static_position_zero_for_inset_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(200);
   root_child0_child0.setWidth(200);
   root_child0_child0.setPositionType(PositionType.Static);
@@ -3378,7 +3379,7 @@ test("static_position_zero_for_inset_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(63);
   root_child0_child0_child0.setWidthPercent(41);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -3448,10 +3449,10 @@ test("static_position_zero_for_inset_amalgamation", () => {
 test("static_position_start_inset_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(500);
   root_child0.setHeight(500);
   root_child0.setMargin(Edge.Top, 5);
@@ -3468,7 +3469,7 @@ test("static_position_start_inset_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(200);
   root_child0_child0.setWidth(200);
   root_child0_child0.setPositionType(PositionType.Static);
@@ -3486,7 +3487,7 @@ test("static_position_start_inset_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(63);
   root_child0_child0_child0.setWidthPercent(41);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -3556,10 +3557,10 @@ test("static_position_start_inset_amalgamation", () => {
 test("static_position_end_inset_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(500);
   root_child0.setHeight(500);
   root_child0.setMargin(Edge.Top, 5);
@@ -3576,7 +3577,7 @@ test("static_position_end_inset_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(200);
   root_child0_child0.setWidth(200);
   root_child0_child0.setPositionType(PositionType.Static);
@@ -3594,7 +3595,7 @@ test("static_position_end_inset_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeightPercent(63);
   root_child0_child0_child0.setWidthPercent(41);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
@@ -3664,10 +3665,10 @@ test("static_position_end_inset_amalgamation", () => {
 test("static_position_row_reverse_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -3682,7 +3683,7 @@ test("static_position_row_reverse_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -3699,7 +3700,7 @@ test("static_position_row_reverse_amalgamation", () => {
   root_child0_child0.setFlexDirection(FlexDirection.RowReverse);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setHeightPercent(12);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -3716,7 +3717,7 @@ test("static_position_row_reverse_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -3794,10 +3795,10 @@ test("static_position_row_reverse_amalgamation", () => {
 test("static_position_column_reverse_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -3812,7 +3813,7 @@ test("static_position_column_reverse_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -3829,7 +3830,7 @@ test("static_position_column_reverse_amalgamation", () => {
   root_child0_child0.setFlexDirection(FlexDirection.ColumnReverse);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -3846,7 +3847,7 @@ test("static_position_column_reverse_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -3924,10 +3925,10 @@ test("static_position_column_reverse_amalgamation", () => {
 test("static_position_justify_flex_start_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -3942,7 +3943,7 @@ test("static_position_justify_flex_start_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -3958,7 +3959,7 @@ test("static_position_justify_flex_start_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -3975,7 +3976,7 @@ test("static_position_justify_flex_start_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -3992,7 +3993,7 @@ test("static_position_justify_flex_start_amalgamation", () => {
   root_child0_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidthPercent(10);
   root_child0_child0_child1.setMargin(Edge.Top, 12);
   root_child0_child0_child1.setMargin(Edge.Right, 4);
@@ -4008,7 +4009,7 @@ test("static_position_justify_flex_start_amalgamation", () => {
   root_child0_child0_child1.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setWidth(100);
   root_child0_child0_child1_child0.setHeight(50);
   root_child0_child0_child1_child0.setMargin(Edge.Top, 12);
@@ -4025,7 +4026,7 @@ test("static_position_justify_flex_start_amalgamation", () => {
   root_child0_child0_child1_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child2 = new Node(config);
+  const root_child0_child0_child2 = newFixtureNode(config);
   root_child0_child0_child2.setWidthPercent(10);
   root_child0_child0_child2.setMargin(Edge.Top, 12);
   root_child0_child0_child2.setMargin(Edge.Right, 4);
@@ -4041,7 +4042,7 @@ test("static_position_justify_flex_start_amalgamation", () => {
   root_child0_child0_child2.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child2, 2);
 
-  const root_child0_child0_child2_child0 = new Node(config);
+  const root_child0_child0_child2_child0 = newFixtureNode(config);
   root_child0_child0_child2_child0.setWidth(100);
   root_child0_child0_child2_child0.setHeight(50);
   root_child0_child0_child2_child0.setMargin(Edge.Top, 12);
@@ -4159,10 +4160,10 @@ test("static_position_justify_flex_start_amalgamation", () => {
 test("static_position_justify_flex_start_position_set_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -4177,7 +4178,7 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -4193,7 +4194,7 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setPosition(Edge.Right, 30);
@@ -4211,7 +4212,7 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4228,7 +4229,7 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
   root_child0_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidthPercent(10);
   root_child0_child0_child1.setMargin(Edge.Top, 12);
   root_child0_child0_child1.setMargin(Edge.Right, 4);
@@ -4244,7 +4245,7 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
   root_child0_child0_child1.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setWidth(100);
   root_child0_child0_child1_child0.setHeight(50);
   root_child0_child0_child1_child0.setMargin(Edge.Top, 12);
@@ -4261,7 +4262,7 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
   root_child0_child0_child1_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child2 = new Node(config);
+  const root_child0_child0_child2 = newFixtureNode(config);
   root_child0_child0_child2.setWidthPercent(10);
   root_child0_child0_child2.setMargin(Edge.Top, 12);
   root_child0_child0_child2.setMargin(Edge.Right, 4);
@@ -4277,7 +4278,7 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
   root_child0_child0_child2.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child2, 2);
 
-  const root_child0_child0_child2_child0 = new Node(config);
+  const root_child0_child0_child2_child0 = newFixtureNode(config);
   root_child0_child0_child2_child0.setWidth(100);
   root_child0_child0_child2_child0.setHeight(50);
   root_child0_child0_child2_child0.setMargin(Edge.Top, 12);
@@ -4395,10 +4396,10 @@ test("static_position_justify_flex_start_position_set_amalgamation", () => {
 test("static_position_no_definite_size_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -4413,7 +4414,7 @@ test("static_position_no_definite_size_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -4429,7 +4430,7 @@ test("static_position_no_definite_size_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setPositionPercent(Edge.Left, 23);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4446,7 +4447,7 @@ test("static_position_no_definite_size_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4524,10 +4525,10 @@ test("static_position_no_definite_size_amalgamation", () => {
 test("static_position_both_insets_set_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -4542,7 +4543,7 @@ test("static_position_both_insets_set_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -4558,7 +4559,7 @@ test("static_position_both_insets_set_amalgamation", () => {
   root_child0_child0.setPadding(Edge.Left, 1);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setPositionPercent(Edge.Left, 23);
   root_child0_child0_child0.setPosition(Edge.Right, 13);
@@ -4576,7 +4577,7 @@ test("static_position_both_insets_set_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4654,10 +4655,10 @@ test("static_position_both_insets_set_amalgamation", () => {
 test("static_position_justify_center_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -4672,7 +4673,7 @@ test("static_position_justify_center_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -4689,7 +4690,7 @@ test("static_position_justify_center_amalgamation", () => {
   root_child0_child0.setJustifyContent(Justify.Center);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4706,7 +4707,7 @@ test("static_position_justify_center_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4723,7 +4724,7 @@ test("static_position_justify_center_amalgamation", () => {
   root_child0_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidthPercent(10);
   root_child0_child0_child1.setMargin(Edge.Top, 12);
   root_child0_child0_child1.setMargin(Edge.Right, 4);
@@ -4739,7 +4740,7 @@ test("static_position_justify_center_amalgamation", () => {
   root_child0_child0_child1.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setWidth(100);
   root_child0_child0_child1_child0.setHeight(50);
   root_child0_child0_child1_child0.setMargin(Edge.Top, 12);
@@ -4756,7 +4757,7 @@ test("static_position_justify_center_amalgamation", () => {
   root_child0_child0_child1_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child2 = new Node(config);
+  const root_child0_child0_child2 = newFixtureNode(config);
   root_child0_child0_child2.setWidthPercent(10);
   root_child0_child0_child2.setMargin(Edge.Top, 12);
   root_child0_child0_child2.setMargin(Edge.Right, 4);
@@ -4772,7 +4773,7 @@ test("static_position_justify_center_amalgamation", () => {
   root_child0_child0_child2.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child2, 2);
 
-  const root_child0_child0_child2_child0 = new Node(config);
+  const root_child0_child0_child2_child0 = newFixtureNode(config);
   root_child0_child0_child2_child0.setWidth(100);
   root_child0_child0_child2_child0.setHeight(50);
   root_child0_child0_child2_child0.setMargin(Edge.Top, 12);
@@ -4890,10 +4891,10 @@ test("static_position_justify_center_amalgamation", () => {
 test("static_position_justify_flex_end_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -4908,7 +4909,7 @@ test("static_position_justify_flex_end_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -4925,7 +4926,7 @@ test("static_position_justify_flex_end_amalgamation", () => {
   root_child0_child0.setJustifyContent(Justify.FlexEnd);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4942,7 +4943,7 @@ test("static_position_justify_flex_end_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -4959,7 +4960,7 @@ test("static_position_justify_flex_end_amalgamation", () => {
   root_child0_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidthPercent(10);
   root_child0_child0_child1.setMargin(Edge.Top, 12);
   root_child0_child0_child1.setMargin(Edge.Right, 4);
@@ -4975,7 +4976,7 @@ test("static_position_justify_flex_end_amalgamation", () => {
   root_child0_child0_child1.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setWidth(100);
   root_child0_child0_child1_child0.setHeight(50);
   root_child0_child0_child1_child0.setMargin(Edge.Top, 12);
@@ -4992,7 +4993,7 @@ test("static_position_justify_flex_end_amalgamation", () => {
   root_child0_child0_child1_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child2 = new Node(config);
+  const root_child0_child0_child2 = newFixtureNode(config);
   root_child0_child0_child2.setWidthPercent(10);
   root_child0_child0_child2.setMargin(Edge.Top, 12);
   root_child0_child0_child2.setMargin(Edge.Right, 4);
@@ -5008,7 +5009,7 @@ test("static_position_justify_flex_end_amalgamation", () => {
   root_child0_child0_child2.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child2, 2);
 
-  const root_child0_child0_child2_child0 = new Node(config);
+  const root_child0_child0_child2_child0 = newFixtureNode(config);
   root_child0_child0_child2_child0.setWidth(100);
   root_child0_child0_child2_child0.setHeight(50);
   root_child0_child0_child2_child0.setMargin(Edge.Top, 12);
@@ -5126,10 +5127,10 @@ test("static_position_justify_flex_end_amalgamation", () => {
 test("static_position_align_flex_start_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -5144,7 +5145,7 @@ test("static_position_align_flex_start_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -5161,7 +5162,7 @@ test("static_position_align_flex_start_amalgamation", () => {
   root_child0_child0.setAlignItems(Align.FlexStart);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -5178,7 +5179,7 @@ test("static_position_align_flex_start_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -5195,7 +5196,7 @@ test("static_position_align_flex_start_amalgamation", () => {
   root_child0_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidthPercent(10);
   root_child0_child0_child1.setMargin(Edge.Top, 12);
   root_child0_child0_child1.setMargin(Edge.Right, 4);
@@ -5211,7 +5212,7 @@ test("static_position_align_flex_start_amalgamation", () => {
   root_child0_child0_child1.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setWidth(100);
   root_child0_child0_child1_child0.setHeight(50);
   root_child0_child0_child1_child0.setMargin(Edge.Top, 12);
@@ -5228,7 +5229,7 @@ test("static_position_align_flex_start_amalgamation", () => {
   root_child0_child0_child1_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child2 = new Node(config);
+  const root_child0_child0_child2 = newFixtureNode(config);
   root_child0_child0_child2.setWidthPercent(10);
   root_child0_child0_child2.setMargin(Edge.Top, 12);
   root_child0_child0_child2.setMargin(Edge.Right, 4);
@@ -5244,7 +5245,7 @@ test("static_position_align_flex_start_amalgamation", () => {
   root_child0_child0_child2.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child2, 2);
 
-  const root_child0_child0_child2_child0 = new Node(config);
+  const root_child0_child0_child2_child0 = newFixtureNode(config);
   root_child0_child0_child2_child0.setWidth(100);
   root_child0_child0_child2_child0.setHeight(50);
   root_child0_child0_child2_child0.setMargin(Edge.Top, 12);
@@ -5362,10 +5363,10 @@ test("static_position_align_flex_start_amalgamation", () => {
 test("static_position_align_center_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -5380,7 +5381,7 @@ test("static_position_align_center_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -5397,7 +5398,7 @@ test("static_position_align_center_amalgamation", () => {
   root_child0_child0.setAlignItems(Align.Center);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -5414,7 +5415,7 @@ test("static_position_align_center_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -5431,7 +5432,7 @@ test("static_position_align_center_amalgamation", () => {
   root_child0_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidthPercent(10);
   root_child0_child0_child1.setMargin(Edge.Top, 12);
   root_child0_child0_child1.setMargin(Edge.Right, 4);
@@ -5447,7 +5448,7 @@ test("static_position_align_center_amalgamation", () => {
   root_child0_child0_child1.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setWidth(100);
   root_child0_child0_child1_child0.setHeight(50);
   root_child0_child0_child1_child0.setMargin(Edge.Top, 12);
@@ -5464,7 +5465,7 @@ test("static_position_align_center_amalgamation", () => {
   root_child0_child0_child1_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child2 = new Node(config);
+  const root_child0_child0_child2 = newFixtureNode(config);
   root_child0_child0_child2.setWidthPercent(10);
   root_child0_child0_child2.setMargin(Edge.Top, 12);
   root_child0_child0_child2.setMargin(Edge.Right, 4);
@@ -5480,7 +5481,7 @@ test("static_position_align_center_amalgamation", () => {
   root_child0_child0_child2.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child2, 2);
 
-  const root_child0_child0_child2_child0 = new Node(config);
+  const root_child0_child0_child2_child0 = newFixtureNode(config);
   root_child0_child0_child2_child0.setWidth(100);
   root_child0_child0_child2_child0.setHeight(50);
   root_child0_child0_child2_child0.setMargin(Edge.Top, 12);
@@ -5598,10 +5599,10 @@ test("static_position_align_center_amalgamation", () => {
 test("static_position_align_flex_end_amalgamation", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMargin(Edge.Top, 5);
   root_child0.setMargin(Edge.Right, 9);
   root_child0.setMargin(Edge.Bottom, 1);
@@ -5616,7 +5617,7 @@ test("static_position_align_flex_end_amalgamation", () => {
   root_child0.setPadding(Edge.Left, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setMargin(Edge.Top, 6);
   root_child0_child0.setMargin(Edge.Right, 3);
@@ -5633,7 +5634,7 @@ test("static_position_align_flex_end_amalgamation", () => {
   root_child0_child0.setAlignItems(Align.FlexEnd);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidthPercent(21);
   root_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -5650,7 +5651,7 @@ test("static_position_align_flex_end_amalgamation", () => {
   root_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setWidth(100);
   root_child0_child0_child0_child0.setHeight(50);
   root_child0_child0_child0_child0.setMargin(Edge.Top, 12);
@@ -5667,7 +5668,7 @@ test("static_position_align_flex_end_amalgamation", () => {
   root_child0_child0_child0_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidthPercent(10);
   root_child0_child0_child1.setMargin(Edge.Top, 12);
   root_child0_child0_child1.setMargin(Edge.Right, 4);
@@ -5683,7 +5684,7 @@ test("static_position_align_flex_end_amalgamation", () => {
   root_child0_child0_child1.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setWidth(100);
   root_child0_child0_child1_child0.setHeight(50);
   root_child0_child0_child1_child0.setMargin(Edge.Top, 12);
@@ -5700,7 +5701,7 @@ test("static_position_align_flex_end_amalgamation", () => {
   root_child0_child0_child1_child0.setPadding(Edge.Left, 5);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child2 = new Node(config);
+  const root_child0_child0_child2 = newFixtureNode(config);
   root_child0_child0_child2.setWidthPercent(10);
   root_child0_child0_child2.setMargin(Edge.Top, 12);
   root_child0_child0_child2.setMargin(Edge.Right, 4);
@@ -5716,7 +5717,7 @@ test("static_position_align_flex_end_amalgamation", () => {
   root_child0_child0_child2.setPadding(Edge.Left, 5);
   root_child0_child0.insertChild(root_child0_child0_child2, 2);
 
-  const root_child0_child0_child2_child0 = new Node(config);
+  const root_child0_child0_child2_child0 = newFixtureNode(config);
   root_child0_child0_child2_child0.setWidth(100);
   root_child0_child0_child2_child0.setHeight(50);
   root_child0_child0_child2_child0.setMargin(Edge.Top, 12);
@@ -5834,7 +5835,7 @@ test("static_position_align_flex_end_amalgamation", () => {
 test("static_position_static_root", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setHeight(200);
   root.setWidth(100);
   root.setPositionType(PositionType.Static);
@@ -5843,7 +5844,7 @@ test("static_position_static_root", () => {
   root.setPadding(Edge.Bottom, 4);
   root.setPadding(Edge.Left, 6);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeightPercent(50);
   root_child0.setWidthPercent(50);
   root_child0.setPositionType(PositionType.Absolute);
@@ -5892,46 +5893,46 @@ test("static_position_static_root", () => {
 test("static_position_absolute_child_multiple", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(400);
   root_child0.setHeight(400);
   root_child0.setPadding(Edge.All, 100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(100);
   root_child0_child0.setWidth(100);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0_child0.setWidthPercent(10);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setHeight(100);
   root_child0_child1.setWidth(100);
   root_child0_child1.setPositionType(PositionType.Static);
   root_child0.insertChild(root_child0_child1, 1);
 
-  const root_child0_child1_child0 = new Node(config);
+  const root_child0_child1_child0 = newFixtureNode(config);
   root_child0_child1_child0.setHeight(50);
   root_child0_child1_child0.setWidthPercent(50);
   root_child0_child1_child0.setPositionType(PositionType.Absolute);
   root_child0_child1.insertChild(root_child0_child1_child0, 0);
 
-  const root_child0_child1_child1 = new Node(config);
+  const root_child0_child1_child1 = newFixtureNode(config);
   root_child0_child1_child1.setHeight(50);
   root_child0_child1_child1.setWidthPercent(50);
   root_child0_child1_child1.setPositionType(PositionType.Absolute);
   root_child0_child1.insertChild(root_child0_child1_child1, 1);
 
-  const root_child0_child2 = new Node(config);
+  const root_child0_child2 = newFixtureNode(config);
   root_child0_child2.setHeight(50);
   root_child0_child2.setWidth(25);
   root_child0_child2.setPositionType(PositionType.Absolute);

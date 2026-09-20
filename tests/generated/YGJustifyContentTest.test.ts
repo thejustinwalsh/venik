@@ -2,26 +2,27 @@
 // (upstream fixture: gentest/fixtures/YGJustifyContentTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, FlexDirection, Justify, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, FlexDirection, Justify, PositionType } from "../../src/index.ts";
 
 test("justify_content_row_flex_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -76,22 +77,22 @@ test("justify_content_row_flex_start", () => {
 test("justify_content_row_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.FlexEnd);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -146,22 +147,22 @@ test("justify_content_row_flex_end", () => {
 test("justify_content_row_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -216,22 +217,22 @@ test("justify_content_row_center", () => {
 test("justify_content_row_space_between", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.SpaceBetween);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -286,22 +287,22 @@ test("justify_content_row_space_between", () => {
 test("justify_content_row_space_around", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.SpaceAround);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -356,20 +357,20 @@ test("justify_content_row_space_around", () => {
 test("justify_content_column_flex_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -424,21 +425,21 @@ test("justify_content_column_flex_start", () => {
 test("justify_content_column_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setJustifyContent(Justify.FlexEnd);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -493,21 +494,21 @@ test("justify_content_column_flex_end", () => {
 test("justify_content_column_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -562,21 +563,21 @@ test("justify_content_column_center", () => {
 test("justify_content_column_space_between", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setJustifyContent(Justify.SpaceBetween);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -631,21 +632,21 @@ test("justify_content_column_space_between", () => {
 test("justify_content_column_space_around", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setJustifyContent(Justify.SpaceAround);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -700,14 +701,14 @@ test("justify_content_column_space_around", () => {
 test("justify_content_row_min_width_and_margin", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMinWidth(50);
   root.setMargin(Edge.Left, 100);
   root.setJustifyContent(Justify.Center);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setWidth(20);
   root.insertChild(root_child0, 0);
@@ -743,7 +744,7 @@ test("justify_content_row_min_width_and_margin", () => {
 test("justify_content_row_max_width_and_margin", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setMaxWidth(80);
@@ -751,7 +752,7 @@ test("justify_content_row_max_width_and_margin", () => {
   root.setJustifyContent(Justify.Center);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setWidth(20);
   root.insertChild(root_child0, 0);
@@ -787,13 +788,13 @@ test("justify_content_row_max_width_and_margin", () => {
 test("justify_content_column_min_height_and_margin", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMinHeight(50);
   root.setMargin(Edge.Top, 100);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setWidth(20);
   root.insertChild(root_child0, 0);
@@ -829,14 +830,14 @@ test("justify_content_column_min_height_and_margin", () => {
 test("justify_content_column_max_height_and_margin", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setMaxHeight(80);
   root.setMargin(Edge.Top, 100);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setWidth(20);
   root.insertChild(root_child0, 0);
@@ -872,21 +873,21 @@ test("justify_content_column_max_height_and_margin", () => {
 test("justify_content_column_space_evenly", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setJustifyContent(Justify.SpaceEvenly);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -941,22 +942,22 @@ test("justify_content_column_space_evenly", () => {
 test("justify_content_row_space_evenly", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setJustifyContent(Justify.SpaceEvenly);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1011,18 +1012,18 @@ test("justify_content_row_space_evenly", () => {
 test("justify_content_min_width_with_padding_child_width_greater_than_parent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(1000);
   root.setHeight(1584);
   root.setAlignContent(Align.Stretch);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setAlignContent(Align.Stretch);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0.setJustifyContent(Justify.Center);
   root_child0_child0.setAlignContent(Align.Stretch);
@@ -1031,7 +1032,7 @@ test("justify_content_min_width_with_padding_child_width_greater_than_parent", (
   root_child0_child0.setPadding(Edge.Right, 100);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(100);
   root_child0_child0_child0.setWidth(300);
   root_child0_child0_child0.setAlignContent(Align.Stretch);
@@ -1089,18 +1090,18 @@ test("justify_content_min_width_with_padding_child_width_greater_than_parent", (
 test("justify_content_min_width_with_padding_child_width_lower_than_parent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(1080);
   root.setHeight(1584);
   root.setAlignContent(Align.Stretch);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setAlignContent(Align.Stretch);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0.setJustifyContent(Justify.Center);
   root_child0_child0.setAlignContent(Align.Stretch);
@@ -1109,7 +1110,7 @@ test("justify_content_min_width_with_padding_child_width_lower_than_parent", () 
   root_child0_child0.setPadding(Edge.Right, 100);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setHeight(100);
   root_child0_child0_child0.setWidth(199);
   root_child0_child0_child0.setAlignContent(Align.Stretch);
@@ -1167,23 +1168,23 @@ test("justify_content_min_width_with_padding_child_width_lower_than_parent", () 
 test("justify_content_space_between_indefinite_container_dim_with_free_space", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(300);
   root.setAlignItems(Align.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexDirection(FlexDirection.Row);
   root_child0.setMinWidth(200);
   root_child0.setJustifyContent(Justify.SpaceBetween);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(50);
   root_child0_child0.setHeight(50);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setWidth(50);
   root_child0_child1.setHeight(50);
   root_child0.insertChild(root_child0_child1, 1);
@@ -1239,21 +1240,21 @@ test("justify_content_space_between_indefinite_container_dim_with_free_space", (
 test("justify_content_flex_start_row_reverse", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.RowReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(20);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(20);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1308,21 +1309,21 @@ test("justify_content_flex_start_row_reverse", () => {
 test("justify_content_flex_end_row_reverse", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.RowReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(20);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(20);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1377,21 +1378,21 @@ test("justify_content_flex_end_row_reverse", () => {
 test("justify_content_overflow_row_flex_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(40);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(40);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1446,22 +1447,22 @@ test("justify_content_overflow_row_flex_start", () => {
 test("justify_content_overflow_row_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.FlexEnd);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(40);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(40);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1516,22 +1517,22 @@ test("justify_content_overflow_row_flex_end", () => {
 test("justify_content_overflow_row_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(40);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(40);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1586,22 +1587,22 @@ test("justify_content_overflow_row_center", () => {
 test("justify_content_overflow_row_space_between", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.SpaceBetween);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(40);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(40);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1656,22 +1657,22 @@ test("justify_content_overflow_row_space_between", () => {
 test("justify_content_overflow_row_space_around", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.SpaceAround);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(40);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(40);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1726,22 +1727,22 @@ test("justify_content_overflow_row_space_around", () => {
 test("justify_content_overflow_row_space_evenly", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.SpaceEvenly);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(40);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(40);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1796,23 +1797,23 @@ test("justify_content_overflow_row_space_evenly", () => {
 test("justify_content_overflow_row_space_evenly_auto_margin", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(102);
   root.setHeight(102);
   root.setFlexDirection(FlexDirection.Row);
   root.setJustifyContent(Justify.SpaceEvenly);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root_child0.setMarginAuto(Edge.Right);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(40);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(40);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);

@@ -2,12 +2,13 @@
 // (upstream fixture: gentest/fixtures/YGBorderTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, Justify, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, Justify, PositionType } from "../../src/index.ts";
 
 test("border_no_size", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setBorder(Edge.All, 10);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -32,11 +33,11 @@ test("border_no_size", () => {
 test("border_container_match_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setBorder(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
@@ -72,13 +73,13 @@ test("border_container_match_child", () => {
 test("border_flex_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setBorder(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
@@ -114,13 +115,13 @@ test("border_flex_child", () => {
 test("border_stretch_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setBorder(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -155,7 +156,7 @@ test("border_stretch_child", () => {
 test("border_center_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -165,7 +166,7 @@ test("border_center_child", () => {
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(10);
   root.insertChild(root_child0, 0);

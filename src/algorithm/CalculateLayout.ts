@@ -174,10 +174,8 @@ function hasNonZeroFlex(node: Node): boolean {
   const flexShrink = style.flexShrink().unwrap();
 
   const canGrow = flexGrow === flexGrow ? flexGrow !== 0.0 : flex > 0.0;
-  const canShrink =
-    flexShrink === flexShrink
-      ? flexShrink !== 0.0
-      : node.getConfig().useWebDefaults() || flex < 0.0;
+  // An unset flex-shrink is the CSS default of 1.
+  const canShrink = flexShrink === flexShrink ? flexShrink !== 0.0 : true;
   return canGrow || canShrink;
 }
 

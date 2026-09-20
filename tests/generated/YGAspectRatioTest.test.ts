@@ -2,17 +2,18 @@
 // (upstream fixture: gentest/fixtures/YGAspectRatioTest.html).
 
 import { expect, test } from "vitest";
-import { Config, Direction, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Config, Direction, PositionType } from "../../src/index.ts";
 
 test("zero_aspect_ratio_behaves_like_auto", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(300);
   root.setHeight(300);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setAspectRatio(0);
   root_child0.setWidth(50);
   root.insertChild(root_child0, 0);

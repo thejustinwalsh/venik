@@ -1,6 +1,7 @@
 // Port of yoga-cpp/tests/YGMeasureCacheTest.cpp
 
 import { expect, test } from "vitest";
+import { newFixtureNode } from "./util/testUtil.ts";
 import {
   Align,
   Direction,
@@ -8,7 +9,6 @@ import {
   FlexDirection,
   type MeasureFunction,
   MeasureMode,
-  Node,
 } from "../src/index.ts";
 
 type Counter = { count: number };
@@ -48,13 +48,13 @@ const _measure_84_49: MeasureFunction = (_width, _widthMode, _height, _heightMod
 };
 
 test("measure_once_single_flexible_child", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
   root_child0.setContext(measureCount);
   root_child0.setMeasureFunc(_measureMax);
@@ -71,9 +71,9 @@ test("measure_once_single_flexible_child", () => {
 });
 
 test("remeasure_with_same_exact_width_larger_than_needed_height", () => {
-  const root = new Node();
+  const root = newFixtureNode();
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
   root_child0.setContext(measureCount);
   root_child0.setMeasureFunc(_measureMin);
@@ -88,10 +88,10 @@ test("remeasure_with_same_exact_width_larger_than_needed_height", () => {
 });
 
 test("remeasure_with_same_atmost_width_larger_than_needed_height", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
   root_child0.setContext(measureCount);
   root_child0.setMeasureFunc(_measureMin);
@@ -106,10 +106,10 @@ test("remeasure_with_same_atmost_width_larger_than_needed_height", () => {
 });
 
 test("remeasure_with_computed_width_larger_than_needed_height", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
   root_child0.setContext(measureCount);
   root_child0.setMeasureFunc(_measureMin);
@@ -125,10 +125,10 @@ test("remeasure_with_computed_width_larger_than_needed_height", () => {
 });
 
 test("remeasure_with_atmost_computed_width_undefined_height", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
   root_child0.setContext(measureCount);
   root_child0.setMeasureFunc(_measureMin);
@@ -147,17 +147,17 @@ test("remeasure_with_already_measured_value_smaller_but_still_float_equal", () =
   // one by an epsilon; the cache must still treat them as equal.
   const measureCount: Counter = { count: 0 };
 
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(288);
   root.setHeight(288);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setPadding(Edge.All, 2.88);
   root_child0.setFlexDirection(FlexDirection.Row);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node();
+  const root_child0_child0 = newFixtureNode();
   root_child0_child0.setContext(measureCount);
   root_child0_child0.setMeasureFunc(_measure_84_49);
   root_child0.insertChild(root_child0_child0, 0);

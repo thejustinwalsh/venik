@@ -1,12 +1,12 @@
 // Port of yoga-cpp/tests/YGRoundingFunctionTest.cpp
 
 import { expect, test } from "vitest";
+import { newFixtureNode } from "./util/testUtil.ts";
 import {
   Config,
   Direction,
   Edge,
   type MeasureFunction,
-  Node,
   roundValueToPixelGrid,
 } from "../src/index.ts";
 
@@ -84,15 +84,15 @@ test("consistent_rounding_during_repeated_layouts", () => {
   const config = new Config();
   config.setPointScaleFactor(2);
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setMargin(Edge.Top, -1.49);
   root.setWidth(500);
   root.setHeight(500);
 
-  const node0 = new Node(config);
+  const node0 = newFixtureNode(config);
   root.insertChild(node0, 0);
 
-  const node1 = new Node(config);
+  const node1 = newFixtureNode(config);
   node1.setMeasureFunc(measureText);
   node0.insertChild(node1, 0);
 
@@ -119,16 +119,16 @@ test("per_node_point_scale_factor", () => {
   const config3 = new Config();
   config3.setPointScaleFactor(0.5);
 
-  const root = new Node(config1);
+  const root = newFixtureNode(config1);
   root.setWidth(11.5);
   root.setHeight(11.5);
 
-  const node0 = new Node(config2);
+  const node0 = newFixtureNode(config2);
   node0.setWidth(9.5);
   node0.setHeight(9.5);
   root.insertChild(node0, 0);
 
-  const node1 = new Node(config3);
+  const node1 = newFixtureNode(config3);
   node1.setWidth(7);
   node1.setHeight(7);
   node0.insertChild(node1, 0);
@@ -155,7 +155,7 @@ test("raw_layout_dimensions", () => {
   const config = new Config();
   config.setPointScaleFactor(0.5);
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setWidth(11.5);
   root.setHeight(9.5);
 

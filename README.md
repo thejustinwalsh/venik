@@ -32,6 +32,13 @@ spec-correct free-space distribution, and what Yoga gates behind
 `WebFlexBasis` / `FixFlexBasisFitContent` are always on. Code that calls
 `config.setErrata(...)` or `config.setExperimentalFeatureEnabled(...)` has to
 drop those calls.
+
+Defaults are the CSS initial values, not Yoga's: `flex-direction: row`,
+`flex-shrink: 1`, `align-content: stretch`, and `flex: <n>` means `n 1 0`.
+`setUseWebDefaults` is gone because there is nothing left to opt into. A tree
+written for Yoga needs `setFlexDirection(FlexDirection.Column)`,
+`setFlexShrink(0)` and `setAlignContent(Align.FlexStart)` wherever it relied
+on the old defaults (the test-suite does this through `newFixtureNode`).
 Like upstream at this revision, grid styles can be set but there is no grid
 layout algorithm yet.
 

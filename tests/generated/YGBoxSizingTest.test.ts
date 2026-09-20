@@ -2,12 +2,13 @@
 // (upstream fixture: gentest/fixtures/YGBoxSizingTest.html).
 
 import { expect, test } from "vitest";
-import { BoxSizing, Config, Direction, Edge, FlexDirection, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { BoxSizing, Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";
 
 test("box_sizing_content_box_simple", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -36,7 +37,7 @@ test("box_sizing_content_box_simple", () => {
 test("box_sizing_border_box_simple", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -64,12 +65,12 @@ test("box_sizing_border_box_simple", () => {
 test("box_sizing_content_box_percent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeightPercent(25);
   root_child0.setPadding(Edge.All, 4);
@@ -108,12 +109,12 @@ test("box_sizing_content_box_percent", () => {
 test("box_sizing_border_box_percent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeightPercent(25);
   root_child0.setPadding(Edge.All, 4);
@@ -151,12 +152,12 @@ test("box_sizing_border_box_percent", () => {
 test("box_sizing_content_box_absolute", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeightPercent(25);
   root_child0.setPadding(Edge.All, 12);
   root_child0.setBorder(Edge.All, 8);
@@ -195,12 +196,12 @@ test("box_sizing_content_box_absolute", () => {
 test("box_sizing_border_box_absolute", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeightPercent(25);
   root_child0.setPadding(Edge.All, 12);
   root_child0.setBorder(Edge.All, 8);
@@ -238,7 +239,7 @@ test("box_sizing_border_box_absolute", () => {
 test("box_sizing_content_box_comtaining_block", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -246,11 +247,11 @@ test("box_sizing_content_box_comtaining_block", () => {
   root.setBorder(Edge.All, 8);
   root.setBoxSizing(BoxSizing.ContentBox);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Static);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(50);
   root_child0_child0.setHeightPercent(25);
   root_child0_child0.setPositionType(PositionType.Absolute);
@@ -297,18 +298,18 @@ test("box_sizing_content_box_comtaining_block", () => {
 test("box_sizing_border_box_comtaining_block", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setPadding(Edge.All, 12);
   root.setBorder(Edge.All, 8);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Static);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(50);
   root_child0_child0.setHeightPercent(25);
   root_child0_child0.setPositionType(PositionType.Absolute);
@@ -355,7 +356,7 @@ test("box_sizing_border_box_comtaining_block", () => {
 test("box_sizing_content_box_padding_only", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -383,12 +384,12 @@ test("box_sizing_content_box_padding_only", () => {
 test("box_sizing_content_box_padding_only_percent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(150);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(75);
   root_child0.setPaddingPercent(Edge.All, 10);
@@ -426,7 +427,7 @@ test("box_sizing_content_box_padding_only_percent", () => {
 test("box_sizing_border_box_padding_only", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -453,12 +454,12 @@ test("box_sizing_border_box_padding_only", () => {
 test("box_sizing_border_box_padding_only_percent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(150);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(75);
   root_child0.setPaddingPercent(Edge.All, 10);
@@ -495,7 +496,7 @@ test("box_sizing_border_box_padding_only_percent", () => {
 test("box_sizing_content_box_border_only", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -523,12 +524,12 @@ test("box_sizing_content_box_border_only", () => {
 test("box_sizing_content_box_border_only_percent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
   root.insertChild(root_child0, 0);
@@ -564,7 +565,7 @@ test("box_sizing_content_box_border_only_percent", () => {
 test("box_sizing_border_box_border_only", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -591,12 +592,12 @@ test("box_sizing_border_box_border_only", () => {
 test("box_sizing_border_box_border_only_percent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root.insertChild(root_child0, 0);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -631,7 +632,7 @@ test("box_sizing_border_box_border_only_percent", () => {
 test("box_sizing_content_box_no_padding_no_border", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -658,7 +659,7 @@ test("box_sizing_content_box_no_padding_no_border", () => {
 test("box_sizing_border_box_no_padding_no_border", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -684,7 +685,7 @@ test("box_sizing_border_box_no_padding_no_border", () => {
 test("box_sizing_content_box_children", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -692,22 +693,22 @@ test("box_sizing_content_box_children", () => {
   root.setBorder(Edge.All, 10);
   root.setBoxSizing(BoxSizing.ContentBox);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(25);
   root_child0.setHeight(25);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(25);
   root_child2.setHeight(25);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setWidth(25);
   root_child3.setHeight(25);
   root.insertChild(root_child3, 3);
@@ -773,29 +774,29 @@ test("box_sizing_content_box_children", () => {
 test("box_sizing_border_box_children", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setPadding(Edge.All, 5);
   root.setBorder(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(25);
   root_child0.setHeight(25);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(25);
   root_child2.setHeight(25);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setWidth(25);
   root_child3.setHeight(25);
   root.insertChild(root_child3, 3);
@@ -861,17 +862,17 @@ test("box_sizing_border_box_children", () => {
 test("box_sizing_content_box_siblings", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(25);
   root_child0.setHeight(25);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root_child1.setBoxSizing(BoxSizing.ContentBox);
@@ -879,12 +880,12 @@ test("box_sizing_content_box_siblings", () => {
   root_child1.setBorder(Edge.All, 10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(25);
   root_child2.setHeight(25);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setWidth(25);
   root_child3.setHeight(25);
   root.insertChild(root_child3, 3);
@@ -950,29 +951,29 @@ test("box_sizing_content_box_siblings", () => {
 test("box_sizing_border_box_siblings", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(25);
   root_child0.setHeight(25);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root_child1.setPadding(Edge.All, 10);
   root_child1.setBorder(Edge.All, 10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(25);
   root_child2.setHeight(25);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setWidth(25);
   root_child3.setHeight(25);
   root.insertChild(root_child3, 3);
@@ -1038,12 +1039,12 @@ test("box_sizing_border_box_siblings", () => {
 test("box_sizing_content_box_max_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMaxWidth(50);
   root_child0.setHeight(25);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1051,7 +1052,7 @@ test("box_sizing_content_box_max_width", () => {
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1097,19 +1098,19 @@ test("box_sizing_content_box_max_width", () => {
 test("box_sizing_border_box_max_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMaxWidth(50);
   root_child0.setHeight(25);
   root_child0.setPadding(Edge.All, 5);
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1155,12 +1156,12 @@ test("box_sizing_border_box_max_width", () => {
 test("box_sizing_content_box_max_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setMaxHeight(50);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1168,7 +1169,7 @@ test("box_sizing_content_box_max_height", () => {
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1214,19 +1215,19 @@ test("box_sizing_content_box_max_height", () => {
 test("box_sizing_border_box_max_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setMaxHeight(50);
   root_child0.setPadding(Edge.All, 5);
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1272,12 +1273,12 @@ test("box_sizing_border_box_max_height", () => {
 test("box_sizing_content_box_min_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMinWidth(50);
   root_child0.setHeight(25);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1285,7 +1286,7 @@ test("box_sizing_content_box_min_width", () => {
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1331,19 +1332,19 @@ test("box_sizing_content_box_min_width", () => {
 test("box_sizing_border_box_min_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setMinWidth(50);
   root_child0.setHeight(25);
   root_child0.setPadding(Edge.All, 5);
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1389,12 +1390,12 @@ test("box_sizing_border_box_min_width", () => {
 test("box_sizing_content_box_min_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setMinHeight(50);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1402,7 +1403,7 @@ test("box_sizing_content_box_min_height", () => {
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1448,19 +1449,19 @@ test("box_sizing_content_box_min_height", () => {
 test("box_sizing_border_box_min_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setMinHeight(50);
   root_child0.setPadding(Edge.All, 5);
   root_child0.setBorder(Edge.All, 15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(25);
   root_child1.setHeight(25);
   root.insertChild(root_child1, 1);
@@ -1506,12 +1507,12 @@ test("box_sizing_border_box_min_height", () => {
 test("box_sizing_content_box_no_height_no_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
   root_child0.setPadding(Edge.All, 2);
   root_child0.setBorder(Edge.All, 7);
@@ -1548,12 +1549,12 @@ test("box_sizing_content_box_no_height_no_width", () => {
 test("box_sizing_border_box_no_height_no_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPadding(Edge.All, 2);
   root_child0.setBorder(Edge.All, 7);
   root.insertChild(root_child0, 0);
@@ -1589,7 +1590,7 @@ test("box_sizing_border_box_no_height_no_width", () => {
 test("box_sizing_content_box_nested", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -1597,7 +1598,7 @@ test("box_sizing_content_box_nested", () => {
   root.setPadding(Edge.All, 15);
   root.setBorder(Edge.All, 3);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root_child0.setHeight(20);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1605,7 +1606,7 @@ test("box_sizing_content_box_nested", () => {
   root_child0.setBorder(Edge.All, 7);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(10);
   root_child0_child0.setHeight(5);
   root_child0_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1654,21 +1655,21 @@ test("box_sizing_content_box_nested", () => {
 test("box_sizing_border_box_nested", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setPadding(Edge.All, 15);
   root.setBorder(Edge.All, 3);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root_child0.setHeight(20);
   root_child0.setPadding(Edge.All, 2);
   root_child0.setBorder(Edge.All, 7);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(10);
   root_child0_child0.setHeight(5);
   root_child0_child0.setPadding(Edge.All, 1);
@@ -1716,7 +1717,7 @@ test("box_sizing_border_box_nested", () => {
 test("box_sizing_content_box_nested_alternating", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -1724,14 +1725,14 @@ test("box_sizing_content_box_nested_alternating", () => {
   root.setPadding(Edge.All, 3);
   root.setBorder(Edge.All, 2);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root_child0.setHeight(40);
   root_child0.setPadding(Edge.All, 8);
   root_child0.setBorder(Edge.All, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(20);
   root_child0_child0.setHeight(25);
   root_child0_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1739,7 +1740,7 @@ test("box_sizing_content_box_nested_alternating", () => {
   root_child0_child0.setBorder(Edge.All, 6);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setWidth(10);
   root_child0_child0_child0.setHeight(5);
   root_child0_child0_child0.setPadding(Edge.All, 1);
@@ -1797,14 +1798,14 @@ test("box_sizing_content_box_nested_alternating", () => {
 test("box_sizing_border_box_nested_alternating", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setPadding(Edge.All, 3);
   root.setBorder(Edge.All, 2);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(40);
   root_child0.setHeight(40);
   root_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1812,14 +1813,14 @@ test("box_sizing_border_box_nested_alternating", () => {
   root_child0.setBorder(Edge.All, 2);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(20);
   root_child0_child0.setHeight(25);
   root_child0_child0.setPadding(Edge.All, 3);
   root_child0_child0.setBorder(Edge.All, 6);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setWidth(10);
   root_child0_child0_child0.setHeight(5);
   root_child0_child0_child0.setBoxSizing(BoxSizing.ContentBox);
@@ -1878,13 +1879,13 @@ test("box_sizing_border_box_nested_alternating", () => {
 test("box_sizing_border_box_flex_basis_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(50);
   root_child0.setHeight(25);
   root_child0.setPadding(Edge.All, 5);
@@ -1922,12 +1923,12 @@ test("box_sizing_border_box_flex_basis_row", () => {
 test("box_sizing_border_box_flex_basis_column", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(50);
   root_child0.setHeight(25);
   root_child0.setPadding(Edge.All, 5);
@@ -1965,7 +1966,7 @@ test("box_sizing_border_box_flex_basis_column", () => {
 test("box_sizing_content_box_padding_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -1993,7 +1994,7 @@ test("box_sizing_content_box_padding_start", () => {
 test("box_sizing_border_box_padding_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -2020,7 +2021,7 @@ test("box_sizing_border_box_padding_start", () => {
 test("box_sizing_content_box_padding_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -2048,7 +2049,7 @@ test("box_sizing_content_box_padding_end", () => {
 test("box_sizing_border_box_padding_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -2075,7 +2076,7 @@ test("box_sizing_border_box_padding_end", () => {
 test("box_sizing_content_box_border_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -2103,7 +2104,7 @@ test("box_sizing_content_box_border_start", () => {
 test("box_sizing_border_box_border_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -2130,7 +2131,7 @@ test("box_sizing_border_box_border_start", () => {
 test("box_sizing_content_box_border_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -2158,7 +2159,7 @@ test("box_sizing_content_box_border_end", () => {
 test("box_sizing_border_box_border_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);

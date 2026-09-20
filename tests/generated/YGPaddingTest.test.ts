@@ -2,12 +2,13 @@
 // (upstream fixture: gentest/fixtures/YGPaddingTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, Justify, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, Justify, PositionType } from "../../src/index.ts";
 
 test("padding_no_size", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setPadding(Edge.All, 10);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -32,11 +33,11 @@ test("padding_no_size", () => {
 test("padding_container_match_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setPadding(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
@@ -72,13 +73,13 @@ test("padding_container_match_child", () => {
 test("padding_flex_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setPadding(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
@@ -114,13 +115,13 @@ test("padding_flex_child", () => {
 test("padding_stretch_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setPadding(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -155,7 +156,7 @@ test("padding_stretch_child", () => {
 test("padding_center_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
@@ -165,7 +166,7 @@ test("padding_center_child", () => {
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(10);
   root.insertChild(root_child0, 0);
@@ -201,14 +202,14 @@ test("padding_center_child", () => {
 test("child_with_padding_align_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setJustifyContent(Justify.FlexEnd);
   root.setAlignItems(Align.FlexEnd);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root_child0.setHeight(100);
   root_child0.setPadding(Edge.All, 20);
@@ -245,14 +246,14 @@ test("child_with_padding_align_end", () => {
 test("physical_and_relative_edge_defined", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setPadding(Edge.Left, 20);
   root.setPadding(Edge.End, 50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(100);
   root_child0.setHeight(50);
   root.insertChild(root_child0, 0);

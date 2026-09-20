@@ -1,6 +1,7 @@
 // Port of yoga-cpp/tests/YGAspectRatioTest.cpp
 
 import { expect, test } from "vitest";
+import { newFixtureNode } from "./util/testUtil.ts";
 import {
   Align,
   Config,
@@ -27,12 +28,12 @@ function _measure(
 }
 
 test("aspect_ratio_cross_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
@@ -48,12 +49,12 @@ test("aspect_ratio_cross_defined", () => {
 });
 
 test("aspect_ratio_main_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
@@ -69,13 +70,13 @@ test("aspect_ratio_main_defined", () => {
 });
 
 test("aspect_ratio_both_dimensions_defined_row", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(100);
   root_child0.setHeight(50);
   root_child0.setAspectRatio(1);
@@ -92,12 +93,12 @@ test("aspect_ratio_both_dimensions_defined_row", () => {
 });
 
 test("aspect_ratio_both_dimensions_defined_column", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(100);
   root_child0.setHeight(50);
   root_child0.setAspectRatio(1);
@@ -114,11 +115,11 @@ test("aspect_ratio_both_dimensions_defined_column", () => {
 });
 
 test("aspect_ratio_align_stretch", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
 
@@ -133,12 +134,12 @@ test("aspect_ratio_align_stretch", () => {
 });
 
 test("aspect_ratio_flex_grow", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setFlexGrow(1);
   root_child0.setAspectRatio(1);
@@ -155,12 +156,12 @@ test("aspect_ratio_flex_grow", () => {
 });
 
 test("aspect_ratio_flex_shrink", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(150);
   root_child0.setFlexShrink(1);
   root_child0.setAspectRatio(1);
@@ -177,17 +178,17 @@ test("aspect_ratio_flex_shrink", () => {
 });
 
 test("aspect_ratio_flex_shrink_2", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeightPercent(100);
   root_child0.setFlexShrink(1);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node();
+  const root_child1 = newFixtureNode();
   root_child1.setHeightPercent(100);
   root_child1.setFlexShrink(1);
   root_child1.setAspectRatio(1);
@@ -209,12 +210,12 @@ test("aspect_ratio_flex_shrink_2", () => {
 });
 
 test("aspect_ratio_basis", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setFlexBasis(50);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
@@ -230,11 +231,11 @@ test("aspect_ratio_basis", () => {
 });
 
 test("aspect_ratio_absolute_layout_width_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPosition(Edge.Left, 0);
   root_child0.setPosition(Edge.Top, 0);
@@ -253,11 +254,11 @@ test("aspect_ratio_absolute_layout_width_defined", () => {
 });
 
 test("aspect_ratio_absolute_layout_height_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPosition(Edge.Left, 0);
   root_child0.setPosition(Edge.Top, 0);
@@ -276,12 +277,12 @@ test("aspect_ratio_absolute_layout_height_defined", () => {
 });
 
 test("aspect_ratio_with_max_cross_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setMaxWidth(40);
   root_child0.setAspectRatio(1);
@@ -298,12 +299,12 @@ test("aspect_ratio_with_max_cross_defined", () => {
 });
 
 test("aspect_ratio_with_max_main_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setMaxHeight(40);
   root_child0.setAspectRatio(1);
@@ -320,12 +321,12 @@ test("aspect_ratio_with_max_main_defined", () => {
 });
 
 test("aspect_ratio_with_min_cross_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(30);
   root_child0.setMinWidth(40);
   root_child0.setAspectRatio(1);
@@ -342,12 +343,12 @@ test("aspect_ratio_with_min_cross_defined", () => {
 });
 
 test("aspect_ratio_with_min_main_defined", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(30);
   root_child0.setMinHeight(40);
   root_child0.setAspectRatio(1);
@@ -364,12 +365,12 @@ test("aspect_ratio_with_min_main_defined", () => {
 });
 
 test("aspect_ratio_double_cross", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setAspectRatio(2);
   root.insertChild(root_child0, 0);
@@ -385,12 +386,12 @@ test("aspect_ratio_double_cross", () => {
 });
 
 test("aspect_ratio_half_cross", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(100);
   root_child0.setAspectRatio(0.5);
   root.insertChild(root_child0, 0);
@@ -406,12 +407,12 @@ test("aspect_ratio_half_cross", () => {
 });
 
 test("aspect_ratio_double_main", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setAspectRatio(0.5);
   root.insertChild(root_child0, 0);
@@ -427,12 +428,12 @@ test("aspect_ratio_double_main", () => {
 });
 
 test("aspect_ratio_half_main", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(100);
   root_child0.setAspectRatio(2);
   root.insertChild(root_child0, 0);
@@ -448,12 +449,12 @@ test("aspect_ratio_half_main", () => {
 });
 
 test("aspect_ratio_with_measure_func", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setMeasureFunc(_measure);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
@@ -469,13 +470,13 @@ test("aspect_ratio_with_measure_func", () => {
 });
 
 test("aspect_ratio_width_height_flex_grow_row", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setFlexDirection(FlexDirection.Row);
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(200);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root_child0.setFlexGrow(1);
@@ -493,12 +494,12 @@ test("aspect_ratio_width_height_flex_grow_row", () => {
 });
 
 test("aspect_ratio_width_height_flex_grow_column", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(200);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root_child0.setFlexGrow(1);
@@ -516,19 +517,19 @@ test("aspect_ratio_width_height_flex_grow_column", () => {
 });
 
 test("aspect_ratio_height_as_flex_basis", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(200);
   root.setHeight(200);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setFlexGrow(1);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node();
+  const root_child1 = newFixtureNode();
   root_child1.setHeight(100);
   root_child1.setFlexGrow(1);
   root_child1.setAspectRatio(1);
@@ -550,18 +551,18 @@ test("aspect_ratio_height_as_flex_basis", () => {
 });
 
 test("aspect_ratio_width_as_flex_basis", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(200);
   root.setHeight(200);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setFlexGrow(1);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node();
+  const root_child1 = newFixtureNode();
   root_child1.setWidth(100);
   root_child1.setFlexGrow(1);
   root_child1.setAspectRatio(1);
@@ -583,13 +584,13 @@ test("aspect_ratio_width_as_flex_basis", () => {
 });
 
 test("aspect_ratio_overrides_flex_grow_row", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setFlexGrow(1);
   root_child0.setAspectRatio(0.5);
@@ -606,12 +607,12 @@ test("aspect_ratio_overrides_flex_grow_row", () => {
 });
 
 test("aspect_ratio_overrides_flex_grow_column", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setFlexGrow(1);
   root_child0.setAspectRatio(2);
@@ -628,11 +629,11 @@ test("aspect_ratio_overrides_flex_grow_column", () => {
 });
 
 test("aspect_ratio_left_right_absolute", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPosition(Edge.Left, 10);
   root_child0.setPosition(Edge.Top, 10);
@@ -651,11 +652,11 @@ test("aspect_ratio_left_right_absolute", () => {
 });
 
 test("aspect_ratio_top_bottom_absolute", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPosition(Edge.Left, 10);
   root_child0.setPosition(Edge.Top, 10);
@@ -674,12 +675,12 @@ test("aspect_ratio_top_bottom_absolute", () => {
 });
 
 test("aspect_ratio_width_overrides_align_stretch_row", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
@@ -695,11 +696,11 @@ test("aspect_ratio_width_overrides_align_stretch_row", () => {
 });
 
 test("aspect_ratio_height_overrides_align_stretch_column", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setAspectRatio(1);
   root.insertChild(root_child0, 0);
@@ -715,11 +716,11 @@ test("aspect_ratio_height_overrides_align_stretch_column", () => {
 });
 
 test("aspect_ratio_allow_child_overflow_parent_size", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.FlexStart);
   root.setWidth(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setAspectRatio(4);
   root.insertChild(root_child0, 0);
@@ -736,13 +737,13 @@ test("aspect_ratio_allow_child_overflow_parent_size", () => {
 });
 
 test("aspect_ratio_defined_main_with_margin", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setHeight(50);
   root_child0.setAspectRatio(1);
   root_child0.setMargin(Edge.Left, 10);
@@ -761,13 +762,13 @@ test("aspect_ratio_defined_main_with_margin", () => {
 });
 
 test("aspect_ratio_defined_cross_with_margin", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setAspectRatio(1);
   root_child0.setMargin(Edge.Left, 10);
@@ -786,13 +787,13 @@ test("aspect_ratio_defined_cross_with_margin", () => {
 });
 
 test("aspect_ratio_defined_cross_with_main_margin", () => {
-  const root = new Node();
+  const root = newFixtureNode();
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node();
+  const root_child0 = newFixtureNode();
   root_child0.setWidth(50);
   root_child0.setAspectRatio(1);
   root_child0.setMargin(Edge.Top, 10);
@@ -812,7 +813,6 @@ test("aspect_ratio_defined_cross_with_main_margin", () => {
 
 test("aspect_ratio_should_prefer_explicit_height", () => {
   const config = new Config();
-  config.setUseWebDefaults(true);
 
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Column);
@@ -843,7 +843,6 @@ test("aspect_ratio_should_prefer_explicit_height", () => {
 
 test("aspect_ratio_should_prefer_explicit_width", () => {
   const config = new Config();
-  config.setUseWebDefaults(true);
 
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
@@ -874,7 +873,6 @@ test("aspect_ratio_should_prefer_explicit_width", () => {
 
 test("aspect_ratio_should_prefer_flexed_dimension", () => {
   const config = new Config();
-  config.setUseWebDefaults(true);
 
   const root = new Node(config);
 

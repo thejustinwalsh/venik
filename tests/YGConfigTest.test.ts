@@ -131,16 +131,7 @@ describe("YogaTest", () => {
     config1.setPointScaleFactor(3.0);
     expect(configUpdateInvalidatesLayout(config1, config2)).toBe(false);
 
-    // Changing useWebDefaults should invalidate
-    config2.setUseWebDefaults(true);
-    expect(configUpdateInvalidatesLayout(config1, config2)).toBe(true);
-
-    // Make them match again
-    config1.setUseWebDefaults(true);
-    expect(configUpdateInvalidatesLayout(config1, config2)).toBe(false);
-
     config1.free();
     config2.free();
   });
-
 });

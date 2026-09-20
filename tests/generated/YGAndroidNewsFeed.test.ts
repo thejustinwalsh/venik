@@ -2,28 +2,29 @@
 // (upstream fixture: gentest/fixtures/YGAndroidNewsFeed.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, FlexDirection, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";
 
 test("android_news_feed", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setAlignContent(Align.Stretch);
   root.setWidth(1080);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setAlignContent(Align.Stretch);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setAlignContent(Align.Stretch);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0_child0_child0.setAlignItems(Align.FlexStart);
   root_child0_child0_child0_child0.setAlignContent(Align.Stretch);
@@ -31,18 +32,18 @@ test("android_news_feed", () => {
   root_child0_child0_child0_child0.setMargin(Edge.Start, 36);
   root_child0_child0_child0.insertChild(root_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0_child0_child0_child0.setAlignContent(Align.Stretch);
   root_child0_child0_child0_child0.insertChild(root_child0_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0_child0_child0.setAlignContent(Align.Stretch);
   root_child0_child0_child0_child0_child0_child0.setWidth(120);
   root_child0_child0_child0_child0_child0_child0.setHeight(120);
   root_child0_child0_child0_child0_child0.insertChild(root_child0_child0_child0_child0_child0_child0, 0);
 
-  const root_child0_child0_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child0_child0_child1.setAlignContent(Align.Stretch);
   root_child0_child0_child0_child0_child1.setFlexShrink(1);
   root_child0_child0_child0_child0_child1.setMargin(Edge.Right, 36);
@@ -52,22 +53,22 @@ test("android_news_feed", () => {
   root_child0_child0_child0_child0_child1.setPadding(Edge.Bottom, 18);
   root_child0_child0_child0_child0.insertChild(root_child0_child0_child0_child0_child1, 1);
 
-  const root_child0_child0_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child0_child0_child1_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0_child0_child0_child1_child0.setAlignContent(Align.Stretch);
   root_child0_child0_child0_child0_child1_child0.setFlexShrink(1);
   root_child0_child0_child0_child0_child1.insertChild(root_child0_child0_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child0_child0_child1_child1 = new Node(config);
+  const root_child0_child0_child0_child0_child1_child1 = newFixtureNode(config);
   root_child0_child0_child0_child0_child1_child1.setAlignContent(Align.Stretch);
   root_child0_child0_child0_child0_child1_child1.setFlexShrink(1);
   root_child0_child0_child0_child0_child1.insertChild(root_child0_child0_child0_child0_child1_child1, 1);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setAlignContent(Align.Stretch);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
 
-  const root_child0_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0_child1_child0.setAlignItems(Align.FlexStart);
   root_child0_child0_child1_child0.setAlignContent(Align.Stretch);
@@ -75,18 +76,18 @@ test("android_news_feed", () => {
   root_child0_child0_child1_child0.setMargin(Edge.Start, 174);
   root_child0_child0_child1.insertChild(root_child0_child0_child1_child0, 0);
 
-  const root_child0_child0_child1_child0_child0 = new Node(config);
+  const root_child0_child0_child1_child0_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0_child1_child0_child0.setAlignContent(Align.Stretch);
   root_child0_child0_child1_child0.insertChild(root_child0_child0_child1_child0_child0, 0);
 
-  const root_child0_child0_child1_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child1_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0_child0_child0.setAlignContent(Align.Stretch);
   root_child0_child0_child1_child0_child0_child0.setWidth(72);
   root_child0_child0_child1_child0_child0_child0.setHeight(72);
   root_child0_child0_child1_child0_child0.insertChild(root_child0_child0_child1_child0_child0_child0, 0);
 
-  const root_child0_child0_child1_child0_child1 = new Node(config);
+  const root_child0_child0_child1_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1_child0_child1.setAlignContent(Align.Stretch);
   root_child0_child0_child1_child0_child1.setFlexShrink(1);
   root_child0_child0_child1_child0_child1.setMargin(Edge.Right, 36);
@@ -96,13 +97,13 @@ test("android_news_feed", () => {
   root_child0_child0_child1_child0_child1.setPadding(Edge.Bottom, 18);
   root_child0_child0_child1_child0.insertChild(root_child0_child0_child1_child0_child1, 1);
 
-  const root_child0_child0_child1_child0_child1_child0 = new Node(config);
+  const root_child0_child0_child1_child0_child1_child0 = newFixtureNode(config);
   root_child0_child0_child1_child0_child1_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0_child1_child0_child1_child0.setAlignContent(Align.Stretch);
   root_child0_child0_child1_child0_child1_child0.setFlexShrink(1);
   root_child0_child0_child1_child0_child1.insertChild(root_child0_child0_child1_child0_child1_child0, 0);
 
-  const root_child0_child0_child1_child0_child1_child1 = new Node(config);
+  const root_child0_child0_child1_child0_child1_child1 = newFixtureNode(config);
   root_child0_child0_child1_child0_child1_child1.setAlignContent(Align.Stretch);
   root_child0_child0_child1_child0_child1_child1.setFlexShrink(1);
   root_child0_child0_child1_child0_child1.insertChild(root_child0_child0_child1_child0_child1_child1, 1);

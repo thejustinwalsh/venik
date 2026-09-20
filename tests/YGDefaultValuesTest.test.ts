@@ -23,16 +23,16 @@ test("assert_default_values", () => {
   expect(root.getChild(1)).toBe(null);
 
   expect(root.getDirection()).toBe(Direction.Inherit);
-  expect(root.getFlexDirection()).toBe(FlexDirection.Column);
+  expect(root.getFlexDirection()).toBe(FlexDirection.Row);
   expect(root.getJustifyContent()).toBe(Justify.FlexStart);
-  expect(root.getAlignContent()).toBe(Align.FlexStart);
+  expect(root.getAlignContent()).toBe(Align.Stretch);
   expect(root.getAlignItems()).toBe(Align.Stretch);
   expect(root.getAlignSelf()).toBe(Align.Auto);
   expect(root.getPositionType()).toBe(PositionType.Relative);
   expect(root.getFlexWrap()).toBe(Wrap.NoWrap);
   expect(root.getOverflow()).toBe(Overflow.Visible);
   expect(root.getFlexGrow()).toBe(0);
-  expect(root.getFlexShrink()).toBe(0);
+  expect(root.getFlexShrink()).toBe(1);
   expect(root.getFlexBasis().unit).toBe(Unit.Auto);
 
   expect(root.getPosition(Edge.Left).unit).toBe(Unit.Undefined);
@@ -97,22 +97,8 @@ test("assert_default_values", () => {
   root.freeRecursive();
 });
 
-test("assert_webdefault_values", () => {
+test("assert_default_values_reset", () => {
   const config = new Config();
-  config.setUseWebDefaults(true);
-  const root = new Node(config);
-
-  expect(root.getFlexDirection()).toBe(FlexDirection.Row);
-  expect(root.getAlignContent()).toBe(Align.Stretch);
-  expect(root.getFlexShrink()).toBe(1);
-
-  root.freeRecursive();
-  config.free();
-});
-
-test("assert_webdefault_values_reset", () => {
-  const config = new Config();
-  config.setUseWebDefaults(true);
   const root = new Node(config);
   root.reset();
 

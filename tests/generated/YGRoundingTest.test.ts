@@ -2,26 +2,27 @@
 // (upstream fixture: gentest/fixtures/YGRoundingTest.html).
 
 import { expect, test } from "vitest";
-import { Config, Direction, Edge, FlexDirection, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";
 
 test("rounding_flex_basis_flex_grow_row_width_of_100", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -76,29 +77,29 @@ test("rounding_flex_basis_flex_grow_row_width_of_100", () => {
 test("rounding_flex_basis_flex_grow_row_prime_number_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(113);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setFlexGrow(1);
   root.insertChild(root_child3, 3);
 
-  const root_child4 = new Node(config);
+  const root_child4 = newFixtureNode(config);
   root_child4.setFlexGrow(1);
   root.insertChild(root_child4, 4);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -173,22 +174,22 @@ test("rounding_flex_basis_flex_grow_row_prime_number_width", () => {
 test("rounding_flex_basis_flex_shrink_row", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(101);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexBasis(100);
   root_child0.setFlexShrink(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexBasis(25);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setFlexBasis(25);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -243,23 +244,23 @@ test("rounding_flex_basis_flex_shrink_row", () => {
 test("rounding_flex_basis_overrides_main_size", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(113);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -315,23 +316,23 @@ test("rounding_flex_basis_overrides_main_size", () => {
 test("rounding_total_fractial", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(113.4);
   root.setWidth(87.4);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20.3);
   root_child0.setFlexGrow(0.7);
   root_child0.setFlexBasis(50.3);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1.6);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10.7);
   root_child2.setFlexGrow(1.1);
   root.insertChild(root_child2, 2);
@@ -387,37 +388,37 @@ test("rounding_total_fractial", () => {
 test("rounding_total_fractial_nested", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(113.4);
   root.setWidth(87.4);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20.3);
   root_child0.setFlexGrow(0.7);
   root_child0.setFlexBasis(50.3);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPosition(Edge.Bottom, 13.3);
   root_child0_child0.setHeight(9.9);
   root_child0_child0.setFlexGrow(1);
   root_child0_child0.setFlexBasis(0.3);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setPosition(Edge.Top, 13.3);
   root_child0_child1.setHeight(1.1);
   root_child0_child1.setFlexGrow(4);
   root_child0_child1.setFlexBasis(0.3);
   root_child0.insertChild(root_child0_child1, 1);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1.6);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10.7);
   root_child2.setFlexGrow(1.1);
   root.insertChild(root_child2, 2);
@@ -493,23 +494,23 @@ test("rounding_total_fractial_nested", () => {
 test("rounding_fractial_input_1", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(113.4);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -565,23 +566,23 @@ test("rounding_fractial_input_1", () => {
 test("rounding_fractial_input_2", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(113.6);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -637,24 +638,24 @@ test("rounding_fractial_input_2", () => {
 test("rounding_fractial_input_3", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setPosition(Edge.Top, 0.3);
   root.setHeight(113.4);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -710,24 +711,24 @@ test("rounding_fractial_input_3", () => {
 test("rounding_fractial_input_4", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setPosition(Edge.Top, 0.7);
   root.setHeight(113.4);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(20);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -783,27 +784,27 @@ test("rounding_fractial_input_4", () => {
 test("rounding_inner_node_controversy_horizontal", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(320);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeight(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child1_child0 = new Node(config);
+  const root_child1_child0 = newFixtureNode(config);
   root_child1_child0.setHeight(10);
   root_child1_child0.setFlexGrow(1);
   root_child1.insertChild(root_child1_child0, 0);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeight(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -869,26 +870,26 @@ test("rounding_inner_node_controversy_horizontal", () => {
 test("rounding_inner_node_controversy_vertical", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(320);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(10);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child1_child0 = new Node(config);
+  const root_child1_child0 = newFixtureNode(config);
   root_child1_child0.setWidth(10);
   root_child1_child0.setFlexGrow(1);
   root_child1.insertChild(root_child1_child0, 0);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(10);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);
@@ -954,43 +955,43 @@ test("rounding_inner_node_controversy_vertical", () => {
 test("rounding_inner_node_controversy_combined", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(640);
   root.setHeight(320);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeightPercent(100);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setHeightPercent(100);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child1_child0 = new Node(config);
+  const root_child1_child0 = newFixtureNode(config);
   root_child1_child0.setWidthPercent(100);
   root_child1_child0.setFlexGrow(1);
   root_child1.insertChild(root_child1_child0, 0);
 
-  const root_child1_child1 = new Node(config);
+  const root_child1_child1 = newFixtureNode(config);
   root_child1_child1.setWidthPercent(100);
   root_child1_child1.setFlexGrow(1);
   root_child1.insertChild(root_child1_child1, 1);
 
-  const root_child1_child1_child0 = new Node(config);
+  const root_child1_child1_child0 = newFixtureNode(config);
   root_child1_child1_child0.setFlexGrow(1);
   root_child1_child1_child0.setWidthPercent(100);
   root_child1_child1.insertChild(root_child1_child1_child0, 0);
 
-  const root_child1_child2 = new Node(config);
+  const root_child1_child2 = newFixtureNode(config);
   root_child1_child2.setWidthPercent(100);
   root_child1_child2.setFlexGrow(1);
   root_child1.insertChild(root_child1_child2, 2);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setHeightPercent(100);
   root_child2.setFlexGrow(1);
   root.insertChild(root_child2, 2);

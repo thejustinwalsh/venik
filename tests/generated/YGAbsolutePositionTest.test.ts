@@ -2,17 +2,18 @@
 // (upstream fixture: gentest/fixtures/YGAbsolutePositionTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, FlexDirection, Justify, Node, Overflow, PositionType, Wrap } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, FlexDirection, Justify, Overflow, PositionType, Wrap } from "../../src/index.ts";
 
 test("absolute_layout_width_height_start_top", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root_child0.setPositionType(PositionType.Absolute);
@@ -51,12 +52,12 @@ test("absolute_layout_width_height_start_top", () => {
 test("absolute_layout_width_height_left_auto_right", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root_child0.setPositionType(PositionType.Absolute);
@@ -95,12 +96,12 @@ test("absolute_layout_width_height_left_auto_right", () => {
 test("absolute_layout_width_height_left_right_auto", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root_child0.setPositionType(PositionType.Absolute);
@@ -139,12 +140,12 @@ test("absolute_layout_width_height_left_right_auto", () => {
 test("absolute_layout_width_height_left_auto_right_auto", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root_child0.setPositionType(PositionType.Absolute);
@@ -183,12 +184,12 @@ test("absolute_layout_width_height_left_auto_right_auto", () => {
 test("absolute_layout_width_height_end_bottom", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root_child0.setPositionType(PositionType.Absolute);
@@ -227,12 +228,12 @@ test("absolute_layout_width_height_end_bottom", () => {
 test("absolute_layout_start_top_end_bottom", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPosition(Edge.Start, 10);
   root_child0.setPosition(Edge.Top, 10);
@@ -271,12 +272,12 @@ test("absolute_layout_start_top_end_bottom", () => {
 test("absolute_layout_width_height_start_top_end_bottom", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root_child0.setPositionType(PositionType.Absolute);
@@ -317,20 +318,20 @@ test("absolute_layout_width_height_start_top_end_bottom", () => {
 test("do_not_clamp_height_of_absolute_node_to_height_of_its_overflow_hidden_parent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(50);
   root.setWidth(50);
   root.setOverflow(Overflow.Hidden);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPosition(Edge.Start, 0);
   root_child0.setPosition(Edge.Top, 0);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(100);
   root_child0_child0.setHeight(100);
   root_child0.insertChild(root_child0_child0, 0);
@@ -376,7 +377,7 @@ test("do_not_clamp_height_of_absolute_node_to_height_of_its_overflow_hidden_pare
 test("absolute_layout_within_border", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(100);
@@ -384,7 +385,7 @@ test("absolute_layout_within_border", () => {
   root.setMargin(Edge.All, 10);
   root.setPadding(Edge.All, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
@@ -392,7 +393,7 @@ test("absolute_layout_within_border", () => {
   root_child0.setPosition(Edge.Top, 0);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setPositionType(PositionType.Absolute);
   root_child1.setWidth(50);
   root_child1.setHeight(50);
@@ -400,7 +401,7 @@ test("absolute_layout_within_border", () => {
   root_child1.setPosition(Edge.Bottom, 0);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setPositionType(PositionType.Absolute);
   root_child2.setWidth(50);
   root_child2.setHeight(50);
@@ -409,7 +410,7 @@ test("absolute_layout_within_border", () => {
   root_child2.setMargin(Edge.All, 10);
   root.insertChild(root_child2, 2);
 
-  const root_child3 = new Node(config);
+  const root_child3 = newFixtureNode(config);
   root_child3.setPositionType(PositionType.Absolute);
   root_child3.setWidth(50);
   root_child3.setHeight(50);
@@ -479,7 +480,7 @@ test("absolute_layout_within_border", () => {
 test("absolute_layout_align_items_and_justify_content_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
@@ -487,7 +488,7 @@ test("absolute_layout_align_items_and_justify_content_center", () => {
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -524,7 +525,7 @@ test("absolute_layout_align_items_and_justify_content_center", () => {
 test("absolute_layout_align_items_and_justify_content_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
@@ -532,7 +533,7 @@ test("absolute_layout_align_items_and_justify_content_flex_end", () => {
   root.setAlignItems(Align.FlexEnd);
   root.setJustifyContent(Justify.FlexEnd);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -569,14 +570,14 @@ test("absolute_layout_align_items_and_justify_content_flex_end", () => {
 test("absolute_layout_justify_content_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
   root.setFlexGrow(1);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -613,14 +614,14 @@ test("absolute_layout_justify_content_center", () => {
 test("absolute_layout_align_items_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
   root.setFlexGrow(1);
   root.setAlignItems(Align.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -657,13 +658,13 @@ test("absolute_layout_align_items_center", () => {
 test("absolute_layout_align_items_center_on_child_only", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
   root.setFlexGrow(1);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -701,7 +702,7 @@ test("absolute_layout_align_items_center_on_child_only", () => {
 test("absolute_layout_align_items_and_justify_content_center_and_top_position", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
@@ -709,7 +710,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_top_position", 
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -747,7 +748,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_top_position", 
 test("absolute_layout_align_items_and_justify_content_center_and_bottom_position", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
@@ -755,7 +756,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_bottom_position
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -793,7 +794,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_bottom_position
 test("absolute_layout_align_items_and_justify_content_center_and_left_position", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
@@ -801,7 +802,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_left_position",
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -839,7 +840,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_left_position",
 test("absolute_layout_align_items_and_justify_content_center_and_right_position", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(110);
@@ -847,7 +848,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_right_position"
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(60);
   root_child0.setHeight(40);
@@ -885,7 +886,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_right_position"
 test("position_root_with_rtl_should_position_withoutdirection", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(52);
   root.setWidth(52);
@@ -912,26 +913,26 @@ test("position_root_with_rtl_should_position_withoutdirection", () => {
 test("absolute_layout_percentage_bottom_based_on_parent_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(200);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPositionPercent(Edge.Top, 50);
   root_child0.setWidth(10);
   root_child0.setHeight(10);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setPositionType(PositionType.Absolute);
   root_child1.setPositionPercent(Edge.Bottom, 50);
   root_child1.setWidth(10);
   root_child1.setHeight(10);
   root.insertChild(root_child1, 1);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setPositionType(PositionType.Absolute);
   root_child2.setPositionPercent(Edge.Top, 10);
   root_child2.setWidth(10);
@@ -989,13 +990,13 @@ test("absolute_layout_percentage_bottom_based_on_parent_height", () => {
 test("absolute_layout_in_wrap_reverse_column_container", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexWrap(Wrap.WrapReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root_child0.setHeight(20);
   root_child0.setPositionType(PositionType.Absolute);
@@ -1032,14 +1033,14 @@ test("absolute_layout_in_wrap_reverse_column_container", () => {
 test("absolute_layout_in_wrap_reverse_row_container", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexWrap(Wrap.WrapReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root_child0.setHeight(20);
   root_child0.setPositionType(PositionType.Absolute);
@@ -1076,13 +1077,13 @@ test("absolute_layout_in_wrap_reverse_row_container", () => {
 test("absolute_layout_in_wrap_reverse_column_container_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexWrap(Wrap.WrapReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root_child0.setHeight(20);
   root_child0.setPositionType(PositionType.Absolute);
@@ -1120,14 +1121,14 @@ test("absolute_layout_in_wrap_reverse_column_container_flex_end", () => {
 test("absolute_layout_in_wrap_reverse_row_container_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexWrap(Wrap.WrapReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(20);
   root_child0.setHeight(20);
   root_child0.setPositionType(PositionType.Absolute);
@@ -1165,15 +1166,15 @@ test("absolute_layout_in_wrap_reverse_row_container_flex_end", () => {
 test("percent_absolute_position_infinite_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(300);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(300);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidthPercent(20);
   root_child1.setHeightPercent(20);
   root_child1.setPositionPercent(Edge.Left, 20);
@@ -1222,14 +1223,14 @@ test("percent_absolute_position_infinite_height", () => {
 test("absolute_layout_percentage_height_based_on_padded_parent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setPadding(Edge.Top, 10);
   root.setBorder(Edge.Top, 10);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root_child0.setHeightPercent(50);
   root_child0.setPositionType(PositionType.Absolute);
@@ -1266,7 +1267,7 @@ test("absolute_layout_percentage_height_based_on_padded_parent", () => {
 test("absolute_layout_percentage_height_based_on_padded_parent_and_align_items_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setAlignItems(Align.Center);
   root.setJustifyContent(Justify.Center);
   root.setWidth(100);
@@ -1274,7 +1275,7 @@ test("absolute_layout_percentage_height_based_on_padded_parent_and_align_items_c
   root.setPadding(Edge.Top, 20);
   root.setPadding(Edge.Bottom, 20);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(100);
   root_child0.setHeightPercent(50);
@@ -1311,13 +1312,13 @@ test("absolute_layout_percentage_height_based_on_padded_parent_and_align_items_c
 test("absolute_layout_padding_left", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setPadding(Edge.Left, 100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
@@ -1354,13 +1355,13 @@ test("absolute_layout_padding_left", () => {
 test("absolute_layout_padding_right", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setPadding(Edge.Right, 100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
@@ -1397,13 +1398,13 @@ test("absolute_layout_padding_right", () => {
 test("absolute_layout_padding_top", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setPadding(Edge.Top, 100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
@@ -1440,13 +1441,13 @@ test("absolute_layout_padding_top", () => {
 test("absolute_layout_padding_bottom", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setPadding(Edge.Bottom, 100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
@@ -1483,23 +1484,23 @@ test("absolute_layout_padding_bottom", () => {
 test("absolute_layout_padding", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setMargin(Edge.All, 10);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setWidth(200);
   root_child0_child0.setHeight(200);
   root_child0_child0.setPadding(Edge.All, 50);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setHeight(50);
@@ -1556,23 +1557,23 @@ test("absolute_layout_padding", () => {
 test("absolute_layout_border", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(200);
   root_child0.setHeight(200);
   root_child0.setMargin(Edge.All, 10);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setPositionType(PositionType.Static);
   root_child0_child0.setWidth(200);
   root_child0_child0.setHeight(200);
   root_child0_child0.setBorder(Edge.All, 10);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setPositionType(PositionType.Absolute);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setHeight(50);
@@ -1629,13 +1630,13 @@ test("absolute_layout_border", () => {
 test("absolute_layout_column_reverse_margin_border", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setFlexDirection(FlexDirection.ColumnReverse);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setWidth(50);
   root_child0.setHeight(50);

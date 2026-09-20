@@ -2,20 +2,21 @@
 // (upstream fixture: gentest/fixtures/YGSizeOverflowTest.html).
 
 import { expect, test } from "vitest";
-import { Config, Direction, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Config, Direction, PositionType } from "../../src/index.ts";
 
 test("nested_overflowing_child", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(200);
   root_child0_child0.setWidth(200);
   root_child0.insertChild(root_child0_child0, 0);
@@ -61,17 +62,17 @@ test("nested_overflowing_child", () => {
 test("nested_overflowing_child_in_constraint_parent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setHeight(100);
   root.setWidth(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(100);
   root_child0.setWidth(100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setHeight(200);
   root_child0_child0.setWidth(200);
   root_child0.insertChild(root_child0_child0, 0);
@@ -117,16 +118,16 @@ test("nested_overflowing_child_in_constraint_parent", () => {
 test("parent_wrap_child_size_overflowing_parent", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(100);
   root_child0_child0.setHeight(200);
   root_child0.insertChild(root_child0_child0, 0);

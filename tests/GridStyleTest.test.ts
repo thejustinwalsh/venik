@@ -57,12 +57,6 @@ test("copies_do_not_share_grid_style", () => {
   expect(copy.equals(style)).toBe(false);
 });
 
-// Not portable: C++ move construction/assignment (`Style moved =
-// std::move(style)`) hands over the heap allocated GridStyleStorage and resets
-// the moved-from style to its defaults. JavaScript has no move semantics and
-// the TS Style has no GridStyleStorage, so there is nothing to test.
-test.skip("moving_a_style_hands_over_the_grid_style", () => {});
-
 test("assigning_an_unset_style_clears_a_set_one", () => {
   const style = new Style();
   style.setGridTemplateColumns([GridTrackSize.length(10.0)]);

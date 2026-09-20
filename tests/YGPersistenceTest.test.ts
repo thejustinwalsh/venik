@@ -1,22 +1,22 @@
 // Port of yoga-cpp/tests/YGPersistenceTest.cpp
 
 import { expect, test } from "vitest";
-import { Config, Direction, Node } from "../src/index.ts";
-import { TestUtil } from "./util/testUtil.ts";
+import { Config, Direction } from "../src/index.ts";
+import { newFixtureNode, TestUtil } from "./util/testUtil.ts";
 
 test("cloning_shared_root", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -104,13 +104,13 @@ test("cloning_shared_root", () => {
 test("mutating_children_of_a_clone_clones_only_after_layout", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   expect(root.getChildCount()).toBe(0);
 
   const root2 = root.clone();
   expect(root2.getChildCount()).toBe(0);
 
-  const root2_child0 = new Node(config);
+  const root2_child0 = newFixtureNode(config);
   root2.insertChild(root2_child0, 0);
 
   expect(root.getChildCount()).toBe(0);
@@ -121,7 +121,7 @@ test("mutating_children_of_a_clone_clones_only_after_layout", () => {
   expect(root3.getChildCount()).toBe(1);
   expect(root3.getChild(0)).toBe(root2.getChild(0));
 
-  const root3_child1 = new Node(config);
+  const root3_child1 = newFixtureNode(config);
   root3.insertChild(root3_child1, 1);
   expect(root2.getChildCount()).toBe(1);
   expect(root3.getChildCount()).toBe(2);
@@ -152,25 +152,25 @@ test("mutating_children_of_a_clone_clones_only_after_layout", () => {
 test("cloning_two_levels", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(15);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child1_0 = new Node(config);
+  const root_child1_0 = newFixtureNode(config);
   root_child1_0.setFlexBasis(10);
   root_child1_0.setFlexGrow(1);
   root_child1.insertChild(root_child1_0, 0);
 
-  const root_child1_1 = new Node(config);
+  const root_child1_1 = newFixtureNode(config);
   root_child1_1.setFlexBasis(25);
   root_child1.insertChild(root_child1_1, 1);
 
@@ -220,12 +220,12 @@ test("cloning_and_freeing", () => {
 
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setWidth(100);
   root.setHeight(100);
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root.insertChild(root_child1, 1);
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -251,16 +251,16 @@ test("cloning_and_freeing", () => {
 test("mixed_shared_and_owned_children", () => {
   // Don't try this at home!
 
-  const root0 = new Node();
-  const root1 = new Node();
+  const root0 = newFixtureNode();
+  const root1 = newFixtureNode();
 
-  const root0_child0 = new Node();
-  const root0_child0_0 = new Node();
+  const root0_child0 = newFixtureNode();
+  const root0_child0_0 = newFixtureNode();
   root0.insertChild(root0_child0, 0);
   root0_child0.insertChild(root0_child0_0, 0);
 
-  const root1_child0 = new Node();
-  const root1_child2 = new Node();
+  const root1_child0 = newFixtureNode();
+  const root1_child2 = newFixtureNode();
   root1.insertChild(root1_child0, 0);
   root1.insertChild(root1_child2, 1);
 

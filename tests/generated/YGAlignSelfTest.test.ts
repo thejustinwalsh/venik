@@ -2,17 +2,18 @@
 // (upstream fixture: gentest/fixtures/YGAlignSelfTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, FlexDirection, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, FlexDirection, PositionType } from "../../src/index.ts";
 
 test("align_self_center", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(10);
   root_child0.setAlignSelf(Align.Center);
@@ -49,12 +50,12 @@ test("align_self_center", () => {
 test("align_self_flex_end", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(10);
   root_child0.setAlignSelf(Align.FlexEnd);
@@ -91,12 +92,12 @@ test("align_self_flex_end", () => {
 test("align_self_flex_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(10);
   root_child0.setAlignSelf(Align.FlexStart);
@@ -133,13 +134,13 @@ test("align_self_flex_start", () => {
 test("align_self_flex_end_override_flex_start", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setAlignItems(Align.FlexStart);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(10);
   root_child0.setWidth(10);
   root_child0.setAlignSelf(Align.FlexEnd);
@@ -176,25 +177,25 @@ test("align_self_flex_end_override_flex_start", () => {
 test("align_self_baseline", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(100);
   root.setHeight(100);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(50);
   root_child0.setHeight(50);
   root_child0.setAlignSelf(Align.Baseline);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setWidth(50);
   root_child1.setHeight(20);
   root_child1.setAlignSelf(Align.Baseline);
   root.insertChild(root_child1, 1);
 
-  const root_child1_child0 = new Node(config);
+  const root_child1_child0 = newFixtureNode(config);
   root_child1_child0.setWidth(50);
   root_child1_child0.setHeight(10);
   root_child1.insertChild(root_child1_child0, 0);

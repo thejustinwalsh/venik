@@ -55,7 +55,6 @@ function measureFixedSize(
 
 function makeWebConfig(): Config {
   const config = new Config();
-  config.setUseWebDefaults(true);
   return config;
 }
 

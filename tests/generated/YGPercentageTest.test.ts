@@ -2,18 +2,19 @@
 // (upstream fixture: gentest/fixtures/YGPercentageTest.html).
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Edge, FlexDirection, Justify, Node, PositionType } from "../../src/index.ts";
+import { newFixtureNode } from "../util/testUtil.ts";
+import { Align, Config, Direction, Edge, FlexDirection, Justify, PositionType } from "../../src/index.ts";
 
 test("percentage_width_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(30);
   root_child0.setHeightPercent(30);
   root.insertChild(root_child0, 0);
@@ -49,13 +50,13 @@ test("percentage_width_height", () => {
 test("percentage_position_left_top", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(400);
   root.setHeight(400);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(45);
   root_child0.setHeightPercent(55);
   root_child0.setPositionPercent(Edge.Left, 10);
@@ -93,13 +94,13 @@ test("percentage_position_left_top", () => {
 test("percentage_position_bottom_right", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(500);
   root.setHeight(500);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(55);
   root_child0.setHeightPercent(15);
   root_child0.setPositionPercent(Edge.Bottom, 10);
@@ -137,18 +138,18 @@ test("percentage_position_bottom_right", () => {
 test("percentage_flex_basis", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root_child1.setFlexBasisPercent(25);
   root.insertChild(root_child1, 1);
@@ -194,17 +195,17 @@ test("percentage_flex_basis", () => {
 test("percentage_flex_basis_cross", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(50);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root_child1.setFlexBasisPercent(25);
   root.insertChild(root_child1, 1);
@@ -250,19 +251,19 @@ test("percentage_flex_basis_cross", () => {
 test("percentage_flex_basis_main_max_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(10);
   root_child0.setMaxHeightPercent(60);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(4);
   root_child1.setFlexBasisPercent(10);
   root_child1.setMaxHeightPercent(20);
@@ -309,18 +310,18 @@ test("percentage_flex_basis_main_max_height", () => {
 test("percentage_flex_basis_cross_max_height", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(10);
   root_child0.setMaxHeightPercent(60);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(4);
   root_child1.setFlexBasisPercent(10);
   root_child1.setMaxHeightPercent(20);
@@ -367,19 +368,19 @@ test("percentage_flex_basis_cross_max_height", () => {
 test("percentage_flex_basis_main_max_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(15);
   root_child0.setMaxWidthPercent(60);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(4);
   root_child1.setFlexBasisPercent(10);
   root_child1.setMaxWidthPercent(20);
@@ -426,18 +427,18 @@ test("percentage_flex_basis_main_max_width", () => {
 test("percentage_flex_basis_cross_max_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(10);
   root_child0.setMaxWidthPercent(60);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(4);
   root_child1.setFlexBasisPercent(15);
   root_child1.setMaxWidthPercent(20);
@@ -484,19 +485,19 @@ test("percentage_flex_basis_cross_max_width", () => {
 test("percentage_flex_basis_main_min_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
   root.setFlexDirection(FlexDirection.Row);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(15);
   root_child0.setMinWidthPercent(60);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(4);
   root_child1.setFlexBasisPercent(10);
   root_child1.setMinWidthPercent(20);
@@ -543,18 +544,18 @@ test("percentage_flex_basis_main_min_width", () => {
 test("percentage_flex_basis_cross_min_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(10);
   root_child0.setMinWidthPercent(60);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(4);
   root_child1.setFlexBasisPercent(15);
   root_child1.setMinWidthPercent(20);
@@ -601,12 +602,12 @@ test("percentage_flex_basis_cross_min_width", () => {
 test("percentage_multiple_nested_with_padding_margin_and_percentage_values", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(200);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasisPercent(10);
   root_child0.setMinWidthPercent(60);
@@ -614,19 +615,19 @@ test("percentage_multiple_nested_with_padding_margin_and_percentage_values", () 
   root_child0.setPadding(Edge.All, 3);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidthPercent(50);
   root_child0_child0.setMargin(Edge.All, 5);
   root_child0_child0.setPaddingPercent(Edge.All, 3);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setWidthPercent(45);
   root_child0_child0_child0.setMarginPercent(Edge.All, 5);
   root_child0_child0_child0.setPadding(Edge.All, 3);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(4);
   root_child1.setFlexBasisPercent(15);
   root_child1.setMinWidthPercent(20);
@@ -693,17 +694,17 @@ test("percentage_multiple_nested_with_padding_margin_and_percentage_values", () 
 test("percentage_margin_should_calculate_based_only_on_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setMarginPercent(Edge.All, 10);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(10);
   root_child0_child0.setHeight(10);
   root_child0.insertChild(root_child0_child0, 0);
@@ -749,17 +750,17 @@ test("percentage_margin_should_calculate_based_only_on_width", () => {
 test("percentage_padding_should_calculate_based_only_on_width", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setFlexGrow(1);
   root_child0.setPaddingPercent(Edge.All, 10);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidth(10);
   root_child0_child0.setHeight(10);
   root_child0.insertChild(root_child0_child0, 0);
@@ -805,12 +806,12 @@ test("percentage_padding_should_calculate_based_only_on_width", () => {
 test("percentage_absolute_position", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(200);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setPositionType(PositionType.Absolute);
   root_child0.setPositionPercent(Edge.Top, 10);
   root_child0.setPositionPercent(Edge.Left, 30);
@@ -849,10 +850,10 @@ test("percentage_absolute_position", () => {
 test("percentage_width_height_undefined_parent_size", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeightPercent(50);
   root.insertChild(root_child0, 0);
@@ -888,25 +889,25 @@ test("percentage_width_height_undefined_parent_size", () => {
 test("percent_within_flex_grow", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(350);
   root.setHeight(100);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidth(100);
   root.insertChild(root_child0, 0);
 
-  const root_child1 = new Node(config);
+  const root_child1 = newFixtureNode(config);
   root_child1.setFlexGrow(1);
   root.insertChild(root_child1, 1);
 
-  const root_child1_child0 = new Node(config);
+  const root_child1_child0 = newFixtureNode(config);
   root_child1_child0.setWidthPercent(100);
   root_child1.insertChild(root_child1_child0, 0);
 
-  const root_child2 = new Node(config);
+  const root_child2 = newFixtureNode(config);
   root_child2.setWidth(100);
   root.insertChild(root_child2, 2);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -971,28 +972,28 @@ test("percent_within_flex_grow", () => {
 test("percentage_container_in_wrapping_container", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setAlignItems(Align.Center);
   root.setWidth(200);
   root.setHeight(200);
   root.setJustifyContent(Justify.Center);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setFlexDirection(FlexDirection.Row);
   root_child0_child0.setJustifyContent(Justify.Center);
   root_child0_child0.setWidthPercent(100);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child0_child0 = new Node(config);
+  const root_child0_child0_child0 = newFixtureNode(config);
   root_child0_child0_child0.setWidth(50);
   root_child0_child0_child0.setHeight(50);
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
-  const root_child0_child0_child1 = new Node(config);
+  const root_child0_child0_child1 = newFixtureNode(config);
   root_child0_child0_child1.setWidth(50);
   root_child0_child0_child1.setHeight(50);
   root_child0_child0.insertChild(root_child0_child0_child1, 1);
@@ -1058,12 +1059,12 @@ test("percentage_container_in_wrapping_container", () => {
 test("percent_absolute_position", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setWidth(60);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setHeight(50);
   root_child0.setWidthPercent(100);
   root_child0.setPositionPercent(Edge.Left, 50);
@@ -1071,11 +1072,11 @@ test("percent_absolute_position", () => {
   root_child0.setFlexDirection(FlexDirection.Row);
   root.insertChild(root_child0, 0);
 
-  const root_child0_child0 = new Node(config);
+  const root_child0_child0 = newFixtureNode(config);
   root_child0_child0.setWidthPercent(100);
   root_child0.insertChild(root_child0_child0, 0);
 
-  const root_child0_child1 = new Node(config);
+  const root_child0_child1 = newFixtureNode(config);
   root_child0_child1.setWidthPercent(100);
   root_child0.insertChild(root_child0_child1, 1);
   root.calculateLayout(undefined, undefined, Direction.LTR);
@@ -1130,14 +1131,14 @@ test("percent_absolute_position", () => {
 test("percent_of_minmax_main", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setFlexDirection(FlexDirection.Row);
   root.setMinWidth(60);
   root.setMaxWidth(60);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeight(20);
   root.insertChild(root_child0, 0);
@@ -1173,13 +1174,13 @@ test("percent_of_minmax_main", () => {
 test("percent_of_minmax_cross_stretched", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMinWidth(60);
   root.setMaxWidth(60);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeight(20);
   root.insertChild(root_child0, 0);
@@ -1215,13 +1216,13 @@ test("percent_of_minmax_cross_stretched", () => {
 test("percent_absolute_of_minmax_cross_stretched", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMinWidth(60);
   root.setMaxWidth(60);
   root.setHeight(50);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeight(20);
   root_child0.setPositionType(PositionType.Absolute);
@@ -1258,14 +1259,14 @@ test("percent_absolute_of_minmax_cross_stretched", () => {
 test("percent_of_minmax_cross_unstretched", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMinWidth(60);
   root.setMaxWidth(60);
   root.setHeight(50);
   root.setAlignItems(Align.FlexStart);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeight(20);
   root.insertChild(root_child0, 0);
@@ -1301,13 +1302,13 @@ test("percent_of_minmax_cross_unstretched", () => {
 test("percent_of_max_cross_unstretched", () => {
   const config = new Config();
 
-  const root = new Node(config);
+  const root = newFixtureNode(config);
   root.setPositionType(PositionType.Absolute);
   root.setMaxWidth(60);
   root.setHeight(50);
   root.setAlignItems(Align.FlexStart);
 
-  const root_child0 = new Node(config);
+  const root_child0 = newFixtureNode(config);
   root_child0.setWidthPercent(50);
   root_child0.setHeight(20);
   root.insertChild(root_child0, 0);
