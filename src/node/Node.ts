@@ -822,11 +822,6 @@ export class Node {
   }
 
   /** @internal */
-  getDirtiedFunc(): DirtiedFunction | null {
-    return this.dirtiedFunc_;
-  }
-
-  /** @internal */
   getProcessedDimension(dimension: Dimension): StyleSizeLength {
     return this.processedDimensions_[dimension]!;
   }
