@@ -126,7 +126,9 @@ export function roundLayoutResultsToPixelGrid(
     );
   }
 
-  for (const child of node.getChildren()) {
+  const children = node.getChildren();
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     if (child.getOwner() !== node) {
       continue;
     }

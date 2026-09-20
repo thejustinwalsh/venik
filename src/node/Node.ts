@@ -111,7 +111,8 @@ export class Node {
       owner.markDirtyAndPropagate();
     }
 
-    for (const child of this.children_) {
+    for (let i = 0, length = this.children_.length; i < length; i++) {
+      const child = this.children_[i]!;
       child.setOwner(null);
     }
 
@@ -238,7 +239,8 @@ export class Node {
     if (firstChild.getOwner() === this) {
       // If the first child has this node as its owner, we assume that this child
       // set is unique.
-      for (const oldChild of this.children_) {
+      for (let i = 0, length = this.children_.length; i < length; i++) {
+        const oldChild = this.children_[i]!;
         oldChild.detachFromOwner();
       }
       this.clearChildren();
@@ -253,7 +255,8 @@ export class Node {
   setChildren(children: readonly Node[]): void {
     if (children.length === 0) {
       if (this.children_.length > 0) {
-        for (const child of this.children_) {
+        for (let i = 0, length = this.children_.length; i < length; i++) {
+          const child = this.children_[i]!;
           child.setLayout(new LayoutResults());
           child.setOwner(null);
         }
@@ -262,7 +265,8 @@ export class Node {
       }
     } else {
       if (this.children_.length > 0) {
-        for (const oldChild of this.children_) {
+        for (let i = 0, length = this.children_.length; i < length; i++) {
+          const oldChild = this.children_[i]!;
           // Our new children may have nodes in common with the old children. We
           // don't reset these common nodes.
           if (!children.includes(oldChild)) {
@@ -272,7 +276,8 @@ export class Node {
         }
       }
       this.setChildrenRaw(children);
-      for (const child of children) {
+      for (let i = 0, length = children.length; i < length; i++) {
+        const child = children[i]!;
         child.setOwner(this);
       }
       this.markDirtyAndPropagate();
@@ -762,7 +767,8 @@ export class Node {
     this.children_ = children.slice();
 
     this.contentsChildrenCount_ = 0;
-    for (const child of children) {
+    for (let i = 0, length = children.length; i < length; i++) {
+      const child = children[i]!;
       if (child.style_.display() === Display.Contents) {
         this.contentsChildrenCount_++;
       }
@@ -1015,7 +1021,8 @@ export class Node {
   /** @internal */
   processDimensions(): void {
     const style = this.style_;
-    for (const dim of DIMENSIONS) {
+    for (let i = 0, length = DIMENSIONS.length; i < length; i++) {
+      const dim = DIMENSIONS[i]!;
       if (
         style.maxDimension(dim).isDefined() &&
         style.maxDimension(dim).inexactEquals(style.minDimension(dim))
@@ -1231,7 +1238,9 @@ function isContentsNode(node: Node): boolean {
 }
 
 function collectLayoutChildren(node: Node, out: Node[]): void {
-  for (const child of node.getChildren()) {
+  const children = node.getChildren();
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     if (child.style().display() === Display.Contents) {
       collectLayoutChildren(child, out);
     } else {

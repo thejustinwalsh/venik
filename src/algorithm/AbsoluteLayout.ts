@@ -444,7 +444,9 @@ export function layoutAbsoluteDescendants(
   currentNodeTopOffsetFromContainingBlock: number,
 ): boolean {
   let hasNewLayout = false;
-  for (const child of currentNode.getLayoutChildren()) {
+  const children = currentNode.getLayoutChildren();
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     const childStyle = child.style();
     if (childStyle.display() === Display.None) {
       continue;

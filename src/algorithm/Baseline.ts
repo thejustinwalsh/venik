@@ -23,7 +23,9 @@ export function calculateBaseline(node: Node): number {
   }
 
   let baselineChild: Node | null = null;
-  for (const child of node.getLayoutChildren()) {
+  const children = node.getLayoutChildren();
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     if (child.getLineIndex() > 0) {
       break;
     }
@@ -56,7 +58,9 @@ export function isBaselineLayout(node: Node): boolean {
   if (node.style().alignItems() === Align.Baseline) {
     return true;
   }
-  for (const child of node.getLayoutChildren()) {
+  const children = node.getLayoutChildren();
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     if (
       child.style().positionType() !== PositionType.Absolute &&
       child.style().alignSelf() === Align.Baseline

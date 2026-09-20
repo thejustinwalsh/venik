@@ -167,7 +167,8 @@ export const Event = /* @__PURE__ */ (() => ({
       return;
     }
     const args = [node, eventType, eventData[0] ?? EMPTY_EVENT_DATA] as EventArgs;
-    for (const subscriber of subscribers) {
+    for (let i = 0, length = subscribers.length; i < length; i++) {
+      const subscriber = subscribers[i]!;
       subscriber(...args);
     }
   },

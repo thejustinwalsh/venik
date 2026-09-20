@@ -51,7 +51,8 @@ let gCurrentGenerationCount = 0;
 const DIRECTIONS = [Direction.LTR, Direction.RTL] as const;
 
 function hasAutoHorizontalMargin(style: Style): boolean {
-  for (const direction of DIRECTIONS) {
+  for (let i = 0, length = DIRECTIONS.length; i < length; i++) {
+    const direction = DIRECTIONS[i]!;
     if (
       style.flexStartMarginIsAuto(FlexDirection.Row, direction) ||
       style.flexEndMarginIsAuto(FlexDirection.Row, direction)
@@ -108,7 +109,8 @@ function isNonZeroLength(length: StyleLength): boolean {
 const VERTICAL_EDGES = [Edge.Top, Edge.Bottom, Edge.Vertical, Edge.All] as const;
 
 function hasNonZeroVerticalSpacing(style: Style): boolean {
-  for (const edge of VERTICAL_EDGES) {
+  for (let i = 0, length = VERTICAL_EDGES.length; i < length; i++) {
+    const edge = VERTICAL_EDGES[i]!;
     if (
       isNonZeroLength(style.margin(edge)) ||
       isNonZeroLength(style.padding(edge)) ||
@@ -135,7 +137,8 @@ const ALL_EDGES = [
 const DIMENSIONS = [Dimension.Width, Dimension.Height] as const;
 
 function hasPercentageLength(style: Style): boolean {
-  for (const edge of ALL_EDGES) {
+  for (let i = 0, length = ALL_EDGES.length; i < length; i++) {
+    const edge = ALL_EDGES[i]!;
     if (
       style.margin(edge).isPercent() ||
       style.position(edge).isPercent() ||
@@ -146,7 +149,8 @@ function hasPercentageLength(style: Style): boolean {
     }
   }
 
-  for (const dim of DIMENSIONS) {
+  for (let i = 0, length = DIMENSIONS.length; i < length; i++) {
+    const dim = DIMENSIONS[i]!;
     if (
       style.dimension(dim).isPercent() ||
       style.minDimension(dim).isPercent() ||
@@ -228,7 +232,9 @@ function canSkipHeightFitContent(root: Node | null): boolean {
       return false;
     }
 
-    for (const child of node.getLayoutChildren()) {
+    const children = node.getLayoutChildren();
+    for (let i = 0, length = children.length; i < length; i++) {
+      const child = children[i]!;
       if (stack.length === maxPendingNodes) {
         return false;
       }
@@ -699,7 +705,9 @@ function zeroOutLayoutRecursively(node: Node): void {
   node.setHasNewLayout(true);
 
   node.cloneChildrenIfNeeded();
-  for (const child of node.getChildren()) {
+  const children = node.getChildren();
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     zeroOutLayoutRecursively(child);
   }
 }
@@ -707,7 +715,9 @@ function zeroOutLayoutRecursively(node: Node): void {
 export function cleanupContentsNodesRecursively(node: Node, didPerformLayout: boolean): void {
   if (node.hasContentsChildren()) {
     node.cloneContentsChildrenIfNeeded();
-    for (const child of node.getChildren()) {
+    const children = node.getChildren();
+    for (let i = 0, length = children.length; i < length; i++) {
+      const child = children[i]!;
       if (child.style().display() === Display.Contents) {
         resetLayout(child);
         if (didPerformLayout) {
@@ -779,7 +789,8 @@ function computeFlexBasisForChildren(
   // the computedFlexBasis to 0 instead of measuring and shrinking / flexing the
   // child to exactly match the remaining space
   if (sizingModeMainDim === SizingMode.StretchFit) {
-    for (const child of children) {
+    for (let i = 0, length = children.length; i < length; i++) {
+      const child = children[i]!;
       if (child.isNodeFlexible()) {
         if (
           singleFlexChild !== null ||
@@ -797,7 +808,8 @@ function computeFlexBasisForChildren(
     }
   }
 
-  for (const child of children) {
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     child.processDimensions();
     if (child.style().display() === Display.None) {
       // Only mutate display: none children during layout passes. Zeroing them
@@ -934,7 +946,9 @@ function computeMinContentMainSize(
 
   let mainTotal = 0.0;
   let crossMax = 0.0;
-  for (const child of node.getChildren()) {
+  const children = node.getChildren();
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
     if (
       child.style().display() === Display.None ||
       child.style().positionType() === PositionType.Absolute
@@ -1121,7 +1135,8 @@ function distributeFreeSpaceSecondPass(
   const isMainAxisRow = isRow(mainAxis);
   const isNodeFlexWrap = node.style().flexWrap() !== Wrap.NoWrap;
 
-  for (const currentLineChild of flexLine.itemsInFlow) {
+  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+    const currentLineChild = flexLine.itemsInFlow[i]!;
     childFlexBasis = boundAxisWithinMinAndMax(
       currentLineChild,
       direction,
@@ -1318,7 +1333,8 @@ function distributeFreeSpaceFirstPass(
   const originalTotalFlexGrowFactors = flexLine.layout.totalFlexGrowFactors;
   const originalTotalFlexShrinkScaledFactors = flexLine.layout.totalFlexShrinkScaledFactors;
 
-  for (const currentLineChild of flexLine.itemsInFlow) {
+  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+    const currentLineChild = flexLine.itemsInFlow[i]!;
     const childFlexBasis = boundAxisWithinMinAndMax(
       currentLineChild,
       direction,
@@ -1445,7 +1461,8 @@ function resolveFlexibleLength(
   //
   // The floor is only ever read for items that flex, and probing the content
   // size can mean an extra measure call, so inflexible items skip it.
-  for (const currentLineChild of flexLine.itemsInFlow) {
+  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+    const currentLineChild = flexLine.itemsInFlow[i]!;
     currentLineChild.getLayout().computedAutoMinMainSize = currentLineChild.isNodeFlexible()
       ? computeAutoMinMainSize(
           currentLineChild,
@@ -1605,7 +1622,8 @@ function justifyMainAxis(
   let maxDescentForCurrentLine = 0;
   const isNodeBaselineLayout = isBaselineLayout(node);
   const lastChild = flexLine.itemsInFlow[itemCount - 1];
-  for (const child of flexLine.itemsInFlow) {
+  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+    const child = flexLine.itemsInFlow[i]!;
     const childLayout = child.getLayout();
     const childStyle = child.style();
     if (
@@ -2152,7 +2170,8 @@ function calculateLayoutImpl(
     // STEP 7: CROSS-AXIS ALIGNMENT
     // We can skip child alignment if we're just measuring the container.
     if (performLayout) {
-      for (const child of flexLine.itemsInFlow) {
+      for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+        const child = flexLine.itemsInFlow[i]!;
         const childStyle = child.style();
         let leadingCrossDim = leadingPaddingAndBorderCross;
 
@@ -2593,7 +2612,8 @@ function calculateLayoutImpl(
   // As we only wrapped in normal direction yet, we need to reverse the
   // positions on wrap-reverse.
   if (performLayout && style.flexWrap() === Wrap.WrapReverse) {
-    for (const child of layoutChildren) {
+    for (let i = 0, length = layoutChildren.length; i < length; i++) {
+      const child = layoutChildren[i]!;
       if (child.style().positionType() !== PositionType.Absolute) {
         const childLayout = child.getLayout();
         childLayout.setPosition(
@@ -2612,7 +2632,8 @@ function calculateLayoutImpl(
     const needsCrossTrailingPos = needsTrailingPosition(crossAxis);
 
     if (needsMainTrailingPos || needsCrossTrailingPos) {
-      for (const child of layoutChildren) {
+      for (let i = 0, length = layoutChildren.length; i < length; i++) {
+        const child = layoutChildren[i]!;
         // Absolute children will be handled by their containing block since we
         // cannot guarantee that their positions are set when their parents are
         // done with layout.
