@@ -17,12 +17,6 @@ export function resolveChildAlignment(node: Node, child: Node): Align {
   return align;
 }
 
-export function resolveChildJustification(node: Node, child: Node): Justify {
-  return child.style().justifySelf() === Justify.Auto
-    ? node.style().justifyItems()
-    : child.style().justifySelf();
-}
-
 /**
  * Fallback alignment to use on overflow
  * https://www.w3.org/TR/css-align-3/#distribution-values

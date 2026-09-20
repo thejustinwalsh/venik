@@ -9,11 +9,7 @@ import {
   resolveDirection,
 } from "../algorithm/FlexDirection.ts";
 import { Config, configUpdateInvalidatesLayout } from "../config/Config.ts";
-import {
-  assertFatal,
-  assertFatalWithNode,
-  fatalWithMessage,
-} from "../debug/AssertFatal.ts";
+import { assertFatal, assertFatalWithNode } from "../debug/AssertFatal.ts";
 import { logWithNode } from "../debug/Log.ts";
 import {
   Align,
@@ -23,7 +19,6 @@ import {
   Display,
   Edge,
   FlexDirection,
-  GridTrackType,
   type Gutter,
   type Justify,
   LogLevel,
@@ -36,8 +31,6 @@ import {
 import { Event } from "../event/event.ts";
 import { maxOrDefined } from "../numeric/Comparison.ts";
 import { FloatOptional } from "../numeric/FloatOptional.ts";
-import { GridLine } from "../style/GridLine.ts";
-import { GridTrackSize } from "../style/GridTrack.ts";
 import { Style } from "../style/Style.ts";
 import { StyleLength } from "../style/StyleLength.ts";
 import { StyleSizeLength } from "../style/StyleSizeLength.ts";
@@ -520,24 +513,6 @@ export class Node {
   getJustifyContent(): Justify {
     return this.style_.justifyContent();
   }
-  setJustifyItems(justifyItems: Justify): void {
-    if (this.style_.justifyItems() !== justifyItems) {
-      this.style_.setJustifyItems(justifyItems);
-      this.markDirtyAndPropagate();
-    }
-  }
-  getJustifyItems(): Justify {
-    return this.style_.justifyItems();
-  }
-  setJustifySelf(justifySelf: Justify): void {
-    if (this.style_.justifySelf() !== justifySelf) {
-      this.style_.setJustifySelf(justifySelf);
-      this.markDirtyAndPropagate();
-    }
-  }
-  getJustifySelf(): Justify {
-    return this.style_.justifySelf();
-  }
   setAlignContent(alignContent: Align): void {
     if (this.style_.alignContent() !== alignContent) {
       this.style_.setAlignContent(alignContent);
@@ -866,156 +841,6 @@ export class Node {
   }
   getGap(gutter: Gutter): Value {
     return this.style_.gap(gutter).toValue();
-  }
-
-  // Style: grid
-  setGridColumnStart(gridColumnStart: number): void {
-    this.updateGridLine(this.style_.gridColumnStart(), GridLine.fromInteger(gridColumnStart), Style.prototype.setGridColumnStart);
-  }
-  setGridColumnStartAuto(): void {
-    this.updateGridLine(this.style_.gridColumnStart(), GridLine.auto(), Style.prototype.setGridColumnStart);
-  }
-  setGridColumnStartSpan(span: number): void {
-    this.updateGridLine(this.style_.gridColumnStart(), GridLine.span(span), Style.prototype.setGridColumnStart);
-  }
-  getGridColumnStart(): number {
-    const gridLine = this.style_.gridColumnStart();
-    return gridLine.isInteger() ? gridLine.integer : 0;
-  }
-  setGridColumnEnd(gridColumnEnd: number): void {
-    this.updateGridLine(this.style_.gridColumnEnd(), GridLine.fromInteger(gridColumnEnd), Style.prototype.setGridColumnEnd);
-  }
-  setGridColumnEndAuto(): void {
-    this.updateGridLine(this.style_.gridColumnEnd(), GridLine.auto(), Style.prototype.setGridColumnEnd);
-  }
-  setGridColumnEndSpan(span: number): void {
-    this.updateGridLine(this.style_.gridColumnEnd(), GridLine.span(span), Style.prototype.setGridColumnEnd);
-  }
-  getGridColumnEnd(): number {
-    const gridLine = this.style_.gridColumnEnd();
-    return gridLine.isInteger() ? gridLine.integer : 0;
-  }
-  setGridRowStart(gridRowStart: number): void {
-    this.updateGridLine(this.style_.gridRowStart(), GridLine.fromInteger(gridRowStart), Style.prototype.setGridRowStart);
-  }
-  setGridRowStartAuto(): void {
-    this.updateGridLine(this.style_.gridRowStart(), GridLine.auto(), Style.prototype.setGridRowStart);
-  }
-  setGridRowStartSpan(span: number): void {
-    this.updateGridLine(this.style_.gridRowStart(), GridLine.span(span), Style.prototype.setGridRowStart);
-  }
-  getGridRowStart(): number {
-    const gridLine = this.style_.gridRowStart();
-    return gridLine.isInteger() ? gridLine.integer : 0;
-  }
-  setGridRowEnd(gridRowEnd: number): void {
-    this.updateGridLine(this.style_.gridRowEnd(), GridLine.fromInteger(gridRowEnd), Style.prototype.setGridRowEnd);
-  }
-  setGridRowEndAuto(): void {
-    this.updateGridLine(this.style_.gridRowEnd(), GridLine.auto(), Style.prototype.setGridRowEnd);
-  }
-  setGridRowEndSpan(span: number): void {
-    this.updateGridLine(this.style_.gridRowEnd(), GridLine.span(span), Style.prototype.setGridRowEnd);
-  }
-  getGridRowEnd(): number {
-    const gridLine = this.style_.gridRowEnd();
-    return gridLine.isInteger() ? gridLine.integer : 0;
-  }
-  setGridTemplateColumnsCount(count: number): void {
-    this.style_.resizeGridTemplateColumns(count);
-    this.markDirtyAndPropagate();
-  }
-  setGridTemplateColumn(index: number, type: GridTrackType, value: number): void {
-    this.style_.setGridTemplateColumnAt(index, gridTrackSizeFromTypeAndValue(type, value));
-    this.markDirtyAndPropagate();
-  }
-  setGridTemplateColumnMinMax(
-    index: number,
-    minType: GridTrackType,
-    minValue: number,
-    maxType: GridTrackType,
-    maxValue: number,
-  ): void {
-    this.style_.setGridTemplateColumnAt(
-      index,
-      GridTrackSize.minmax(
-        styleSizeLengthFromTypeAndValue(minType, minValue),
-        styleSizeLengthFromTypeAndValue(maxType, maxValue),
-      ),
-    );
-    this.markDirtyAndPropagate();
-  }
-  setGridTemplateRowsCount(count: number): void {
-    this.style_.resizeGridTemplateRows(count);
-    this.markDirtyAndPropagate();
-  }
-  setGridTemplateRow(index: number, type: GridTrackType, value: number): void {
-    this.style_.setGridTemplateRowAt(index, gridTrackSizeFromTypeAndValue(type, value));
-    this.markDirtyAndPropagate();
-  }
-  setGridTemplateRowMinMax(
-    index: number,
-    minType: GridTrackType,
-    minValue: number,
-    maxType: GridTrackType,
-    maxValue: number,
-  ): void {
-    this.style_.setGridTemplateRowAt(
-      index,
-      GridTrackSize.minmax(
-        styleSizeLengthFromTypeAndValue(minType, minValue),
-        styleSizeLengthFromTypeAndValue(maxType, maxValue),
-      ),
-    );
-    this.markDirtyAndPropagate();
-  }
-  setGridAutoColumnsCount(count: number): void {
-    this.style_.resizeGridAutoColumns(count);
-    this.markDirtyAndPropagate();
-  }
-  setGridAutoColumn(index: number, type: GridTrackType, value: number): void {
-    this.style_.setGridAutoColumnAt(index, gridTrackSizeFromTypeAndValue(type, value));
-    this.markDirtyAndPropagate();
-  }
-  setGridAutoColumnMinMax(
-    index: number,
-    minType: GridTrackType,
-    minValue: number,
-    maxType: GridTrackType,
-    maxValue: number,
-  ): void {
-    this.style_.setGridAutoColumnAt(
-      index,
-      GridTrackSize.minmax(
-        styleSizeLengthFromTypeAndValue(minType, minValue),
-        styleSizeLengthFromTypeAndValue(maxType, maxValue),
-      ),
-    );
-    this.markDirtyAndPropagate();
-  }
-  setGridAutoRowsCount(count: number): void {
-    this.style_.resizeGridAutoRows(count);
-    this.markDirtyAndPropagate();
-  }
-  setGridAutoRow(index: number, type: GridTrackType, value: number): void {
-    this.style_.setGridAutoRowAt(index, gridTrackSizeFromTypeAndValue(type, value));
-    this.markDirtyAndPropagate();
-  }
-  setGridAutoRowMinMax(
-    index: number,
-    minType: GridTrackType,
-    minValue: number,
-    maxType: GridTrackType,
-    maxValue: number,
-  ): void {
-    this.style_.setGridAutoRowAt(
-      index,
-      GridTrackSize.minmax(
-        styleSizeLengthFromTypeAndValue(minType, minValue),
-        styleSizeLengthFromTypeAndValue(maxType, maxValue),
-      ),
-    );
-    this.markDirtyAndPropagate();
   }
 
   // Internal API (`yoga::Node` members that have no C API equivalent)
@@ -1528,17 +1353,6 @@ export class Node {
       this.markDirtyAndPropagate();
     }
   }
-
-  private updateGridLine(
-    current: GridLine,
-    value: GridLine,
-    setter: (this: Style, value: GridLine) => void,
-  ): void {
-    if (!current.equals(value)) {
-      setter.call(this.style_, value);
-      this.markDirtyAndPropagate();
-    }
-  }
 }
 
 const DIMENSIONS = [Dimension.Width, Dimension.Height] as const;
@@ -1573,38 +1387,4 @@ function parseSizeLength(value: number | "auto" | Percent | undefined): StyleSiz
       : StyleSizeLength.percent(Number.parseFloat(value));
   }
   return StyleSizeLength.points(value ?? NaN);
-}
-
-function gridTrackSizeFromTypeAndValue(type: GridTrackType, value: number): GridTrackSize {
-  switch (type) {
-    case GridTrackType.Points:
-      return GridTrackSize.length(value);
-    case GridTrackType.Percent:
-      return GridTrackSize.percent(value);
-    case GridTrackType.Fr:
-      return GridTrackSize.fr(value);
-    case GridTrackType.Auto:
-      return GridTrackSize.auto();
-    case GridTrackType.Minmax:
-      return GridTrackSize.auto();
-    default:
-      fatalWithMessage("Unknown YGGridTrackType");
-  }
-}
-
-function styleSizeLengthFromTypeAndValue(type: GridTrackType, value: number): StyleSizeLength {
-  switch (type) {
-    case GridTrackType.Points:
-      return StyleSizeLength.points(value);
-    case GridTrackType.Percent:
-      return StyleSizeLength.percent(value);
-    case GridTrackType.Fr:
-      return StyleSizeLength.stretch(value);
-    case GridTrackType.Auto:
-      return StyleSizeLength.ofAuto();
-    case GridTrackType.Minmax:
-      return StyleSizeLength.ofAuto();
-    default:
-      fatalWithMessage("Unknown YGGridTrackType");
-  }
 }

@@ -12,7 +12,7 @@ import {
 } from "../enums.ts";
 import { type LayoutData, LayoutPassReason } from "../event/event.ts";
 import type { Node } from "../node/Node.ts";
-import { resolveChildAlignment, resolveChildJustification } from "./Align.ts";
+import { resolveChildAlignment } from "./Align.ts";
 import { boundAxis } from "./BoundAxis.ts";
 import { calculateLayoutInternal, cleanupContentsNodesRecursively } from "./CalculateLayout.ts";
 import {
@@ -32,13 +32,6 @@ import {
   setChildTrailingPosition,
 } from "./TrailingPosition.ts";
 
-// https://www.w3.org/TR/css-grid-1/#abspos
-// absolute positioned grid items are positioned relative to the padding edge
-// of the grid container
-function positionsAgainstPaddingEdge(parent: Node): boolean {
-  return parent.style().display() !== Display.Grid;
-}
-
 function setFlexStartLayoutPosition(
   parent: Node,
   child: Node,
@@ -46,13 +39,10 @@ function setFlexStartLayoutPosition(
   axis: FlexDirection,
   containingBlockWidth: number,
 ): void {
-  let position =
+  const position =
     child.style().computeFlexStartMargin(axis, direction, containingBlockWidth) +
-    parent.getLayout().border(flexStartEdge(axis));
-
-  if (positionsAgainstPaddingEdge(parent)) {
-    position += parent.getLayout().padding(flexStartEdge(axis));
-  }
+    parent.getLayout().border(flexStartEdge(axis)) +
+    parent.getLayout().padding(flexStartEdge(axis));
 
   child.getLayout().setPosition(flexStartEdge(axis), position);
 }
@@ -64,13 +54,10 @@ function setFlexEndLayoutPosition(
   axis: FlexDirection,
   containingBlockWidth: number,
 ): void {
-  let flexEndPosition =
+  const flexEndPosition =
     parent.getLayout().border(flexEndEdge(axis)) +
+    parent.getLayout().padding(flexEndEdge(axis)) +
     child.style().computeFlexEndMargin(axis, direction, containingBlockWidth);
-
-  if (positionsAgainstPaddingEdge(parent)) {
-    flexEndPosition += parent.getLayout().padding(flexEndEdge(axis));
-  }
 
   child
     .getLayout()
@@ -88,29 +75,22 @@ function setCenterLayoutPosition(
   containingBlockWidth: number,
 ): void {
   const parentLayout = parent.getLayout();
-  const againstPaddingEdge = positionsAgainstPaddingEdge(parent);
-  let parentContentBoxSize =
+  const parentContentBoxSize =
     parentLayout.measuredDimension(dimension(axis)) -
     parentLayout.border(flexStartEdge(axis)) -
-    parentLayout.border(flexEndEdge(axis));
-
-  if (againstPaddingEdge) {
-    parentContentBoxSize -= parentLayout.padding(flexStartEdge(axis));
-    parentContentBoxSize -= parentLayout.padding(flexEndEdge(axis));
-  }
+    parentLayout.border(flexEndEdge(axis)) -
+    parentLayout.padding(flexStartEdge(axis)) -
+    parentLayout.padding(flexEndEdge(axis));
 
   const childOuterSize =
     child.getLayout().measuredDimension(dimension(axis)) +
     child.style().computeMarginForAxis(axis, containingBlockWidth);
 
-  let position =
+  const position =
     (parentContentBoxSize - childOuterSize) / 2.0 +
     parentLayout.border(flexStartEdge(axis)) +
+    parentLayout.padding(flexStartEdge(axis)) +
     child.style().computeFlexStartMargin(axis, direction, containingBlockWidth);
-
-  if (againstPaddingEdge) {
-    position += parentLayout.padding(flexStartEdge(axis));
-  }
 
   child.getLayout().setPosition(flexStartEdge(axis), position);
 }
@@ -122,11 +102,7 @@ function justifyAbsoluteChild(
   mainAxis: FlexDirection,
   containingBlockWidth: number,
 ): void {
-  const justify =
-    parent.style().display() === Display.Grid
-      ? resolveChildJustification(parent, child)
-      : parent.style().justifyContent();
-  switch (justify) {
+  switch (parent.style().justifyContent()) {
     case Justify.Start:
     case Justify.Auto:
     case Justify.Stretch:
@@ -281,14 +257,8 @@ function layoutAbsoluteChild(
   depth: number,
   generationCount: number,
 ): void {
-  // For grid containers, use inline (Row) and block (Column) axes for
-  // positioning, since grid alignment properties (justify-self, align-self)
-  // operate on inline/block axes, not main/cross axes based on flex-direction.
-  const isGrid = node.style().display() === Display.Grid;
-  const mainAxis = isGrid
-    ? resolveDirection(FlexDirection.Row, direction)
-    : resolveDirection(node.style().flexDirection(), direction);
-  const crossAxis = isGrid ? FlexDirection.Column : resolveCrossDirection(mainAxis, direction);
+  const mainAxis = resolveDirection(node.style().flexDirection(), direction);
+  const crossAxis = resolveCrossDirection(mainAxis, direction);
   const isMainAxisRow = isRow(mainAxis);
 
   let childWidth = NaN;

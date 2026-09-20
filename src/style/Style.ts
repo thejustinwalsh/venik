@@ -1,8 +1,8 @@
 // Port of yoga-cpp/yoga/style/Style.h
 //
-// Unlike C++, this Style holds plain values: StyleValuePool, StyleValueHandle,
-// SmallValueBuffer and GridStyleStorage are memory layout optimisations that
-// are intentionally not ported.
+// Unlike C++, this Style holds plain values: StyleValuePool, StyleValueHandle
+// and SmallValueBuffer are memory layout optimisations that are intentionally
+// not ported.
 
 import {
   flexEndEdge,
@@ -28,8 +28,6 @@ import {
 } from "../enums.ts";
 import { maxOrDefined } from "../numeric/Comparison.ts";
 import { FloatOptional } from "../numeric/FloatOptional.ts";
-import { GridLine } from "./GridLine.ts";
-import { type GridTrackList, GridTrackSize } from "./GridTrack.ts";
 import { StyleLength } from "./StyleLength.ts";
 import { StyleSizeLength } from "./StyleSizeLength.ts";
 
@@ -38,11 +36,11 @@ import { StyleSizeLength } from "./StyleSizeLength.ts";
  * (`style.flexDirection()` / `style.setFlexDirection(v)`).
  *
  * Defaults of a new Style follow CSS: direction Inherit, flexDirection Row,
- * justifyContent FlexStart, justifyItems Stretch, justifySelf Auto,
+ * justifyContent FlexStart,
  * alignContent Stretch, alignItems Stretch, alignSelf Auto, positionType
  * Relative, flexWrap NoWrap, overflow Visible, display Flex, boxSizing
  * BorderBox, flexBasis auto, dimensions auto, every other number/length
- * undefined, grid track lists empty and grid lines auto.
+ * undefined.
  */
 export class Style {
   static readonly DefaultFlexGrow: number = 0.0;
@@ -51,8 +49,6 @@ export class Style {
   private direction_: Direction = Direction.Inherit;
   private flexDirection_: FlexDirection = FlexDirection.Row;
   private justifyContent_: Justify = Justify.FlexStart;
-  private justifyItems_: Justify = Justify.Stretch;
-  private justifySelf_: Justify = Justify.Auto;
   private alignContent_: Align = Align.Stretch;
   private alignItems_: Align = Align.Stretch;
   private alignSelf_: Align = Align.Auto;
@@ -82,9 +78,6 @@ export class Style {
   ];
   private aspectRatio_: FloatOptional = UNDEFINED_NUMBER;
 
-  // Grid properties, allocated only when one of them is set
-  private grid_: GridStyle | null = null;
-
   /** C++ copy construction (`Style copy = style;`). The copy shares no mutable state with `this`. */
   clone(): Style {
     const copy = new Style();
@@ -97,8 +90,6 @@ export class Style {
     this.direction_ = other.direction_;
     this.flexDirection_ = other.flexDirection_;
     this.justifyContent_ = other.justifyContent_;
-    this.justifyItems_ = other.justifyItems_;
-    this.justifySelf_ = other.justifySelf_;
     this.alignContent_ = other.alignContent_;
     this.alignItems_ = other.alignItems_;
     this.alignSelf_ = other.alignSelf_;
@@ -120,7 +111,6 @@ export class Style {
     this.minDimensions_ = other.minDimensions_.slice();
     this.maxDimensions_ = other.maxDimensions_.slice();
     this.aspectRatio_ = other.aspectRatio_;
-    this.grid_ = other.grid_ === null ? null : cloneGrid(other.grid_);
   }
 
   /** C++ `operator==`. */
@@ -130,8 +120,6 @@ export class Style {
       this.direction_ === other.direction_ &&
       this.flexDirection_ === other.flexDirection_ &&
       this.justifyContent_ === other.justifyContent_ &&
-      this.justifyItems_ === other.justifyItems_ &&
-      this.justifySelf_ === other.justifySelf_ &&
       this.alignContent_ === other.alignContent_ &&
       this.alignItems_ === other.alignItems_ &&
       this.alignSelf_ === other.alignSelf_ &&
@@ -151,8 +139,7 @@ export class Style {
       lengthsEqual(this.dimensions_, other.dimensions_) &&
       lengthsEqual(this.minDimensions_, other.minDimensions_) &&
       lengthsEqual(this.maxDimensions_, other.maxDimensions_) &&
-      this.aspectRatio_.equals(other.aspectRatio_) &&
-      (this.grid_ === other.grid_ || gridEquals(this.grid_ ?? DEFAULT_GRID, other.grid_ ?? DEFAULT_GRID))
+      this.aspectRatio_.equals(other.aspectRatio_)
     );
   }
 
@@ -175,20 +162,6 @@ export class Style {
   }
   setJustifyContent(value: Justify): void {
     this.justifyContent_ = value;
-  }
-
-  justifyItems(): Justify {
-    return this.justifyItems_;
-  }
-  setJustifyItems(value: Justify): void {
-    this.justifyItems_ = value;
-  }
-
-  justifySelf(): Justify {
-    return this.justifySelf_;
-  }
-  setJustifySelf(value: Justify): void {
-    this.justifySelf_ = value;
   }
 
   alignContent(): Align {
@@ -315,106 +288,6 @@ export class Style {
   }
   setMinDimension(axis: Dimension, value: StyleSizeLength): void {
     this.minDimensions_[axis] = value;
-  }
-
-  // Grid Container Properties
-
-  gridTemplateColumns(): Readonly<GridTrackList> {
-    return (this.grid_ ?? DEFAULT_GRID).templateColumns;
-  }
-
-  setGridTemplateColumns(value: GridTrackList): void {
-    this.ensureGrid().templateColumns = value;
-  }
-
-  /** Like `std::vector::resize`: new tracks are default constructed `GridTrackSize`s. */
-  resizeGridTemplateColumns(count: number): void {
-    resizeTrackList(this.ensureGrid().templateColumns, count);
-  }
-
-  setGridTemplateColumnAt(index: number, value: GridTrackSize): void {
-    this.ensureGrid().templateColumns[index] = value;
-  }
-
-  gridTemplateRows(): Readonly<GridTrackList> {
-    return (this.grid_ ?? DEFAULT_GRID).templateRows;
-  }
-
-  setGridTemplateRows(value: GridTrackList): void {
-    this.ensureGrid().templateRows = value;
-  }
-
-  /** Like `std::vector::resize`: new tracks are default constructed `GridTrackSize`s. */
-  resizeGridTemplateRows(count: number): void {
-    resizeTrackList(this.ensureGrid().templateRows, count);
-  }
-
-  setGridTemplateRowAt(index: number, value: GridTrackSize): void {
-    this.ensureGrid().templateRows[index] = value;
-  }
-
-  gridAutoColumns(): Readonly<GridTrackList> {
-    return (this.grid_ ?? DEFAULT_GRID).autoColumns;
-  }
-
-  setGridAutoColumns(value: GridTrackList): void {
-    this.ensureGrid().autoColumns = value;
-  }
-
-  /** Like `std::vector::resize`: new tracks are default constructed `GridTrackSize`s. */
-  resizeGridAutoColumns(count: number): void {
-    resizeTrackList(this.ensureGrid().autoColumns, count);
-  }
-
-  setGridAutoColumnAt(index: number, value: GridTrackSize): void {
-    this.ensureGrid().autoColumns[index] = value;
-  }
-
-  gridAutoRows(): Readonly<GridTrackList> {
-    return (this.grid_ ?? DEFAULT_GRID).autoRows;
-  }
-
-  setGridAutoRows(value: GridTrackList): void {
-    this.ensureGrid().autoRows = value;
-  }
-
-  /** Like `std::vector::resize`: new tracks are default constructed `GridTrackSize`s. */
-  resizeGridAutoRows(count: number): void {
-    resizeTrackList(this.ensureGrid().autoRows, count);
-  }
-
-  setGridAutoRowAt(index: number, value: GridTrackSize): void {
-    this.ensureGrid().autoRows[index] = value;
-  }
-
-  // Grid Item Properties
-
-  gridColumnStart(): GridLine {
-    return (this.grid_ ?? DEFAULT_GRID).columnStart;
-  }
-  setGridColumnStart(value: GridLine): void {
-    this.ensureGrid().columnStart = value;
-  }
-
-  gridColumnEnd(): GridLine {
-    return (this.grid_ ?? DEFAULT_GRID).columnEnd;
-  }
-  setGridColumnEnd(value: GridLine): void {
-    this.ensureGrid().columnEnd = value;
-  }
-
-  gridRowStart(): GridLine {
-    return (this.grid_ ?? DEFAULT_GRID).rowStart;
-  }
-  setGridRowStart(value: GridLine): void {
-    this.ensureGrid().rowStart = value;
-  }
-
-  gridRowEnd(): GridLine {
-    return (this.grid_ ?? DEFAULT_GRID).rowEnd;
-  }
-  setGridRowEnd(value: GridLine): void {
-    this.ensureGrid().rowEnd = value;
   }
 
   resolvedMinDimension(
@@ -722,80 +595,8 @@ export class Style {
     const row = this.gap_[Gutter.Row]!;
     return row.isDefined() ? row : this.gap_[Gutter.All]!;
   }
-
-  private ensureGrid(): GridStyle {
-    return (this.grid_ ??= newGridStyle());
-  }
 }
 
-/** Port of yoga-cpp/yoga/style/GridStyle.h (without the lazily allocated storage wrapper). */
-type GridStyle = {
-  // Grid container properties
-  templateColumns: GridTrackList;
-  templateRows: GridTrackList;
-  autoColumns: GridTrackList;
-  autoRows: GridTrackList;
-
-  // Grid item properties
-  columnStart: GridLine;
-  columnEnd: GridLine;
-  rowStart: GridLine;
-  rowEnd: GridLine;
-};
-
-function newGridStyle(): GridStyle {
-  return {
-    templateColumns: [],
-    templateRows: [],
-    autoColumns: [],
-    autoRows: [],
-    columnStart: GridLine.auto(),
-    columnEnd: GridLine.auto(),
-    rowStart: GridLine.auto(),
-    rowEnd: GridLine.auto(),
-  };
-}
-
-function cloneTrackList(list: GridTrackList): GridTrackList {
-  return list.map((track) => track.clone());
-}
-
-function cloneGrid(grid: GridStyle): GridStyle {
-  return {
-    ...grid,
-    templateColumns: cloneTrackList(grid.templateColumns),
-    templateRows: cloneTrackList(grid.templateRows),
-    autoColumns: cloneTrackList(grid.autoColumns),
-    autoRows: cloneTrackList(grid.autoRows),
-  };
-}
-
-function trackListEquals(lhs: GridTrackList, rhs: GridTrackList): boolean {
-  return lhs.length === rhs.length && lhs.every((track, i) => track.equals(rhs[i]!));
-}
-
-function gridEquals(lhs: GridStyle, rhs: GridStyle): boolean {
-  return (
-    trackListEquals(lhs.templateColumns, rhs.templateColumns) &&
-    trackListEquals(lhs.templateRows, rhs.templateRows) &&
-    trackListEquals(lhs.autoColumns, rhs.autoColumns) &&
-    trackListEquals(lhs.autoRows, rhs.autoRows) &&
-    lhs.columnStart.equals(rhs.columnStart) &&
-    lhs.columnEnd.equals(rhs.columnEnd) &&
-    lhs.rowStart.equals(rhs.rowStart) &&
-    lhs.rowEnd.equals(rhs.rowEnd)
-  );
-}
-
-/** Like `std::vector::resize`. */
-function resizeTrackList(list: GridTrackList, count: number): void {
-  while (list.length < count) {
-    list.push(new GridTrackSize());
-  }
-  list.length = count;
-}
-
-const DEFAULT_GRID: Readonly<GridStyle> = newGridStyle();
 const UNDEFINED_NUMBER = new FloatOptional();
 const EDGE_COUNT = 9;
 const GUTTER_COUNT = 3;

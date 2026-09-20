@@ -43,8 +43,8 @@ Defaults are the CSS initial values, not Yoga's: `flex-direction: row`,
 written for Yoga needs `setFlexDirection(FlexDirection.Column)`,
 `setFlexShrink(0)` and `setAlignContent(Align.FlexStart)` wherever it relied
 on the old defaults (the test-suite does this through `newFixtureNode`).
-Like upstream at this revision, grid styles can be set but there is no grid
-layout algorithm yet.
+There is no grid layout: the Yoga revision this started from only had grid
+*styles* (no algorithm), and that inert API was removed.
 
 ```sh
 npm test            # vitest

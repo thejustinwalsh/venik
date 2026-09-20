@@ -38,7 +38,6 @@ export const Display = {
   Flex: 0,
   None: 1,
   Contents: 2,
-  Grid: 3,
 } as const;
 export type Display = (typeof Display)[keyof typeof Display];
 
@@ -62,15 +61,6 @@ export const FlexDirection = {
   RowReverse: 3,
 } as const;
 export type FlexDirection = (typeof FlexDirection)[keyof typeof FlexDirection];
-
-export const GridTrackType = {
-  Auto: 0,
-  Points: 1,
-  Percent: 2,
-  Fr: 3,
-  Minmax: 4,
-} as const;
-export type GridTrackType = (typeof GridTrackType)[keyof typeof GridTrackType];
 
 export const Gutter = {
   Column: 0,
@@ -170,7 +160,6 @@ export const DIRECTION_RTL = Direction.RTL;
 export const DISPLAY_FLEX = Display.Flex;
 export const DISPLAY_NONE = Display.None;
 export const DISPLAY_CONTENTS = Display.Contents;
-export const DISPLAY_GRID = Display.Grid;
 export const EDGE_LEFT = Edge.Left;
 export const EDGE_TOP = Edge.Top;
 export const EDGE_RIGHT = Edge.Right;
@@ -184,11 +173,6 @@ export const FLEX_DIRECTION_COLUMN = FlexDirection.Column;
 export const FLEX_DIRECTION_COLUMN_REVERSE = FlexDirection.ColumnReverse;
 export const FLEX_DIRECTION_ROW = FlexDirection.Row;
 export const FLEX_DIRECTION_ROW_REVERSE = FlexDirection.RowReverse;
-export const GRID_TRACK_TYPE_AUTO = GridTrackType.Auto;
-export const GRID_TRACK_TYPE_POINTS = GridTrackType.Points;
-export const GRID_TRACK_TYPE_PERCENT = GridTrackType.Percent;
-export const GRID_TRACK_TYPE_FR = GridTrackType.Fr;
-export const GRID_TRACK_TYPE_MINMAX = GridTrackType.Minmax;
 export const GUTTER_COLUMN = Gutter.Column;
 export const GUTTER_ROW = Gutter.Row;
 export const GUTTER_ALL = Gutter.All;
