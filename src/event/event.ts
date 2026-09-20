@@ -140,32 +140,27 @@ type PublishDataArgs<E extends EventType> =
 let subscribers: Subscriber[] = [];
 const EMPTY_EVENT_DATA: EmptyEventData = Object.freeze({});
 
-export class Event {
-  static readonly NodeAllocation = EventType.NodeAllocation;
-  static readonly NodeDeallocation = EventType.NodeDeallocation;
-  static readonly NodeLayout = EventType.NodeLayout;
-  static readonly LayoutPassStart = EventType.LayoutPassStart;
-  static readonly LayoutPassEnd = EventType.LayoutPassEnd;
-  static readonly MeasureCallbackStart = EventType.MeasureCallbackStart;
-  static readonly MeasureCallbackEnd = EventType.MeasureCallbackEnd;
-  static readonly NodeBaselineStart = EventType.NodeBaselineStart;
-  static readonly NodeBaselineEnd = EventType.NodeBaselineEnd;
+// A plain object behind a pure call rather than a class with static fields:
+// bundlers keep classes with static initialisers, and the build has to be able
+// to drop this module (see `__EVENTS__` in src/globals.d.ts).
+export const Event = /* @__PURE__ */ (() => ({
+  ...EventType,
 
   /** Lets hot paths skip building event payloads nobody listens to. */
-  static hasSubscribers(): boolean {
+  hasSubscribers(): boolean {
     return subscribers.length !== 0;
-  }
+  },
 
   /** Removes every subscriber. */
-  static reset(): void {
+  reset(): void {
     subscribers = [];
-  }
+  },
 
-  static subscribe(subscriber: Subscriber): void {
+  subscribe(subscriber: Subscriber): void {
     subscribers.unshift(subscriber);
-  }
+  },
 
-  static publish<E extends EventType>(
+  publish<E extends EventType>(
     node: Node | null,
     eventType: E,
     ...eventData: PublishDataArgs<E>
@@ -177,5 +172,5 @@ export class Event {
     for (const subscriber of subscribers) {
       subscriber(...args);
     }
-  }
-}
+  },
+}))();

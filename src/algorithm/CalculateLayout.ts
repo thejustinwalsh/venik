@@ -282,7 +282,7 @@ function computeFlexBasisForChild(
   ownerHeight: number,
   heightMode: SizingMode,
   direction: Direction,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
 ): void {
@@ -490,7 +490,7 @@ function measureNodeWithMeasureFunc(
   heightSizingMode: SizingMode,
   ownerWidth: number,
   ownerHeight: number,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   reason: LayoutPassReason,
 ): void {
   assertFatalWithNode(node, node.hasMeasureFunc(), "Expected node to have custom measure function");
@@ -535,7 +535,7 @@ function measureNodeWithMeasureFunc(
       boundAxis(node, FlexDirection.Column, direction, availableHeight, ownerHeight, ownerWidth),
     );
   } else {
-    Event.publish(node, Event.MeasureCallbackStart);
+    if (__EVENTS__) Event.publish(node, Event.MeasureCallbackStart);
 
     // Measure the text under the current constraints.
     const measuredSize = node.measure(
@@ -545,10 +545,12 @@ function measureNodeWithMeasureFunc(
       measureMode(heightSizingMode),
     );
 
-    layoutMarkerData.measureCallbacks += 1;
-    layoutMarkerData.measureCallbackReasonsCount[reason]! += 1;
+    if (__EVENTS__ && layoutMarkerData !== null) {
+      layoutMarkerData.measureCallbacks += 1;
+      layoutMarkerData.measureCallbackReasonsCount[reason]! += 1;
+    }
 
-    if (Event.hasSubscribers()) {
+    if (__EVENTS__ && Event.hasSubscribers()) {
       Event.publish(node, Event.MeasureCallbackEnd, {
         width: innerWidth,
         widthMeasureMode: measureMode(widthSizingMode),
@@ -766,7 +768,7 @@ function computeFlexBasisForChildren(
   direction: Direction,
   mainAxis: FlexDirection,
   performLayout: boolean,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
 ): number {
@@ -1109,7 +1111,7 @@ function distributeFreeSpaceSecondPass(
   mainAxisOverflows: boolean,
   sizingModeCrossDim: SizingMode,
   performLayout: boolean,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
 ): number {
@@ -1430,7 +1432,7 @@ function resolveFlexibleLength(
   mainAxisOverflows: boolean,
   sizingModeCrossDim: SizingMode,
   performLayout: boolean,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
 ): void {
@@ -1750,7 +1752,7 @@ function calculateLayoutImpl(
   ownerHeight: number,
   performLayout: boolean,
   reason: LayoutPassReason,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
 ): void {
@@ -1765,10 +1767,12 @@ function calculateLayoutImpl(
     "availableHeight is indefinite so heightSizingMode must be SizingMode::MaxContent",
   );
 
-  if (performLayout) {
-    layoutMarkerData.layouts += 1;
-  } else {
-    layoutMarkerData.measures += 1;
+  if (__EVENTS__ && layoutMarkerData !== null) {
+    if (performLayout) {
+      layoutMarkerData.layouts += 1;
+    } else {
+      layoutMarkerData.measures += 1;
+    }
   }
 
   const style = node.style();
@@ -2675,7 +2679,7 @@ export function calculateLayoutInternal(
   ownerHeight: number,
   performLayout: boolean,
   reason: LayoutPassReason,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
 ): boolean {
@@ -2786,10 +2790,12 @@ export function calculateLayoutInternal(
     layout.setMeasuredDimension(Dimension.Width, cachedResults.computedWidth);
     layout.setMeasuredDimension(Dimension.Height, cachedResults.computedHeight);
 
-    if (performLayout) {
-      layoutMarkerData.cachedLayouts += 1;
-    } else {
-      layoutMarkerData.cachedMeasures += 1;
+    if (__EVENTS__ && layoutMarkerData !== null) {
+      if (performLayout) {
+        layoutMarkerData.cachedLayouts += 1;
+      } else {
+        layoutMarkerData.cachedMeasures += 1;
+      }
     }
   } else {
     calculateLayoutImpl(
@@ -2812,10 +2818,12 @@ export function calculateLayoutInternal(
     layout.configVersion = node.getConfig().getVersion();
 
     if (cachedResults === null) {
-      layoutMarkerData.maxMeasureCache = Math.max(
-        layoutMarkerData.maxMeasureCache,
-        layout.nextCachedMeasurementsIndex + 1,
-      );
+      if (__EVENTS__ && layoutMarkerData !== null) {
+        layoutMarkerData.maxMeasureCache = Math.max(
+          layoutMarkerData.maxMeasureCache,
+          layout.nextCachedMeasurementsIndex + 1,
+        );
+      }
 
       if (layout.nextCachedMeasurementsIndex === LayoutResults.MaxCachedMeasurements) {
         layout.nextCachedMeasurementsIndex = 0;
@@ -2850,7 +2858,7 @@ export function calculateLayoutInternal(
 
   layout.generationCount = generationCount;
 
-  if (Event.hasSubscribers()) {
+  if (__EVENTS__ && Event.hasSubscribers()) {
     let layoutType: LayoutType;
     if (performLayout) {
       layoutType =
@@ -2872,8 +2880,9 @@ export function calculateLayout(
   ownerHeight: number,
   ownerDirection: Direction,
 ): void {
-  Event.publish(node, Event.LayoutPassStart);
-  const markerData = new LayoutData();
+  if (__EVENTS__) Event.publish(node, Event.LayoutPassStart);
+  // Pass statistics are only gathered for `Event.LayoutPassEnd`.
+  const markerData = __EVENTS__ ? new LayoutData() : null;
 
   // Increment the generation count. This will force the recursive routine to
   // visit all dirty nodes at least once. Subsequent visits will be skipped if
@@ -2951,5 +2960,5 @@ export function calculateLayout(
     roundLayoutResultsToPixelGrid(node, 0.0, 0.0);
   }
 
-  Event.publish(node, Event.LayoutPassEnd, { layoutData: markerData });
+  if (__EVENTS__) Event.publish(node, Event.LayoutPassEnd, { layoutData: markerData });
 }

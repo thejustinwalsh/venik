@@ -10,14 +10,14 @@ import { isColumn, PhysicalEdge } from "./FlexDirection.ts";
 // Calculate baseline represented as an offset from the top edge of the node.
 export function calculateBaseline(node: Node): number {
   if (node.hasBaselineFunc()) {
-    Event.publish(node, Event.NodeBaselineStart);
+    if (__EVENTS__) Event.publish(node, Event.NodeBaselineStart);
 
     const baseline = node.baseline(
       node.getLayout().measuredDimension(Dimension.Width),
       node.getLayout().measuredDimension(Dimension.Height),
     );
 
-    Event.publish(node, Event.NodeBaselineEnd);
+    if (__EVENTS__) Event.publish(node, Event.NodeBaselineEnd);
 
     assertFatalWithNode(
       node,

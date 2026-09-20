@@ -93,7 +93,7 @@ export class Node {
   constructor(config: Config = Config.getDefault()) {
     assertFatal(config != null, "Tried to construct YGNode with null config");
     this.config_ = config;
-    Event.publish(this, Event.NodeAllocation, { config });
+    if (__EVENTS__) Event.publish(this, Event.NodeAllocation, { config });
   }
 
   // yoga-layout compatible factories
@@ -135,7 +135,7 @@ export class Node {
     node.children_ = this.children_.slice();
     node.config_ = this.config_;
     node.processedDimensions_ = this.processedDimensions_.slice();
-    Event.publish(node, Event.NodeAllocation, { config: node.config_ });
+    if (__EVENTS__) Event.publish(node, Event.NodeAllocation, { config: node.config_ });
     return node;
   }
   free(): void {
@@ -151,7 +151,7 @@ export class Node {
     }
 
     this.clearChildren();
-    Event.publish(this, Event.NodeDeallocation, { config: this.config_ });
+    if (__EVENTS__) Event.publish(this, Event.NodeDeallocation, { config: this.config_ });
   }
   freeRecursive(): void {
     let skipped = 0;

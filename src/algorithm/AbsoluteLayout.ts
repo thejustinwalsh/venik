@@ -277,7 +277,7 @@ export function layoutAbsoluteChild(
   containingBlockHeight: number,
   widthMode: SizingMode,
   direction: Direction,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
 ): void {
@@ -469,7 +469,7 @@ export function layoutAbsoluteDescendants(
   currentNode: Node,
   widthSizingMode: SizingMode,
   currentNodeDirection: Direction,
-  layoutMarkerData: LayoutData,
+  layoutMarkerData: LayoutData | null,
   currentDepth: number,
   generationCount: number,
   currentNodeLeftOffsetFromContainingBlock: number,

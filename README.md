@@ -25,6 +25,10 @@ the C++ file layout) until every test passed. Flexbox layout, absolute
 positioning, `display: contents`, measure/baseline callbacks, the measurement
 cache, pixel-grid rounding, events and node cloning are all ported.
 
+Yoga's instrumentation events (`src/event/event.ts`) are test-only: every use
+sits behind the build-time `__EVENTS__` flag, which vitest sets to `true` and
+the tsdown build to `false`, so none of it reaches `dist/`.
+
 Unlike Yoga, there is a single, standards-driven behaviour: Yoga's errata
 (`setErrata` and friends) and experimental feature flags are gone. The CSS
 Flexbox §4.5 automatic minimum size (`min-width/height: auto`), the
