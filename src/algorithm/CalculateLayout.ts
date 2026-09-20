@@ -1,7 +1,6 @@
 // `FloatOptional` values are plain numbers here (NaN is undefined). C++
 // in/out pointer parameters are replaced by return values.
 
-import { assertFatal } from "../debug/AssertFatal.ts";
 import {
   Align,
   BoxSizing,
@@ -491,7 +490,9 @@ function measureNodeWithMeasureFunc(
   layoutMarkerData: LayoutData | null,
   reason: LayoutPassReason,
 ): void {
-  assertFatal(node.hasMeasureFunc(), "Expected node to have custom measure function");
+  if (!node.hasMeasureFunc()) {
+    throw new Error("Expected node to have custom measure function");
+  }
 
   if (widthSizingMode === SizingMode.MaxContent) {
     availableWidth = NaN;
@@ -1754,12 +1755,12 @@ function calculateLayoutImpl(
   depth: number,
   generationCount: number,
 ): void {
-  assertFatal(availableWidth !== availableWidth ? widthSizingMode === SizingMode.MaxContent : true,
-    "availableWidth is indefinite so widthSizingMode must be SizingMode::MaxContent",
-  );
-  assertFatal(availableHeight !== availableHeight ? heightSizingMode === SizingMode.MaxContent : true,
-    "availableHeight is indefinite so heightSizingMode must be SizingMode::MaxContent",
-  );
+  if (availableWidth !== availableWidth && widthSizingMode !== SizingMode.MaxContent) {
+    throw new Error("availableWidth is indefinite so widthSizingMode must be SizingMode::MaxContent");
+  }
+  if (availableHeight !== availableHeight && heightSizingMode !== SizingMode.MaxContent) {
+    throw new Error("availableHeight is indefinite so heightSizingMode must be SizingMode::MaxContent");
+  }
 
   if (__EVENTS__ && layoutMarkerData !== null) {
     if (performLayout) {

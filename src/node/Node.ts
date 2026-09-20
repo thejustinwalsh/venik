@@ -9,7 +9,6 @@ import {
   resolveDirection,
 } from "../algorithm/FlexDirection.ts";
 import { Config, configUpdateInvalidatesLayout } from "../config/Config.ts";
-import { assertFatal } from "../debug/AssertFatal.ts";
 import {
   Align,
   BoxSizing,
@@ -71,7 +70,9 @@ export class Node {
   ];
 
   constructor(config: Config = Config.getDefault()) {
-    assertFatal(config != null, "Tried to construct YGNode with null config");
+    if (config == null) {
+      throw new Error("Tried to construct YGNode with null config");
+    }
     this.config_ = config;
     if (__EVENTS__) Event.publish(this, Event.NodeAllocation, { config });
   }
@@ -132,12 +133,12 @@ export class Node {
     this.free();
   }
   reset(): void {
-    assertFatal(this.children_.length === 0,
-      "Cannot reset a node which still has children attached",
-    );
-    assertFatal(this.owner_ === null,
-      "Cannot reset a node still attached to a owner",
-    );
+    if (this.children_.length !== 0) {
+      throw new Error("Cannot reset a node which still has children attached");
+    }
+    if (this.owner_ !== null) {
+      throw new Error("Cannot reset a node still attached to a owner");
+    }
 
     this.hasNewLayout_ = true;
     this.isReferenceBaseline_ = false;
@@ -179,9 +180,9 @@ export class Node {
     return this.isDirty_;
   }
   markDirty(): void {
-    assertFatal(this.hasMeasureFunc(),
-      "Only leaf nodes with custom measure functions should manually mark themselves as dirty",
-    );
+    if (!this.hasMeasureFunc()) {
+      throw new Error("Only leaf nodes with custom measure functions should manually mark themselves as dirty");
+    }
 
     this.markDirtyAndPropagate();
   }
@@ -194,13 +195,13 @@ export class Node {
 
   // Tree
   insertChild(child: Node, index: number): void {
-    assertFatal(child.getOwner() === null,
-      "Child already has a owner, it must be removed first.",
-    );
+    if (child.getOwner() !== null) {
+      throw new Error("Child already has a owner, it must be removed first.");
+    }
 
-    assertFatal(!this.hasMeasureFunc(),
-      "Cannot add child: Nodes with measure functions cannot have children.",
-    );
+    if (this.hasMeasureFunc()) {
+      throw new Error("Cannot add child: Nodes with measure functions cannot have children.");
+    }
 
     this.insertChildRaw(child, index);
     child.setOwner(this);
@@ -292,7 +293,9 @@ export class Node {
 
   // Config, context and callbacks
   setConfig(config: Config | null): void {
-    assertFatal(config !== null, "Attempting to set a null config on a Node");
+    if (config === null) {
+      throw new Error("Attempting to set a null config on a Node");
+    }
 
     if (configUpdateInvalidatesLayout(this.config_, config)) {
       this.markDirtyAndPropagate();
@@ -316,9 +319,9 @@ export class Node {
   }
   setMeasureFunc(measureFunc: MeasureFunction | null): void {
     if (measureFunc !== null) {
-      assertFatal(this.children_.length === 0,
-        "Cannot set measure function: Nodes with measure functions cannot have children.",
-      );
+      if (this.children_.length !== 0) {
+        throw new Error("Cannot set measure function: Nodes with measure functions cannot have children.");
+      }
     }
 
     this.measureFunc_ = measureFunc;
@@ -1165,9 +1168,9 @@ export class Node {
   }
 
   private resolveLayoutEdge(edge: Edge): PhysicalEdge {
-    assertFatal(edge <= Edge.End,
-      "Cannot get layout properties of multi-edge shorthands",
-    );
+    if (edge > Edge.End) {
+      throw new Error("Cannot get layout properties of multi-edge shorthands");
+    }
 
     if (edge === Edge.Start) {
       return this.layout_.direction() === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;

@@ -1,4 +1,3 @@
-import { assertFatal } from "../debug/AssertFatal.ts";
 import { Align, Dimension, PositionType } from "../enums.ts";
 import { Event } from "../event/event.ts";
 import type { Node } from "../node/Node.ts";
@@ -17,9 +16,9 @@ export function calculateBaseline(node: Node): number {
 
     if (__EVENTS__) Event.publish(node, Event.NodeBaselineEnd);
 
-    assertFatal(!Number.isNaN(baseline),
-      "Expect custom baseline function to not return NaN",
-    );
+    if (Number.isNaN(baseline)) {
+      throw new Error("Expect custom baseline function to not return NaN");
+    }
     return baseline;
   }
 

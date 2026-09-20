@@ -1,4 +1,3 @@
-import { assertFatal } from "../debug/AssertFatal.ts";
 import type { Node } from "../node/Node.ts";
 import type { CloneNodeFunction } from "../types.ts";
 
@@ -25,9 +24,9 @@ export class Config {
   }
 
   setPointScaleFactor(pixelsInPoint: number): void {
-    assertFatal(pixelsInPoint >= 0.0,
-      "Scale factor should not be less than zero",
-    );
+    if (pixelsInPoint < 0.0 || pixelsInPoint !== pixelsInPoint) {
+      throw new Error("Scale factor should not be less than zero");
+    }
 
     if (this.pointScaleFactor_ !== pixelsInPoint) {
       this.pointScaleFactor_ = pixelsInPoint;
