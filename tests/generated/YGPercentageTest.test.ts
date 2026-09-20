@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGPercentageTest.cpp
-// (upstream fixture: gentest/fixtures/YGPercentageTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, Edge, FlexDirection, Justify, PositionType } from "../../src/index.ts";

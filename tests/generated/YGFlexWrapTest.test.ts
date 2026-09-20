@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGFlexWrapTest.cpp
-// (upstream fixture: gentest/fixtures/YGFlexWrapTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, Edge, FlexDirection, Justify, PositionType, Wrap } from "../../src/index.ts";

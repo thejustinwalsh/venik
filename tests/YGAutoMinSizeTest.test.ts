@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGAutoMinSizeTest.cpp
-
 import { expect, test } from "vitest";
 import {
   Config,

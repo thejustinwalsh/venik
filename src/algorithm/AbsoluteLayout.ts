@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/AbsoluteLayout.{h,cpp}
-
 import {
   Align,
   Dimension,

@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGComputedMarginTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, Edge, Node } from "../src/index.ts";
 

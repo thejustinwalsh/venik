@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGConfigTest.cpp
-
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { configUpdateInvalidatesLayout } from "../src/config/Config.ts";
 import { Config, Direction, Node } from "../src/index.ts";

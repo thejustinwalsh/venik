@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/CacheTest.cpp
-
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { canUseCachedMeasurement } from "../src/algorithm/Cache.ts";
 import { SizingMode } from "../src/algorithm/SizingMode.ts";

@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGNodeChildTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, Node } from "../src/index.ts";
 

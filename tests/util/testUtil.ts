@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/util/TestUtil.{h,cpp}
-
 import { Event, type Subscriber } from "../../src/event/event.ts";
 import {
   Align,
@@ -42,7 +40,7 @@ const yogaEventSubscriber: Subscriber = (_node, eventType, _eventData) => {
   }
 };
 
-/** Port of `TestUtil::startCountingNodes/nodeCount/stopCountingNodes`. */
+/** Counts live nodes through the allocation and deallocation events. */
 export const TestUtil = {
   startCountingNodes(): void {
     nodeInstanceCount = 0;
@@ -62,9 +60,9 @@ export const TestUtil = {
 };
 
 /**
- * Port of the RAII `ScopedEventSubscription`: subscribes on construction,
- * `dispose()` stands in for the destructor (`Event.reset()`). Construct it in
- * `beforeEach` and dispose it in `afterEach`.
+ * Subscribes on construction; `dispose()` unsubscribes everything
+ * (`Event.reset()`). Construct it in `beforeEach` and dispose it in
+ * `afterEach`.
  */
 export class ScopedEventSubscription {
   constructor(s: Subscriber) {

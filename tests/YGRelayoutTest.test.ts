@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGRelayoutTest.cpp
-
 import { expect, test } from "vitest";
 import { Config, Direction, Edge, Node, PositionType } from "../src/index.ts";
 

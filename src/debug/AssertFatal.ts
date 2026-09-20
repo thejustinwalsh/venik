@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/debug/AssertFatal.{h,cpp}
-
 import type { Config } from "../config/Config.ts";
 import { LogLevel } from "../enums.ts";
 import type { Node } from "../node/Node.ts";

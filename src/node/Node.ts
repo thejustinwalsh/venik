@@ -45,17 +45,9 @@ import type {
 import { LayoutResults } from "./LayoutResults.ts";
 
 /**
- * A layout node. Port of `yoga::Node` plus the `YGNode*` C API, exposed with
- * the method names of the `yoga-layout` JavaScript package.
+ * A layout node.
  *
- * C API name                          -> method
- *   YGNodeStyleSetFoo(node, v)        -> node.setFoo(v)
- *   YGNodeStyleSetFooPercent(node, v) -> node.setFooPercent(v)
- *   YGNodeStyleGetFoo(node)           -> node.getFoo()
- *   YGNodeLayoutGetFoo(node)          -> node.getComputedFoo()
- *   YGNodeFoo(node, ...)              -> node.foo(...)
- *
- * `undefined` and NaN are both accepted wherever the C API takes YGUndefined.
+ * `undefined` and NaN are both accepted wherever a value may be unset.
  */
 export class Node {
   private hasNewLayout_: boolean = true;

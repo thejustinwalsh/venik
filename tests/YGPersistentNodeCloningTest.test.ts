@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGPersistentNodeCloningTest.cpp
-
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { Config, Direction, Display, Node, PositionType } from "../src/index.ts";
 

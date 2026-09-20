@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/Align.h
-
 import { Align, Display, Justify } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { isColumn } from "./FlexDirection.ts";

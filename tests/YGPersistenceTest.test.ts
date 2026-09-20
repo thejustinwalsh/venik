@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGPersistenceTest.cpp
-
 import { expect, test } from "vitest";
 import { Config, Direction } from "../src/index.ts";
 import { newFixtureNode, TestUtil } from "./util/testUtil.ts";

@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGStyleTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, FlexDirection, Node, Unit } from "../src/index.ts";
 

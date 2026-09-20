@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/BoundAxis.h
-//
 // `FloatOptional` values are plain numbers here (NaN is undefined).
 
 import { Dimension, type Direction, type FlexDirection } from "../enums.ts";

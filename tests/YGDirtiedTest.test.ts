@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGDirtiedTest.cpp
-
 import { expect, test } from "vitest";
 import { Align, Direction, Node } from "../src/index.ts";
 

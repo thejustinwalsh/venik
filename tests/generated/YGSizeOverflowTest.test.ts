@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGSizeOverflowTest.cpp
-// (upstream fixture: gentest/fixtures/YGSizeOverflowTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Config, Direction, PositionType } from "../../src/index.ts";

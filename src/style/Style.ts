@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/style/Style.h
-//
 // Unlike C++, this Style holds plain values: StyleValuePool, StyleValueHandle
 // and SmallValueBuffer are memory layout optimisations that are intentionally
 // not ported.
@@ -32,8 +30,8 @@ import { StyleLength } from "./StyleLength.ts";
 import { StyleSizeLength } from "./StyleSizeLength.ts";
 
 /**
- * Port of `yoga::Style`. Accessor names are kept identical to C++
- * (`style.flexDirection()` / `style.setFlexDirection(v)`).
+ * The style of a node. Accessors are `style.flexDirection()` /
+ * `style.setFlexDirection(v)`.
  *
  * Defaults of a new Style follow CSS: direction Inherit, flexDirection Row,
  * justifyContent FlexStart,

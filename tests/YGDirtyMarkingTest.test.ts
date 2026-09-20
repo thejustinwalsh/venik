@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGDirtyMarkingTest.cpp
-
 import { expect, test } from "vitest";
 import { Align, Config, Direction, Display, FlexDirection, Node } from "../src/index.ts";
 

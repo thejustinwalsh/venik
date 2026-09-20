@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGFlexShrinkBorderBugTest.cpp
-
 import { expect, test } from "vitest";
 import { Config, Direction, Edge, FlexDirection, Node } from "../src/index.ts";
 

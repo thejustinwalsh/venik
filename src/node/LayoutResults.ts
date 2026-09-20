@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/node/LayoutResults.{h,cpp}
-//
 // `FloatOptional` members are plain numbers here (NaN is undefined).
 
 import type { PhysicalEdge } from "../algorithm/FlexDirection.ts";

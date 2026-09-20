@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/Baseline.{h,cpp}
-
 import { assertFatalWithNode } from "../debug/AssertFatal.ts";
 import { Align, Dimension, PositionType } from "../enums.ts";
 import { Event } from "../event/event.ts";

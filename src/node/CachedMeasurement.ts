@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/node/CachedMeasurement.h
-
 import { SizingMode } from "../algorithm/SizingMode.ts";
 
 export class CachedMeasurement {

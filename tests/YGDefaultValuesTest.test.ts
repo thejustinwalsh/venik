@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGDefaultValuesTest.cpp
-
 import { expect, test } from "vitest";
 import {
   Align,

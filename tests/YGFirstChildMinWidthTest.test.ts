@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGFirstChildMinWidthTest.cpp
-
 // Regression test for https://github.com/react/yoga/issues/2006
 // A row of three growable children (flexGrow/flexShrink 1, maxWidth 180) inside
 // a 540px container. When the *first* child has a larger minWidth than the

@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGDimensionTest.cpp
-// (upstream fixture: gentest/fixtures/YGDimensionTest.html).
-
 import { expect, test } from "vitest";
 import { Config, Direction, Node, PositionType } from "../../src/index.ts";
 

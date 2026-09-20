@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGZeroOutLayoutRecursivelyTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, Display, Edge, FlexDirection, Node } from "../src/index.ts";
 

@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGBoxSizingTest.cpp
-// (upstream fixture: gentest/fixtures/YGBoxSizingTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { BoxSizing, Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";

@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGScaleChangeTest.cpp
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "./util/testUtil.ts";
 import {

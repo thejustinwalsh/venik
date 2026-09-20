@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGAspectRatioTest.cpp
-// (upstream fixture: gentest/fixtures/YGAspectRatioTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Config, Direction, PositionType } from "../../src/index.ts";

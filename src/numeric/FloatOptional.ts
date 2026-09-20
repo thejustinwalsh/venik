@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/numeric/FloatOptional.h
-//
 // Design: `FloatOptional` is an immutable value class wrapping a number where
 // NaN means "undefined". C++ operators become methods on the left operand:
 //

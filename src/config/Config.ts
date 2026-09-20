@@ -5,9 +5,7 @@ import type { Node } from "../node/Node.ts";
 import type { CloneNodeFunction, Logger } from "../types.ts";
 
 /**
- * Layout configuration shared between nodes. Port of `yoga::Config` plus the
- * `YGConfig*` C API, exposed with the method names of the `yoga-layout`
- * JavaScript package.
+ * Layout configuration shared between nodes.
  */
 export class Config {
   private cloneNodeCallback_: CloneNodeFunction | null = null;

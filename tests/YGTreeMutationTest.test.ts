@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGTreeMutationTest.cpp
-
 import { expect, test } from "vitest";
 import { Node } from "../src/index.ts";
 

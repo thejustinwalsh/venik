@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/StyleTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, Edge, FlexDirection, Gutter } from "../src/index.ts";
 import { Style } from "../src/style/Style.ts";

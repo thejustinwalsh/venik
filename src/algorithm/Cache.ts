@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/Cache.{h,cpp}
-
 import type { Config } from "../config/Config.ts";
 import { inexactEquals } from "../numeric/Comparison.ts";
 import { roundValueToPixelGrid } from "./PixelGrid.ts";

@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGAlignContentTest.cpp
-// (upstream fixture: gentest/fixtures/YGAlignContentTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, Edge, FlexDirection, Gutter, Justify, PositionType, Wrap } from "../../src/index.ts";

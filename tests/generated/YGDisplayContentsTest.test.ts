@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGDisplayContentsTest.cpp
-// (upstream fixture: gentest/fixtures/YGDisplayContentsTest.html).
-
 import { expect, test } from "vitest";
 import { Config, Direction, Display, FlexDirection, Node, PositionType } from "../../src/index.ts";
 

@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGNodeCallbackTest.cpp
-
 import { expect, test } from "vitest";
 import { MeasureMode, Node } from "../src/index.ts";
 

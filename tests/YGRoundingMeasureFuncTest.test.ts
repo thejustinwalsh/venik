@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGRoundingMeasureFuncTest.cpp
-
 import { expect, test } from "vitest";
 import { Config, Direction, Edge, type MeasureFunction, Node, PositionType } from "../src/index.ts";
 

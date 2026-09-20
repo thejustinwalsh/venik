@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/event/event.{h,cpp}
-//
 // Design notes:
 //  - `enum Event::Type` is unscoped in C++, so its values are reachable both
 //    as `Event.NodeAllocation` (like C++ `Event::NodeAllocation`) and through

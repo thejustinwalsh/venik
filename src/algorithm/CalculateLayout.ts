@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/CalculateLayout.{h,cpp}
-//
 // `FloatOptional` values are plain numbers here (NaN is undefined). C++
 // in/out pointer parameters are replaced by return values.
 

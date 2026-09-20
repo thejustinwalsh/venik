@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/debug/Log.{h,cpp}
-//
 // The C++ API is printf style; here messages arrive already formatted.
 
 import type { Config } from "../config/Config.ts";

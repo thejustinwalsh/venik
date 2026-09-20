@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGAbsolutePositionTest.cpp
-// (upstream fixture: gentest/fixtures/YGAbsolutePositionTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, Edge, FlexDirection, Justify, Overflow, PositionType, Wrap } from "../../src/index.ts";

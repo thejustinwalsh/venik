@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/EventsTest.cpp
-//
 // C++ keeps type-erased copies of each event's `TypedData<E>` and reads them
 // back with `data<E>()` / `eventTestData<E>()`; here `data(args, E)` and
 // `eventTestData(args, E)` do the same (they are unchecked casts like the C++

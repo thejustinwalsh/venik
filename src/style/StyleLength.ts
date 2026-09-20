@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/style/StyleLength.h
-
 import { Unit } from "../enums.ts";
 import { inexactEquals as inexactEqualsNumber } from "../numeric/Comparison.ts";
 import { FloatOptional } from "../numeric/FloatOptional.ts";

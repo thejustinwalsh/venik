@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGIntrinsicSizeTest.cpp
-// (upstream fixture: gentest/fixtures/YGIntrinsicSizeTest.html).
-
 import { expect, test } from "vitest";
 import { Align, Config, Direction, FlexDirection, PositionType } from "../../src/index.ts";
 import { newFixtureNode, intrinsicSizeMeasure } from "../util/testUtil.ts";

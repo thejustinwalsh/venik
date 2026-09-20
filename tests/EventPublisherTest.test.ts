@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/EventPublisherTest.cpp
-
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
   Event,

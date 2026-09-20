@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGFlexBasisFitContentTest.cpp
-
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { newFixtureNode } from "./util/testUtil.ts";
 import {

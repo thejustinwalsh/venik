@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/FlexGapTest.cpp
-
 import { expect, test } from "vitest";
 import { Config, Direction, FlexDirection, Gutter, Node } from "../src/index.ts";
 

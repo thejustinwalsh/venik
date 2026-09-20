@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/SizingMode.h
-
 import { fatalWithMessage } from "../debug/AssertFatal.ts";
 import { MeasureMode } from "../enums.ts";
 

@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGFlexBasisFitContentTest.cpp
-// (upstream fixture: gentest/fixtures/YGFlexBasisFitContentTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Config, Direction, FlexDirection, Overflow, PositionType } from "../../src/index.ts";

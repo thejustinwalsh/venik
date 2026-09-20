@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGAlignBaselineTest.cpp
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "./util/testUtil.ts";
 import { Align, Config, Direction, Edge, FlexDirection, Node, type Size } from "../src/index.ts";

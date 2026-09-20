@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/FlexLine.{h,cpp}
-
 import { type Direction, Display, PositionType, Wrap } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { boundAxisWithinMinAndMax } from "./BoundAxis.ts";

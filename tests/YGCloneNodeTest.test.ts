@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGCloneNodeTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, Display, Node, PositionType } from "../src/index.ts";
 

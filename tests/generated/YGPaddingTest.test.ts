@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGPaddingTest.cpp
-// (upstream fixture: gentest/fixtures/YGPaddingTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, Edge, Justify, PositionType } from "../../src/index.ts";

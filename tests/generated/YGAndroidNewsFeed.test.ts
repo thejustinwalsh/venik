@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGAndroidNewsFeed.cpp
-// (upstream fixture: gentest/fixtures/YGAndroidNewsFeed.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";

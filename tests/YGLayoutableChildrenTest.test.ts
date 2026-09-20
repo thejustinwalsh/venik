@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGLayoutableChildrenTest.cpp
-
 import { expect, test } from "vitest";
 import { Display, Node } from "../src/index.ts";
 

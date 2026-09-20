@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGEdgeTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, Edge, FlexDirection, Node } from "../src/index.ts";
 

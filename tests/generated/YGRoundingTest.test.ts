@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGRoundingTest.cpp
-// (upstream fixture: gentest/fixtures/YGRoundingTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";

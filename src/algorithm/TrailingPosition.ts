@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/TrailingPosition.h
-
 import { FlexDirection } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { dimension, flexEndEdge, flexStartEdge } from "./FlexDirection.ts";

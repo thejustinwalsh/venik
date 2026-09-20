@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/FloatOptionalTest.cpp
-//
 // C++ operators map to FloatOptional methods (see src/numeric/FloatOptional.ts):
 // `a == b` -> `a.equals(b)`, `a != b` -> `!a.equals(b)`, `a > b` -> `a.greaterThan(b)`,
 // `a + b` -> `a.add(b)`, ... `ASSERT_EQ` on FloatOptionals uses `operator==`, hence `equals`.

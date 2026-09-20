@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGBorderTest.cpp
-// (upstream fixture: gentest/fixtures/YGBorderTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, Edge, Justify, PositionType } from "../../src/index.ts";

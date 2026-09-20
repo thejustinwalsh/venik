@@ -1,5 +1,3 @@
-// Port of yoga-cpp/tests/YGContentsNodeHasNewLayoutTest.cpp
-
 import { expect, test } from "vitest";
 import { Direction, Display, Edge, FlexDirection, Node, Overflow, PositionType } from "../src/index.ts";
 

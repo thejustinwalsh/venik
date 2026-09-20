@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/numeric/Comparison.h
-//
 // C++ overloads on float/double/std::array collapse as follows:
 //   - `inexactEquals(float|double, float|double)` -> `inexactEquals(a, b)`
 //   - `inexactEquals(std::array, std::array)`     -> `inexactEqualsArray(a, b)`

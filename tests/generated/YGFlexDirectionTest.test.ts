@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGFlexDirectionTest.cpp
-// (upstream fixture: gentest/fixtures/YGFlexDirectionTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Config, Direction, Edge, FlexDirection, PositionType } from "../../src/index.ts";

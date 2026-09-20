@@ -1,8 +1,6 @@
-// Port of yoga-cpp/yoga/algorithm/FlexDirection.h
-
 import { Dimension, Direction, Edge, FlexDirection } from "../enums.ts";
 
-/** Port of yoga-cpp/yoga/enums/PhysicalEdge.h */
+/** The four physical edges, as a subset of `Edge`. */
 export const PhysicalEdge = {
   Left: Edge.Left,
   Top: Edge.Top,

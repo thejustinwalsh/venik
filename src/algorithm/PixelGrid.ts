@@ -1,5 +1,3 @@
-// Port of yoga-cpp/yoga/algorithm/PixelGrid.{h,cpp}
-
 import { Dimension } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { inexactEquals } from "../numeric/Comparison.ts";

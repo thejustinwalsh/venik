@@ -1,6 +1,3 @@
-// Originally ported from Yoga's tests/generated/YGMinMaxDimensionTest.cpp
-// (upstream fixture: gentest/fixtures/YGMinMaxDimensionTest.html).
-
 import { expect, test } from "vitest";
 import { newFixtureNode } from "../util/testUtil.ts";
 import { Align, Config, Direction, FlexDirection, Justify, PositionType } from "../../src/index.ts";
