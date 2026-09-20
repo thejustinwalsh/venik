@@ -84,7 +84,11 @@ export function canUseCachedMeasurement(
 
   const widthIsCompatible =
     hasSameWidthSpec ||
-    sizeIsExactAndMatchesOldMeasuredSize(widthMode, availableWidth - marginRow, lastComputedWidth) ||
+    sizeIsExactAndMatchesOldMeasuredSize(
+      widthMode,
+      availableWidth - marginRow,
+      lastComputedWidth,
+    ) ||
     oldSizeIsMaxContentAndStillFits(
       widthMode,
       availableWidth - marginRow,

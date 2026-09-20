@@ -85,10 +85,7 @@ export function calculateFlexLine(
   for (; index < layoutChildren.length; index++) {
     const child = layoutChildren[index]!;
     const childStyle = child.style;
-    if (
-      childStyle.display === Display.None ||
-      childStyle.positionType === PositionType.Absolute
-    ) {
+    if (childStyle.display === Display.None || childStyle.positionType === PositionType.Absolute) {
       continue;
     }
 
@@ -140,8 +137,7 @@ export function calculateFlexLine(
 
       // Unlike the grow factor, the shrink factor is scaled relative to the
       // child dimension.
-      totalFlexShrinkScaledFactors +=
-        -child.resolveFlexShrink() * child.layout.computedFlexBasis;
+      totalFlexShrinkScaledFactors += -child.resolveFlexShrink() * child.layout.computedFlexBasis;
     }
 
     itemsInFlow.push(child);

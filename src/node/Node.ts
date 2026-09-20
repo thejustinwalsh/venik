@@ -84,7 +84,6 @@ export class Node {
     if (__EVENTS__) Event.publish(this, Event.NodeAllocation, { config });
   }
 
-
   // Lifecycle
   clone(): Node {
     // Does not expose true value semantics, as children are not cloned eagerly.
@@ -166,11 +165,7 @@ export class Node {
   }
 
   // Layout
-  calculateLayout(
-    width?: number | "auto",
-    height?: number | "auto",
-    direction?: Direction,
-  ): void {
+  calculateLayout(width?: number | "auto", height?: number | "auto", direction?: Direction): void {
     calculateLayout(
       this,
       width === undefined || width === "auto" ? NaN : width,
@@ -183,7 +178,9 @@ export class Node {
   }
   markDirty(): void {
     if (!this.hasMeasureFunc()) {
-      throw new Error("Only leaf nodes with custom measure functions should manually mark themselves as dirty");
+      throw new Error(
+        "Only leaf nodes with custom measure functions should manually mark themselves as dirty",
+      );
     }
 
     this.markDirtyAndPropagate();
@@ -314,7 +311,9 @@ export class Node {
   setMeasureFunc(measureFunc: MeasureFunction | null): void {
     if (measureFunc !== null) {
       if (this.children_.length !== 0) {
-        throw new Error("Cannot set measure function: Nodes with measure functions cannot have children.");
+        throw new Error(
+          "Cannot set measure function: Nodes with measure functions cannot have children.",
+        );
       }
     }
 
@@ -551,7 +550,9 @@ export class Node {
     // Degenerate aspect ratios (0, infinite) act as auto.
     // See https://drafts.csswg.org/css-sizing-4/#valdef-aspect-ratio-ratio
     const ratio = aspectRatio ?? NaN;
-    const value = new FloatOptional(ratio === 0 || ratio === Infinity || ratio === -Infinity ? NaN : ratio);
+    const value = new FloatOptional(
+      ratio === 0 || ratio === Infinity || ratio === -Infinity ? NaN : ratio,
+    );
     if (!this.style.aspectRatio.equals(value)) {
       this.style.aspectRatio = value;
       this.markDirtyAndPropagate();
@@ -900,10 +901,14 @@ export class Node {
     const crossAxisLeadingEdge = inlineStartEdge(crossAxis, direction);
     const crossAxisTrailingEdge = inlineEndEdge(crossAxis, direction);
 
-    layout.position[mainAxisLeadingEdge] = style.computeInlineStartMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
-    layout.position[mainAxisTrailingEdge] = style.computeInlineEndMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
-    layout.position[crossAxisLeadingEdge] = style.computeInlineStartMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
-    layout.position[crossAxisTrailingEdge] = style.computeInlineEndMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
+    layout.position[mainAxisLeadingEdge] =
+      style.computeInlineStartMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
+    layout.position[mainAxisTrailingEdge] =
+      style.computeInlineEndMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
+    layout.position[crossAxisLeadingEdge] =
+      style.computeInlineStartMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
+    layout.position[crossAxisTrailingEdge] =
+      style.computeInlineEndMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
   }
 
   /** @internal */
@@ -1168,9 +1173,7 @@ function collectLayoutChildren(node: Node, out: Node[]): void {
 
 function parseLength(value: number | "auto" | Percent | undefined): StyleLength {
   if (typeof value === "string") {
-    return value === "auto"
-      ? StyleLength.ofAuto()
-      : StyleLength.percent(Number.parseFloat(value));
+    return value === "auto" ? StyleLength.ofAuto() : StyleLength.percent(Number.parseFloat(value));
   }
   return StyleLength.points(value ?? NaN);
 }

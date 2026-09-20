@@ -20,11 +20,11 @@ export function getPositionOfOppositeEdge(
 
 export function setChildTrailingPosition(node: Node, child: Node, axis: FlexDirection): void {
   child.layout.position[flexEndEdge(axis)] = getPositionOfOppositeEdge(
-        child.layout.position[flexStartEdge(axis)],
-        axis,
-        node,
-        child,
-      );
+    child.layout.position[flexStartEdge(axis)],
+    axis,
+    node,
+    child,
+  );
 }
 
 export function needsTrailingPosition(axis: FlexDirection): boolean {

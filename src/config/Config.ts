@@ -7,7 +7,6 @@ import type { CloneNodeFunction } from "../types.ts";
 export class Config {
   private cloneNodeCallback_: CloneNodeFunction | null = null;
 
-
   private version_: number = 0;
   private pointScaleFactor_: number = 1.0;
   context: unknown = null;
@@ -61,7 +60,5 @@ export class Config {
 
 /** @internal Whether layouts computed under `oldConfig` must be recomputed under `newConfig`. */
 export function configUpdateInvalidatesLayout(oldConfig: Config, newConfig: Config): boolean {
-  return (
-    oldConfig.getPointScaleFactor() !== newConfig.getPointScaleFactor()
-  );
+  return oldConfig.getPointScaleFactor() !== newConfig.getPointScaleFactor();
 }

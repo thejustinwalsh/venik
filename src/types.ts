@@ -44,4 +44,3 @@ export type DirtiedFunction = (node: Node) => void;
 
 /** Returns the clone that should replace `oldNode`, or null to use the default `oldNode.clone()`. */
 export type CloneNodeFunction = (oldNode: Node, owner: Node, childIndex: number) => Node | null;
-

@@ -24,11 +24,7 @@ import { inexactEquals, maxOrDefined, minOrDefined } from "../numeric/Comparison
 import type { Style } from "../style/Style.ts";
 import type { StyleLength } from "../style/StyleLength.ts";
 import { layoutAbsoluteDescendants } from "./AbsoluteLayout.ts";
-import {
-  fallbackAlignment,
-  fallbackJustification,
-  resolveChildAlignment,
-} from "./Align.ts";
+import { fallbackAlignment, fallbackJustification, resolveChildAlignment } from "./Align.ts";
 import { calculateBaseline, isBaselineLayout } from "./Baseline.ts";
 import { boundAxis, boundAxisWithinMinAndMax, paddingAndBorderForAxis } from "./BoundAxis.ts";
 import { canUseCachedMeasurement } from "./Cache.ts";
@@ -531,8 +527,22 @@ function measureNodeWithMeasureFunc(
 
   if (widthSizingMode === SizingMode.StretchFit && heightSizingMode === SizingMode.StretchFit) {
     // Don't bother sizing the text if both dimensions are already defined.
-    layout.measuredDimensions[Dimension.Width] = boundAxis(node, FlexDirection.Row, direction, availableWidth, ownerWidth, ownerWidth);
-    layout.measuredDimensions[Dimension.Height] = boundAxis(node, FlexDirection.Column, direction, availableHeight, ownerHeight, ownerWidth);
+    layout.measuredDimensions[Dimension.Width] = boundAxis(
+      node,
+      FlexDirection.Row,
+      direction,
+      availableWidth,
+      ownerWidth,
+      ownerWidth,
+    );
+    layout.measuredDimensions[Dimension.Height] = boundAxis(
+      node,
+      FlexDirection.Column,
+      direction,
+      availableHeight,
+      ownerHeight,
+      ownerWidth,
+    );
   } else {
     if (__EVENTS__) Event.publish(node, Event.MeasureCallbackStart);
 
@@ -562,26 +572,26 @@ function measureNodeWithMeasureFunc(
     }
 
     layout.measuredDimensions[Dimension.Width] = boundAxis(
-        node,
-        FlexDirection.Row,
-        direction,
-        widthSizingMode === SizingMode.MaxContent || widthSizingMode === SizingMode.FitContent
-          ? measuredSize.width + paddingAndBorderAxisRow
-          : availableWidth,
-        ownerWidth,
-        ownerWidth,
-      );
+      node,
+      FlexDirection.Row,
+      direction,
+      widthSizingMode === SizingMode.MaxContent || widthSizingMode === SizingMode.FitContent
+        ? measuredSize.width + paddingAndBorderAxisRow
+        : availableWidth,
+      ownerWidth,
+      ownerWidth,
+    );
 
     layout.measuredDimensions[Dimension.Height] = boundAxis(
-        node,
-        FlexDirection.Column,
-        direction,
-        heightSizingMode === SizingMode.MaxContent || heightSizingMode === SizingMode.FitContent
-          ? measuredSize.height + paddingAndBorderAxisColumn
-          : availableHeight,
-        ownerHeight,
-        ownerWidth,
-      );
+      node,
+      FlexDirection.Column,
+      direction,
+      heightSizingMode === SizingMode.MaxContent || heightSizingMode === SizingMode.FitContent
+        ? measuredSize.height + paddingAndBorderAxisColumn
+        : availableHeight,
+      ownerHeight,
+      ownerWidth,
+    );
   }
 }
 
@@ -607,7 +617,14 @@ function measureNodeWithoutChildren(
       layout.border[PhysicalEdge.Left] +
       layout.border[PhysicalEdge.Right];
   }
-  layout.measuredDimensions[Dimension.Width] = boundAxis(node, FlexDirection.Row, direction, width, ownerWidth, ownerWidth);
+  layout.measuredDimensions[Dimension.Width] = boundAxis(
+    node,
+    FlexDirection.Row,
+    direction,
+    width,
+    ownerWidth,
+    ownerWidth,
+  );
 
   let height = availableHeight;
   if (heightSizingMode === SizingMode.MaxContent || heightSizingMode === SizingMode.FitContent) {
@@ -617,7 +634,14 @@ function measureNodeWithoutChildren(
       layout.border[PhysicalEdge.Top] +
       layout.border[PhysicalEdge.Bottom];
   }
-  layout.measuredDimensions[Dimension.Height] = boundAxis(node, FlexDirection.Column, direction, height, ownerHeight, ownerWidth);
+  layout.measuredDimensions[Dimension.Height] = boundAxis(
+    node,
+    FlexDirection.Column,
+    direction,
+    height,
+    ownerHeight,
+    ownerWidth,
+  );
 }
 
 function isFixedSize(dim: number, sizingMode: SizingMode): boolean {
@@ -642,28 +666,28 @@ function measureNodeWithFixedSize(
   ) {
     const layout = node.layout;
     layout.measuredDimensions[Dimension.Width] = boundAxis(
-        node,
-        FlexDirection.Row,
-        direction,
-        availableWidth !== availableWidth ||
-          (widthSizingMode === SizingMode.FitContent && availableWidth < 0.0)
-          ? 0.0
-          : availableWidth,
-        ownerWidth,
-        ownerWidth,
-      );
+      node,
+      FlexDirection.Row,
+      direction,
+      availableWidth !== availableWidth ||
+        (widthSizingMode === SizingMode.FitContent && availableWidth < 0.0)
+        ? 0.0
+        : availableWidth,
+      ownerWidth,
+      ownerWidth,
+    );
 
     layout.measuredDimensions[Dimension.Height] = boundAxis(
-        node,
-        FlexDirection.Column,
-        direction,
-        availableHeight !== availableHeight ||
-          (heightSizingMode === SizingMode.FitContent && availableHeight < 0.0)
-          ? 0.0
-          : availableHeight,
-        ownerHeight,
-        ownerWidth,
-      );
+      node,
+      FlexDirection.Column,
+      direction,
+      availableHeight !== availableHeight ||
+        (heightSizingMode === SizingMode.FitContent && availableHeight < 0.0)
+        ? 0.0
+        : availableHeight,
+      ownerHeight,
+      ownerWidth,
+    );
     return true;
   }
 
@@ -726,12 +750,20 @@ function calculateAvailableInnerDimension(
   if (availableInnerDim === availableInnerDim) {
     // We want to make sure our available height does not violate min and max
     // constraints
-    const minDimension = node.style
-      .resolvedMinDimensionValue(direction, dimension, ownerDim, ownerWidth);
+    const minDimension = node.style.resolvedMinDimensionValue(
+      direction,
+      dimension,
+      ownerDim,
+      ownerWidth,
+    );
     const minInnerDim = minDimension !== minDimension ? 0.0 : minDimension - paddingAndBorder;
 
-    const maxDimension = node.style
-      .resolvedMaxDimensionValue(direction, dimension, ownerDim, ownerWidth);
+    const maxDimension = node.style.resolvedMaxDimensionValue(
+      direction,
+      dimension,
+      ownerDim,
+      ownerWidth,
+    );
 
     const maxInnerDim = maxDimension !== maxDimension ? FLT_MAX : maxDimension - paddingAndBorder;
     availableInnerDim = maxOrDefined(minOrDefined(availableInnerDim, maxInnerDim), minInnerDim);
@@ -1046,8 +1078,12 @@ function computeAutoMinMainSize(
   }
 
   // §4.5: cap by the max main size.
-  const maxMain = child.style
-    .resolvedMaxDimensionValue(direction, mainDim, ownerMainAxisSize, ownerWidth);
+  const maxMain = child.style.resolvedMaxDimensionValue(
+    direction,
+    mainDim,
+    ownerMainAxisSize,
+    ownerWidth,
+  );
   if (floor > maxMain) {
     floor = maxMain;
   }
@@ -1603,7 +1639,8 @@ function justifyMainAxis(
     }
 
     if (performLayout) {
-      childLayout.position[flexStartEdge(mainAxis)] = childLayout.position[flexStartEdge(mainAxis)] + flexLine.layout.mainDim;
+      childLayout.position[flexStartEdge(mainAxis)] =
+        childLayout.position[flexStartEdge(mainAxis)] + flexLine.layout.mainDim;
     }
 
     if (child !== lastChild) {
@@ -1740,10 +1777,14 @@ function calculateLayoutImpl(
   generationCount: number,
 ): void {
   if (availableWidth !== availableWidth && widthSizingMode !== SizingMode.MaxContent) {
-    throw new Error("availableWidth is indefinite so widthSizingMode must be SizingMode::MaxContent");
+    throw new Error(
+      "availableWidth is indefinite so widthSizingMode must be SizingMode::MaxContent",
+    );
   }
   if (availableHeight !== availableHeight && heightSizingMode !== SizingMode.MaxContent) {
-    throw new Error("availableHeight is indefinite so heightSizingMode must be SizingMode::MaxContent");
+    throw new Error(
+      "availableHeight is indefinite so heightSizingMode must be SizingMode::MaxContent",
+    );
   }
 
   if (__EVENTS__ && layoutMarkerData !== null) {
@@ -1796,10 +1837,22 @@ function calculateLayoutImpl(
   layout.border[PhysicalEdge.Top] = style.computeInlineStartBorder(flexColumnDirection, direction);
   layout.border[PhysicalEdge.Bottom] = style.computeInlineEndBorder(flexColumnDirection, direction);
 
-  layout.padding[startEdge] = style.computeInlineStartPadding(flexRowDirection, direction, ownerWidth);
+  layout.padding[startEdge] = style.computeInlineStartPadding(
+    flexRowDirection,
+    direction,
+    ownerWidth,
+  );
   layout.padding[endEdge] = style.computeInlineEndPadding(flexRowDirection, direction, ownerWidth);
-  layout.padding[PhysicalEdge.Top] = style.computeInlineStartPadding(flexColumnDirection, direction, ownerWidth);
-  layout.padding[PhysicalEdge.Bottom] = style.computeInlineEndPadding(flexColumnDirection, direction, ownerWidth);
+  layout.padding[PhysicalEdge.Top] = style.computeInlineStartPadding(
+    flexColumnDirection,
+    direction,
+    ownerWidth,
+  );
+  layout.padding[PhysicalEdge.Bottom] = style.computeInlineEndPadding(
+    flexColumnDirection,
+    direction,
+    ownerWidth,
+  );
 
   if (node.hasMeasureFunc()) {
     measureNodeWithMeasureFunc(
@@ -2157,7 +2210,13 @@ function calculateLayoutImpl(
             childMainSize = constrainMaxSizeForMode(
               SizingMode.StretchFit,
               childMainSize,
-              maxSizeForMode(child, direction, mainAxis, availableInnerMainDim, availableInnerWidth),
+              maxSizeForMode(
+                child,
+                direction,
+                mainAxis,
+                availableInnerMainDim,
+                availableInnerWidth,
+              ),
             );
             childCrossSize = constrainMaxSizeForMode(
               SizingMode.StretchFit,
@@ -2223,9 +2282,8 @@ function calculateLayoutImpl(
           }
         }
         // And we apply the position
-        child.layout.position[flexStartEdge(crossAxis)] = child.layout.position[flexStartEdge(crossAxis)] +
-              totalLineCrossDim +
-              leadingCrossDim;
+        child.layout.position[flexStartEdge(crossAxis)] =
+          child.layout.position[flexStartEdge(crossAxis)] + totalLineCrossDim + leadingCrossDim;
       }
     }
 
@@ -2260,9 +2318,7 @@ function calculateLayoutImpl(
     const remainingAlignContentDim = innerCrossDim - totalLineCrossDim;
 
     const alignContent =
-      remainingAlignContentDim >= 0
-        ? style.alignContent
-        : fallbackAlignment(style.alignContent);
+      remainingAlignContentDim >= 0 ? style.alignContent : fallbackAlignment(style.alignContent);
 
     switch (alignContent) {
       case Align.Start:
@@ -2361,26 +2417,30 @@ function calculateLayoutImpl(
               // Not yet implemented
               break;
             case Align.FlexStart: {
-              childLayout.position[flexStartEdge(crossAxis)] = currentLead +
-                  childStyle.computeFlexStartPosition(crossAxis, direction, availableInnerWidth);
+              childLayout.position[flexStartEdge(crossAxis)] =
+                currentLead +
+                childStyle.computeFlexStartPosition(crossAxis, direction, availableInnerWidth);
               break;
             }
             case Align.FlexEnd: {
-              childLayout.position[flexStartEdge(crossAxis)] = currentLead +
-                  lineHeight -
-                  childStyle.computeFlexEndMargin(crossAxis, direction, availableInnerWidth) -
-                  childLayout.measuredDimensions[dimension(crossAxis)];
+              childLayout.position[flexStartEdge(crossAxis)] =
+                currentLead +
+                lineHeight -
+                childStyle.computeFlexEndMargin(crossAxis, direction, availableInnerWidth) -
+                childLayout.measuredDimensions[dimension(crossAxis)];
               break;
             }
             case Align.Center: {
               const childHeight = childLayout.measuredDimensions[dimension(crossAxis)];
 
-              childLayout.position[flexStartEdge(crossAxis)] = currentLead + (lineHeight - childHeight) / 2;
+              childLayout.position[flexStartEdge(crossAxis)] =
+                currentLead + (lineHeight - childHeight) / 2;
               break;
             }
             case Align.Stretch: {
-              childLayout.position[flexStartEdge(crossAxis)] = currentLead +
-                  childStyle.computeFlexStartMargin(crossAxis, direction, availableInnerWidth);
+              childLayout.position[flexStartEdge(crossAxis)] =
+                currentLead +
+                childStyle.computeFlexStartMargin(crossAxis, direction, availableInnerWidth);
 
               // Remeasure child with the line height as it as been only
               // measured with the owners height yet.
@@ -2395,12 +2455,10 @@ function calculateLayoutImpl(
                     childStyle.computeMarginForAxis(crossAxis, availableInnerWidth)
                   : leadPerLine + lineHeight;
 
-                if (
-                  !(
-                    inexactEquals(childWidth, childLayout.measuredDimensions[Dimension.Width]) &&
-                    inexactEquals(childHeight, childLayout.measuredDimensions[Dimension.Height])
-                  )
-                ) {
+                if (!(
+                  inexactEquals(childWidth, childLayout.measuredDimensions[Dimension.Width]) &&
+                  inexactEquals(childHeight, childLayout.measuredDimensions[Dimension.Height])
+                )) {
                   calculateLayoutInternal(
                     child,
                     childWidth,
@@ -2421,14 +2479,15 @@ function calculateLayoutImpl(
               break;
             }
             case Align.Baseline: {
-              childLayout.position[PhysicalEdge.Top] = currentLead +
-                  maxAscentForCurrentLine -
-                  calculateBaseline(child) +
-                  childStyle.computeFlexStartPosition(
-                    FlexDirection.Column,
-                    direction,
-                    availableInnerCrossDim,
-                  );
+              childLayout.position[PhysicalEdge.Top] =
+                currentLead +
+                maxAscentForCurrentLine -
+                calculateBaseline(child) +
+                childStyle.computeFlexStartPosition(
+                  FlexDirection.Column,
+                  direction,
+                  availableInnerCrossDim,
+                );
 
               break;
             }
@@ -2448,22 +2507,22 @@ function calculateLayoutImpl(
   // STEP 9: COMPUTING FINAL DIMENSIONS
 
   layout.measuredDimensions[Dimension.Width] = boundAxis(
-      node,
-      FlexDirection.Row,
-      direction,
-      availableWidth - marginAxisRow,
-      ownerWidth,
-      ownerWidth,
-    );
+    node,
+    FlexDirection.Row,
+    direction,
+    availableWidth - marginAxisRow,
+    ownerWidth,
+    ownerWidth,
+  );
 
   layout.measuredDimensions[Dimension.Height] = boundAxis(
-      node,
-      FlexDirection.Column,
-      direction,
-      availableHeight - marginAxisColumn,
-      ownerHeight,
-      ownerWidth,
-    );
+    node,
+    FlexDirection.Column,
+    direction,
+    availableHeight - marginAxisColumn,
+    ownerHeight,
+    ownerWidth,
+  );
 
   // If the user didn't specify a width or height for the node, set the
   // dimensions based on the children.
@@ -2473,22 +2532,29 @@ function calculateLayoutImpl(
   ) {
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
-    layout.measuredDimensions[dimension(mainAxis)] = boundAxis(node, mainAxis, direction, maxLineMainDim, mainAxisOwnerSize, ownerWidth);
+    layout.measuredDimensions[dimension(mainAxis)] = boundAxis(
+      node,
+      mainAxis,
+      direction,
+      maxLineMainDim,
+      mainAxisOwnerSize,
+      ownerWidth,
+    );
   } else if (sizingModeMainDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
     layout.measuredDimensions[dimension(mainAxis)] = maxOrDefined(
-        minOrDefined(
-          availableInnerMainDim + paddingAndBorderAxisMain,
-          boundAxisWithinMinAndMax(
-            node,
-            direction,
-            mainAxis,
-            maxLineMainDim,
-            mainAxisOwnerSize,
-            ownerWidth,
-          ),
+      minOrDefined(
+        availableInnerMainDim + paddingAndBorderAxisMain,
+        boundAxisWithinMinAndMax(
+          node,
+          direction,
+          mainAxis,
+          maxLineMainDim,
+          mainAxisOwnerSize,
+          ownerWidth,
         ),
-        paddingAndBorderAxisMain,
-      );
+      ),
+      paddingAndBorderAxisMain,
+    );
   }
 
   if (
@@ -2498,28 +2564,28 @@ function calculateLayoutImpl(
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
     layout.measuredDimensions[dimension(crossAxis)] = boundAxis(
-        node,
-        crossAxis,
-        direction,
-        totalLineCrossDim + paddingAndBorderAxisCross,
-        crossAxisOwnerSize,
-        ownerWidth,
-      );
+      node,
+      crossAxis,
+      direction,
+      totalLineCrossDim + paddingAndBorderAxisCross,
+      crossAxisOwnerSize,
+      ownerWidth,
+    );
   } else if (sizingModeCrossDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
     layout.measuredDimensions[dimension(crossAxis)] = maxOrDefined(
-        minOrDefined(
-          availableInnerCrossDim + paddingAndBorderAxisCross,
-          boundAxisWithinMinAndMax(
-            node,
-            direction,
-            crossAxis,
-            totalLineCrossDim + paddingAndBorderAxisCross,
-            crossAxisOwnerSize,
-            ownerWidth,
-          ),
+      minOrDefined(
+        availableInnerCrossDim + paddingAndBorderAxisCross,
+        boundAxisWithinMinAndMax(
+          node,
+          direction,
+          crossAxis,
+          totalLineCrossDim + paddingAndBorderAxisCross,
+          crossAxisOwnerSize,
+          ownerWidth,
         ),
-        paddingAndBorderAxisCross,
-      );
+      ),
+      paddingAndBorderAxisCross,
+    );
   }
 
   // As we only wrapped in normal direction yet, we need to reverse the
@@ -2529,9 +2595,10 @@ function calculateLayoutImpl(
       const child = layoutChildren[i]!;
       if (child.style.positionType !== PositionType.Absolute) {
         const childLayout = child.layout;
-        childLayout.position[flexStartEdge(crossAxis)] = layout.measuredDimensions[dimension(crossAxis)] -
-            childLayout.position[flexStartEdge(crossAxis)] -
-            childLayout.measuredDimensions[dimension(crossAxis)];
+        childLayout.position[flexStartEdge(crossAxis)] =
+          layout.measuredDimensions[dimension(crossAxis)] -
+          childLayout.position[flexStartEdge(crossAxis)] -
+          childLayout.measuredDimensions[dimension(crossAxis)];
       }
     }
   }

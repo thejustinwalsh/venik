@@ -57,7 +57,12 @@ function setFlexEndLayoutPosition(
     parent.layout.padding[flexEndEdge(axis)] +
     child.style.computeFlexEndMargin(axis, direction, containingBlockWidth);
 
-  child.layout.position[flexStartEdge(axis)] = getPositionOfOppositeEdge(flexEndPosition, axis, parent, child);
+  child.layout.position[flexStartEdge(axis)] = getPositionOfOppositeEdge(
+    flexEndPosition,
+    axis,
+    parent,
+    child,
+  );
 }
 
 function setCenterLayoutPosition(

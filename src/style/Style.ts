@@ -68,10 +68,20 @@ export class Style {
   readonly position: EdgeLengths = undefinedEdges();
   readonly padding: EdgeLengths = undefinedEdges();
   readonly border: EdgeLengths = undefinedEdges();
-  readonly gap: GutterLengths = [StyleLength.undefined(), StyleLength.undefined(), StyleLength.undefined()];
+  readonly gap: GutterLengths = [
+    StyleLength.undefined(),
+    StyleLength.undefined(),
+    StyleLength.undefined(),
+  ];
   readonly dimensions: DimensionLengths = [StyleSizeLength.ofAuto(), StyleSizeLength.ofAuto()];
-  readonly minDimensions: DimensionLengths = [StyleSizeLength.undefined(), StyleSizeLength.undefined()];
-  readonly maxDimensions: DimensionLengths = [StyleSizeLength.undefined(), StyleSizeLength.undefined()];
+  readonly minDimensions: DimensionLengths = [
+    StyleSizeLength.undefined(),
+    StyleSizeLength.undefined(),
+  ];
+  readonly maxDimensions: DimensionLengths = [
+    StyleSizeLength.undefined(),
+    StyleSizeLength.undefined(),
+  ];
 
   /** C++ copy construction (`Style copy = style;`). The copy shares no mutable state with `this`. */
   clone(): Style {
@@ -144,7 +154,9 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): FloatOptional {
-    return new FloatOptional(this.resolvedMinDimensionValue(direction, axis, referenceLength, ownerWidth));
+    return new FloatOptional(
+      this.resolvedMinDimensionValue(direction, axis, referenceLength, ownerWidth),
+    );
   }
 
   resolvedMaxDimension(
@@ -153,7 +165,9 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): FloatOptional {
-    return new FloatOptional(this.resolvedMaxDimensionValue(direction, axis, referenceLength, ownerWidth));
+    return new FloatOptional(
+      this.resolvedMaxDimensionValue(direction, axis, referenceLength, ownerWidth),
+    );
   }
 
   horizontalInsetsDefined(): boolean {
@@ -216,7 +230,11 @@ export class Style {
   }
 
   computeInlineStartPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position, inlineStartEdge(axis, direction), direction).resolveValue(axisSize);
+    const value = computeEdge(
+      this.position,
+      inlineStartEdge(axis, direction),
+      direction,
+    ).resolveValue(axisSize);
     return value !== value ? 0 : value;
   }
 
@@ -226,7 +244,11 @@ export class Style {
   }
 
   computeInlineEndPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position, inlineEndEdge(axis, direction), direction).resolveValue(axisSize);
+    const value = computeEdge(
+      this.position,
+      inlineEndEdge(axis, direction),
+      direction,
+    ).resolveValue(axisSize);
     return value !== value ? 0 : value;
   }
 
@@ -236,7 +258,11 @@ export class Style {
   }
 
   computeInlineStartMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin, inlineStartEdge(axis, direction), direction).resolveValue(widthSize);
+    const value = computeEdge(
+      this.margin,
+      inlineStartEdge(axis, direction),
+      direction,
+    ).resolveValue(widthSize);
     return value !== value ? 0 : value;
   }
 
@@ -246,16 +272,24 @@ export class Style {
   }
 
   computeInlineEndMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin, inlineEndEdge(axis, direction), direction).resolveValue(widthSize);
+    const value = computeEdge(this.margin, inlineEndEdge(axis, direction), direction).resolveValue(
+      widthSize,
+    );
     return value !== value ? 0 : value;
   }
 
   computeFlexStartBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border, flexStartEdge(axis), direction).resolveValue(0), 0);
+    return maxOrDefined(
+      computeEdge(this.border, flexStartEdge(axis), direction).resolveValue(0),
+      0,
+    );
   }
 
   computeInlineStartBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border, inlineStartEdge(axis, direction), direction).resolveValue(0), 0);
+    return maxOrDefined(
+      computeEdge(this.border, inlineStartEdge(axis, direction), direction).resolveValue(0),
+      0,
+    );
   }
 
   computeFlexEndBorder(axis: FlexDirection, direction: Direction): number {
@@ -263,23 +297,40 @@ export class Style {
   }
 
   computeInlineEndBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border, inlineEndEdge(axis, direction), direction).resolveValue(0), 0);
+    return maxOrDefined(
+      computeEdge(this.border, inlineEndEdge(axis, direction), direction).resolveValue(0),
+      0,
+    );
   }
 
   computeFlexStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding, flexStartEdge(axis), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(
+      computeEdge(this.padding, flexStartEdge(axis), direction).resolveValue(widthSize),
+      0,
+    );
   }
 
   computeInlineStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding, inlineStartEdge(axis, direction), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(
+      computeEdge(this.padding, inlineStartEdge(axis, direction), direction).resolveValue(
+        widthSize,
+      ),
+      0,
+    );
   }
 
   computeFlexEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding, flexEndEdge(axis), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(
+      computeEdge(this.padding, flexEndEdge(axis), direction).resolveValue(widthSize),
+      0,
+    );
   }
 
   computeInlineEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding, inlineEndEdge(axis, direction), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(
+      computeEdge(this.padding, inlineEndEdge(axis, direction), direction).resolveValue(widthSize),
+      0,
+    );
   }
 
   computeInlineStartPaddingAndBorder(
@@ -288,7 +339,8 @@ export class Style {
     widthSize: number,
   ): number {
     return (
-      this.computeInlineStartPadding(axis, direction, widthSize) + this.computeInlineStartBorder(axis, direction)
+      this.computeInlineStartPadding(axis, direction, widthSize) +
+      this.computeInlineStartBorder(axis, direction)
     );
   }
 
@@ -298,7 +350,8 @@ export class Style {
     widthSize: number,
   ): number {
     return (
-      this.computeFlexStartPadding(axis, direction, widthSize) + this.computeFlexStartBorder(axis, direction)
+      this.computeFlexStartPadding(axis, direction, widthSize) +
+      this.computeFlexStartBorder(axis, direction)
     );
   }
 
@@ -308,7 +361,8 @@ export class Style {
     widthSize: number,
   ): number {
     return (
-      this.computeInlineEndPadding(axis, direction, widthSize) + this.computeInlineEndBorder(axis, direction)
+      this.computeInlineEndPadding(axis, direction, widthSize) +
+      this.computeInlineEndBorder(axis, direction)
     );
   }
 
@@ -318,7 +372,8 @@ export class Style {
     widthSize: number,
   ): number {
     return (
-      this.computeFlexEndPadding(axis, direction, widthSize) + this.computeFlexEndBorder(axis, direction)
+      this.computeFlexEndPadding(axis, direction, widthSize) +
+      this.computeFlexEndBorder(axis, direction)
     );
   }
 
@@ -372,7 +427,13 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    return this.resolveDimensionBound(this.minDimensions[axis]!, direction, axis, referenceLength, ownerWidth);
+    return this.resolveDimensionBound(
+      this.minDimensions[axis]!,
+      direction,
+      axis,
+      referenceLength,
+      ownerWidth,
+    );
   }
 
   /** Allocation-free `resolvedMaxDimension` for the layout algorithm: NaN when undefined. */
@@ -382,7 +443,13 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    return this.resolveDimensionBound(this.maxDimensions[axis]!, direction, axis, referenceLength, ownerWidth);
+    return this.resolveDimensionBound(
+      this.maxDimensions[axis]!,
+      direction,
+      axis,
+      referenceLength,
+      ownerWidth,
+    );
   }
 
   private resolveDimensionBound(
@@ -404,7 +471,8 @@ export class Style {
     );
 
     return (
-      value + (dimensionPaddingAndBorder === dimensionPaddingAndBorder ? dimensionPaddingAndBorder : 0)
+      value +
+      (dimensionPaddingAndBorder === dimensionPaddingAndBorder ? dimensionPaddingAndBorder : 0)
     );
   }
 

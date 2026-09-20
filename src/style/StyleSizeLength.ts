@@ -39,12 +39,16 @@ export class StyleSizeLength {
 
   /** Undefined if `value` is NaN or infinite. */
   static points(value: number): StyleSizeLength {
-    return Number.isFinite(value) ? StyleSizeLength.make(value, Unit.Point) : StyleSizeLength.UNDEFINED;
+    return Number.isFinite(value)
+      ? StyleSizeLength.make(value, Unit.Point)
+      : StyleSizeLength.UNDEFINED;
   }
 
   /** Undefined if `value` is NaN or infinite. */
   static percent(value: number): StyleSizeLength {
-    return Number.isFinite(value) ? StyleSizeLength.make(value, Unit.Percent) : StyleSizeLength.UNDEFINED;
+    return Number.isFinite(value)
+      ? StyleSizeLength.make(value, Unit.Percent)
+      : StyleSizeLength.UNDEFINED;
   }
 
   static ofAuto(): StyleSizeLength {
