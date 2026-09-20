@@ -1,7 +1,7 @@
 // Port of yoga-cpp/tests/YGDirtyMarkingTest.cpp
 
 import { expect, test } from "vitest";
-import { Align, Config, Direction, Display, Errata, FlexDirection, Node } from "../src/index.ts";
+import { Align, Config, Direction, Display, FlexDirection, Node } from "../src/index.ts";
 
 test("dirty_propagation", () => {
   const root = new Node();
@@ -92,7 +92,7 @@ test("dirty_propagation_changing_layout_config", () => {
   expect(root_child0_child0.isDirty()).toBe(false);
 
   const newConfig = new Config();
-  newConfig.setErrata(Errata.StretchFlexBasis);
+  newConfig.setPointScaleFactor(2);
   root_child0.setConfig(newConfig);
 
   expect(root.isDirty()).toBe(true);

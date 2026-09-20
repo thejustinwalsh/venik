@@ -55,24 +55,6 @@ export const Edge = {
 } as const;
 export type Edge = (typeof Edge)[keyof typeof Edge];
 
-export const Errata = {
-  None: 0,
-  StretchFlexBasis: 1,
-  AbsolutePositionWithoutInsetsExcludesPadding: 2,
-  AbsolutePercentAgainstInnerSize: 4,
-  MinSizeUndefinedInsteadOfAuto: 8,
-  FlexFirstPassUsesRunningTotals: 16,
-  All: 2147483647,
-  Classic: 2147483646,
-} as const;
-export type Errata = number;
-
-export const ExperimentalFeature = {
-  WebFlexBasis: 0,
-  FixFlexBasisFitContent: 1,
-} as const;
-export type ExperimentalFeature = (typeof ExperimentalFeature)[keyof typeof ExperimentalFeature];
-
 export const FlexDirection = {
   Column: 0,
   ColumnReverse: 1,
@@ -198,16 +180,6 @@ export const EDGE_END = Edge.End;
 export const EDGE_HORIZONTAL = Edge.Horizontal;
 export const EDGE_VERTICAL = Edge.Vertical;
 export const EDGE_ALL = Edge.All;
-export const ERRATA_NONE = Errata.None;
-export const ERRATA_STRETCH_FLEX_BASIS = Errata.StretchFlexBasis;
-export const ERRATA_ABSOLUTE_POSITION_WITHOUT_INSETS_EXCLUDES_PADDING = Errata.AbsolutePositionWithoutInsetsExcludesPadding;
-export const ERRATA_ABSOLUTE_PERCENT_AGAINST_INNER_SIZE = Errata.AbsolutePercentAgainstInnerSize;
-export const ERRATA_MIN_SIZE_UNDEFINED_INSTEAD_OF_AUTO = Errata.MinSizeUndefinedInsteadOfAuto;
-export const ERRATA_FLEX_FIRST_PASS_USES_RUNNING_TOTALS = Errata.FlexFirstPassUsesRunningTotals;
-export const ERRATA_ALL = Errata.All;
-export const ERRATA_CLASSIC = Errata.Classic;
-export const EXPERIMENTAL_FEATURE_WEB_FLEX_BASIS = ExperimentalFeature.WebFlexBasis;
-export const EXPERIMENTAL_FEATURE_FIX_FLEX_BASIS_FIT_CONTENT = ExperimentalFeature.FixFlexBasisFitContent;
 export const FLEX_DIRECTION_COLUMN = FlexDirection.Column;
 export const FLEX_DIRECTION_COLUMN_REVERSE = FlexDirection.ColumnReverse;
 export const FLEX_DIRECTION_ROW = FlexDirection.Row;

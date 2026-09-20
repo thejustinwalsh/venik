@@ -23,7 +23,6 @@ import {
   Direction,
   Display,
   Edge,
-  type Errata,
   FlexDirection,
   GridTrackType,
   type Gutter,
@@ -1170,11 +1169,6 @@ export class Node {
    */
   hasDefiniteLength(dimension: Dimension, ownerSize: number): boolean {
     return this.processedDimensions_[dimension]!.resolveValue(ownerSize) >= 0;
-  }
-
-  /** @internal */
-  hasErrata(errata: Errata): boolean {
-    return this.config_.hasErrata(errata);
   }
 
   /** @internal */

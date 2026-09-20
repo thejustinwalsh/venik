@@ -11,8 +11,6 @@ import {
   Direction,
   Display,
   Edge,
-  Errata,
-  ExperimentalFeature,
   FlexDirection,
   Gutter,
   Justify,
@@ -308,9 +306,6 @@ function computeFlexBasisForChild(
   );
   const isRowStyleDimDefined = child.hasDefiniteLength(Dimension.Width, ownerWidth);
   const isColumnStyleDimDefined = child.hasDefiniteLength(Dimension.Height, ownerHeight);
-  const fixFlexBasisFitContent = node
-    .getConfig()
-    .isExperimentalFeatureEnabled(ExperimentalFeature.FixFlexBasisFitContent);
 
   const useResolvedFlexBasis =
     resolvedFlexBasis === resolvedFlexBasis && mainAxisSize === mainAxisSize;
@@ -319,8 +314,7 @@ function computeFlexBasisForChild(
     const childLayout = child.getLayout();
     if (
       childLayout.computedFlexBasis !== childLayout.computedFlexBasis ||
-      (child.getConfig().isExperimentalFeatureEnabled(ExperimentalFeature.WebFlexBasis) &&
-        childLayout.computedFlexBasisGeneration !== generationCount)
+      childLayout.computedFlexBasisGeneration !== generationCount
     ) {
       const paddingAndBorder = paddingAndBorderForAxis(child, mainAxis, direction, ownerWidth);
       childLayout.computedFlexBasis = maxOrDefined(resolvedFlexBasis, paddingAndBorder);
@@ -388,22 +382,20 @@ function computeFlexBasisForChild(
     // size changes elsewhere in a vertical scroll subtree.
     const parentDoesNotScroll = node.style().overflow() !== Overflow.Scroll;
     let applyHeightFitContent = isMainAxisRow || parentDoesNotScroll;
-    if (fixFlexBasisFitContent) {
-      const childHadOverflow = child.isDirty() && child.getLayout().hadOverflow();
-      const hasHeightIndependentSubtree =
-        !isMainAxisRow &&
-        parentDoesNotScroll &&
-        childHeight !== childHeight &&
-        height === height &&
-        isColumnStretchEdge(node, child) &&
-        isInColumnStretchScrollSubtree(node) &&
-        canSkipHeightFitContent(child);
-      if (hasHeightIndependentSubtree && childHadOverflow) {
-        child.getLayout().setHadOverflow(false);
-      }
-      if (hasHeightIndependentSubtree) {
-        applyHeightFitContent = false;
-      }
+    const childHadOverflow = child.isDirty() && child.getLayout().hadOverflow();
+    const hasHeightIndependentSubtree =
+      !isMainAxisRow &&
+      parentDoesNotScroll &&
+      childHeight !== childHeight &&
+      height === height &&
+      isColumnStretchEdge(node, child) &&
+      isInColumnStretchScrollSubtree(node) &&
+      canSkipHeightFitContent(child);
+    if (hasHeightIndependentSubtree && childHadOverflow) {
+      child.getLayout().setHadOverflow(false);
+    }
+    if (hasHeightIndependentSubtree) {
+      applyHeightFitContent = false;
     }
 
     if (applyHeightFitContent && childHeight !== childHeight && height === height) {
@@ -987,7 +979,7 @@ function computeMinContentMainSize(
 }
 
 // Computes the CSS Flexbox §4.5 automatic minimum main-axis size for
-// `child`. Returns Undefined when no auto-min applies (feature off, explicit
+// `child`. Returns Undefined when no auto-min applies (explicit
 // `min-{w,h}` already set, or `display:none`); 0 when the item's own
 // `overflow != visible` (the spec's per-item escape hatch); or a concrete
 // floor otherwise.
@@ -1004,9 +996,6 @@ function computeAutoMinMainSize(
   ownerWidth: number,
   ownerHeight: number,
 ): number {
-  if (child.hasErrata(Errata.MinSizeUndefinedInsteadOfAuto)) {
-    return NaN;
-  }
   if (child.style().display() === Display.None) {
     return NaN;
   }
@@ -1305,7 +1294,6 @@ function distributeFreeSpaceSecondPass(
 // whose min and max constraints are triggered, those flex item's clamped size
 // is removed from the remaingfreespace.
 function distributeFreeSpaceFirstPass(
-  node: Node,
   flexLine: FlexLine,
   direction: Direction,
   mainAxis: FlexDirection,
@@ -1328,11 +1316,6 @@ function distributeFreeSpaceFirstPass(
   // remaining items: doing so inflates their tentative size and can freeze
   // items that should still be able to grow/shrink (see
   // https://github.com/react/yoga/issues/2006).
-  //
-  // Dividing by the running totals is the pre-fix behavior, preserved for
-  // existing layouts behind an errata bit that is set on new configs by
-  // default.
-  const useRunningTotals = node.hasErrata(Errata.FlexFirstPassUsesRunningTotals);
   const originalTotalFlexGrowFactors = flexLine.layout.totalFlexGrowFactors;
   const originalTotalFlexShrinkScaledFactors = flexLine.layout.totalFlexShrinkScaledFactors;
 
@@ -1353,10 +1336,7 @@ function distributeFreeSpaceFirstPass(
       if (flexShrinkScaledFactor === flexShrinkScaledFactor && flexShrinkScaledFactor !== 0) {
         baseMainSize =
           childFlexBasis +
-          (flexLine.layout.remainingFreeSpace /
-            (useRunningTotals
-              ? flexLine.layout.totalFlexShrinkScaledFactors
-              : originalTotalFlexShrinkScaledFactors)) *
+          (flexLine.layout.remainingFreeSpace / originalTotalFlexShrinkScaledFactors) *
             flexShrinkScaledFactor;
         boundMainSize = boundAxisWithAutoMin(
           currentLineChild,
@@ -1387,11 +1367,7 @@ function distributeFreeSpaceFirstPass(
       if (flexGrowFactor === flexGrowFactor && flexGrowFactor !== 0) {
         baseMainSize =
           childFlexBasis +
-          (flexLine.layout.remainingFreeSpace /
-            (useRunningTotals
-              ? flexLine.layout.totalFlexGrowFactors
-              : originalTotalFlexGrowFactors)) *
-            flexGrowFactor;
+          (flexLine.layout.remainingFreeSpace / originalTotalFlexGrowFactors) * flexGrowFactor;
         boundMainSize = boundAxis(
           currentLineChild,
           mainAxis,
@@ -1464,29 +1440,27 @@ function resolveFlexibleLength(
 
   // CSS Flexbox §4.5: compute each item's automatic minimum main-axis size
   // up front so the bounding helpers below can floor shrunk values.
-  // computeAutoMinMainSize returns Undefined when the feature is off or an
-  // explicit `min-{w,h}` already pins the floor, in which case the cached
-  // value is also Undefined and `boundAxisWithAutoMin` reduces to `boundAxis`.
-  if (!node.hasErrata(Errata.MinSizeUndefinedInsteadOfAuto)) {
-    for (const currentLineChild of flexLine.itemsInFlow) {
-      currentLineChild.getLayout().computedAutoMinMainSize = computeAutoMinMainSize(
-        currentLineChild,
-        mainAxis,
-        direction,
-        mainAxisOwnerSize,
-        availableInnerWidth,
-        availableInnerHeight,
-      );
-    }
-  } else {
-    for (const currentLineChild of flexLine.itemsInFlow) {
-      currentLineChild.getLayout().computedAutoMinMainSize = NaN;
-    }
+  // computeAutoMinMainSize returns Undefined when an explicit `min-{w,h}`
+  // already pins the floor, in which case the cached value is also Undefined
+  // and `boundAxisWithAutoMin` reduces to `boundAxis`.
+  //
+  // The floor is only ever read for items that flex, and probing the content
+  // size can mean an extra measure call, so inflexible items skip it.
+  for (const currentLineChild of flexLine.itemsInFlow) {
+    currentLineChild.getLayout().computedAutoMinMainSize = currentLineChild.isNodeFlexible()
+      ? computeAutoMinMainSize(
+          currentLineChild,
+          mainAxis,
+          direction,
+          mainAxisOwnerSize,
+          availableInnerWidth,
+          availableInnerHeight,
+        )
+      : NaN;
   }
 
   // First pass: detect the flex items whose min/max constraints trigger
   distributeFreeSpaceFirstPass(
-    node,
     flexLine,
     direction,
     mainAxis,
@@ -1806,10 +1780,7 @@ function calculateLayoutImpl(
   const direction = node.resolveDirection(ownerDirection);
   layout.setDirection(direction);
 
-  const fixFlexBasisFitContent = node
-    .getConfig()
-    .isExperimentalFeatureEnabled(ExperimentalFeature.FixFlexBasisFitContent);
-  if (fixFlexBasisFitContent && performLayout) {
+  if (performLayout) {
     layout.setHadOverflow(false);
   }
 
@@ -1927,7 +1898,7 @@ function calculateLayoutImpl(
   // At this point we know we're going to perform work. Ensure that each child
   // has a mutable copy.
   node.cloneChildrenIfNeeded();
-  if (!fixFlexBasisFitContent || !performLayout) {
+  if (!performLayout) {
     layout.setHadOverflow(false);
   }
 
@@ -2075,19 +2046,14 @@ function calculateLayoutImpl(
       } else if (flexLine.sizeConsumed > maxInnerMainDim) {
         availableInnerMainDim = maxInnerMainDim;
       } else {
-        const useLegacyStretchBehaviour = node.hasErrata(Errata.StretchFlexBasis);
-
-        if (
-          !useLegacyStretchBehaviour &&
-          (flexLine.layout.totalFlexGrowFactors === 0 || node.resolveFlexGrow() === 0)
-        ) {
+        if (flexLine.layout.totalFlexGrowFactors === 0 || node.resolveFlexGrow() === 0) {
           // If we don't have any children to flex or we can't flex the node
           // itself, space we've used is all space we need. Root node also
           // should be shrunk to minimum
           availableInnerMainDim = flexLine.sizeConsumed;
         }
 
-        sizeBasedOnContent = !useLegacyStretchBehaviour;
+        sizeBasedOnContent = true;
       }
     }
 
@@ -2687,8 +2653,6 @@ function calculateLayoutImpl(
         generationCount,
         0.0,
         0.0,
-        availableInnerWidth,
-        availableInnerHeight,
       );
     }
   }
@@ -2967,11 +2931,7 @@ export function calculateLayout(
   }
   // A measure function or clone callback may run a nested layout pass, in
   // which case the global count has moved on from `currentGenerationCount`.
-  const generationCount = node
-    .getConfig()
-    .isExperimentalFeatureEnabled(ExperimentalFeature.FixFlexBasisFitContent)
-    ? currentGenerationCount
-    : gCurrentGenerationCount;
+  const generationCount = currentGenerationCount;
   if (
     calculateLayoutInternal(
       node,

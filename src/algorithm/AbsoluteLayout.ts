@@ -5,7 +5,6 @@ import {
   Dimension,
   type Direction,
   Display,
-  Errata,
   FlexDirection,
   Justify,
   PositionType,
@@ -36,11 +35,8 @@ import {
 // https://www.w3.org/TR/css-grid-1/#abspos
 // absolute positioned grid items are positioned relative to the padding edge
 // of the grid container
-function positionsAgainstPaddingEdge(parent: Node, child: Node): boolean {
-  return (
-    !child.hasErrata(Errata.AbsolutePositionWithoutInsetsExcludesPadding) &&
-    parent.style().display() !== Display.Grid
-  );
+function positionsAgainstPaddingEdge(parent: Node): boolean {
+  return parent.style().display() !== Display.Grid;
 }
 
 function setFlexStartLayoutPosition(
@@ -54,7 +50,7 @@ function setFlexStartLayoutPosition(
     child.style().computeFlexStartMargin(axis, direction, containingBlockWidth) +
     parent.getLayout().border(flexStartEdge(axis));
 
-  if (positionsAgainstPaddingEdge(parent, child)) {
+  if (positionsAgainstPaddingEdge(parent)) {
     position += parent.getLayout().padding(flexStartEdge(axis));
   }
 
@@ -72,7 +68,7 @@ function setFlexEndLayoutPosition(
     parent.getLayout().border(flexEndEdge(axis)) +
     child.style().computeFlexEndMargin(axis, direction, containingBlockWidth);
 
-  if (positionsAgainstPaddingEdge(parent, child)) {
+  if (positionsAgainstPaddingEdge(parent)) {
     flexEndPosition += parent.getLayout().padding(flexEndEdge(axis));
   }
 
@@ -92,7 +88,7 @@ function setCenterLayoutPosition(
   containingBlockWidth: number,
 ): void {
   const parentLayout = parent.getLayout();
-  const againstPaddingEdge = positionsAgainstPaddingEdge(parent, child);
+  const againstPaddingEdge = positionsAgainstPaddingEdge(parent);
   let parentContentBoxSize =
     parentLayout.measuredDimension(dimension(axis)) -
     parentLayout.border(flexStartEdge(axis)) -
@@ -478,8 +474,6 @@ export function layoutAbsoluteDescendants(
   generationCount: number,
   currentNodeLeftOffsetFromContainingBlock: number,
   currentNodeTopOffsetFromContainingBlock: number,
-  containingNodeAvailableInnerWidth: number,
-  containingNodeAvailableInnerHeight: number,
 ): boolean {
   let hasNewLayout = false;
   for (const child of currentNode.getLayoutChildren()) {
@@ -487,15 +481,12 @@ export function layoutAbsoluteDescendants(
     if (childStyle.display() === Display.None) {
       continue;
     } else if (childStyle.positionType() === PositionType.Absolute) {
-      const absoluteErrata = currentNode.hasErrata(Errata.AbsolutePercentAgainstInnerSize);
-      const containingBlockWidth = absoluteErrata
-        ? containingNodeAvailableInnerWidth
-        : containingNode.getLayout().measuredDimension(Dimension.Width) -
-          containingNode.style().computeBorderForAxis(FlexDirection.Row);
-      const containingBlockHeight = absoluteErrata
-        ? containingNodeAvailableInnerHeight
-        : containingNode.getLayout().measuredDimension(Dimension.Height) -
-          containingNode.style().computeBorderForAxis(FlexDirection.Column);
+      const containingBlockWidth =
+        containingNode.getLayout().measuredDimension(Dimension.Width) -
+        containingNode.style().computeBorderForAxis(FlexDirection.Row);
+      const containingBlockHeight =
+        containingNode.getLayout().measuredDimension(Dimension.Height) -
+        containingNode.style().computeBorderForAxis(FlexDirection.Column);
 
       layoutAbsoluteChild(
         containingNode,
@@ -596,8 +587,6 @@ export function layoutAbsoluteDescendants(
           generationCount,
           childLeftOffsetFromContainingBlock,
           childTopOffsetFromContainingBlock,
-          containingNodeAvailableInnerWidth,
-          containingNodeAvailableInnerHeight,
         ) || hasNewLayout;
 
       cleanupContentsNodesRecursively(child, /* didPerformLayout */ hasNewLayout);

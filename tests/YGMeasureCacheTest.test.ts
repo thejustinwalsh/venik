@@ -63,7 +63,9 @@ test("measure_once_single_flexible_child", () => {
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
-  expect(measureCount.count).toBe(1);
+  // One measure for the layout, plus one min-content probe for the flexible
+  // item's CSS Flexbox §4.5 automatic minimum size.
+  expect(measureCount.count).toBe(2);
 
   root.freeRecursive();
 });

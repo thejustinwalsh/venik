@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { configUpdateInvalidatesLayout } from "../src/config/Config.ts";
-import { Config, Direction, Errata, ExperimentalFeature, Node } from "../src/index.ts";
+import { Config, Direction, Node } from "../src/index.ts";
 import type { Logger } from "../src/index.ts";
 
 describe("ConfigCloningTest", () => {
@@ -113,22 +113,6 @@ describe("YogaTest", () => {
     config.setPointScaleFactor(2.0);
     expect(config.getVersion()).toBe(initialVersion + 1);
 
-    // Changing errata should increment version
-    config.setErrata(Errata.StretchFlexBasis);
-    expect(config.getVersion()).toBe(initialVersion + 2);
-
-    // Setting the same errata again should NOT increment version
-    config.setErrata(Errata.StretchFlexBasis);
-    expect(config.getVersion()).toBe(initialVersion + 2);
-
-    // Enabling an experimental feature should increment version
-    config.setExperimentalFeatureEnabled(ExperimentalFeature.WebFlexBasis, true);
-    expect(config.getVersion()).toBe(initialVersion + 3);
-
-    // Enabling the same feature again should NOT increment version
-    config.setExperimentalFeatureEnabled(ExperimentalFeature.WebFlexBasis, true);
-    expect(config.getVersion()).toBe(initialVersion + 3);
-
     config.free();
   });
 
@@ -137,14 +121,6 @@ describe("YogaTest", () => {
     const config2 = new Config();
 
     // Two identical configs should not invalidate layout
-    expect(configUpdateInvalidatesLayout(config1, config2)).toBe(false);
-
-    // Changing errata on one config should invalidate
-    config2.setErrata(Errata.StretchFlexBasis);
-    expect(configUpdateInvalidatesLayout(config1, config2)).toBe(true);
-
-    // Make them match again
-    config1.setErrata(Errata.StretchFlexBasis);
     expect(configUpdateInvalidatesLayout(config1, config2)).toBe(false);
 
     // Changing point scale factor should invalidate
@@ -163,47 +139,8 @@ describe("YogaTest", () => {
     config1.setUseWebDefaults(true);
     expect(configUpdateInvalidatesLayout(config1, config2)).toBe(false);
 
-    // Changing experimental features should invalidate
-    config2.setExperimentalFeatureEnabled(ExperimentalFeature.WebFlexBasis, true);
-    expect(configUpdateInvalidatesLayout(config1, config2)).toBe(true);
-
     config1.free();
     config2.free();
   });
 
-  test("config_errata_bitmask_add_remove_operations", () => {
-    const config = new Config();
-
-    // Default configs carry the errata that preserve legacy geometry
-    // (MinSizeUndefinedInsteadOfAuto for CSS §4.5 auto-min,
-    // FlexFirstPassUsesRunningTotals for free-space distribution). Clear them
-    // for this test so we can assert exact equality at the end.
-    config.removeErrata(Errata.MinSizeUndefinedInsteadOfAuto);
-    config.removeErrata(Errata.FlexFirstPassUsesRunningTotals);
-
-    // Initially no errata
-    expect(config.hasErrata(Errata.StretchFlexBasis)).toBe(false);
-    expect(config.hasErrata(Errata.AbsolutePositionWithoutInsetsExcludesPadding)).toBe(false);
-
-    // Add one errata flag
-    config.addErrata(Errata.StretchFlexBasis);
-    expect(config.hasErrata(Errata.StretchFlexBasis)).toBe(true);
-    expect(config.hasErrata(Errata.AbsolutePositionWithoutInsetsExcludesPadding)).toBe(false);
-
-    // Add another errata flag — first should still be set
-    config.addErrata(Errata.AbsolutePositionWithoutInsetsExcludesPadding);
-    expect(config.hasErrata(Errata.StretchFlexBasis)).toBe(true);
-    expect(config.hasErrata(Errata.AbsolutePositionWithoutInsetsExcludesPadding)).toBe(true);
-
-    // Remove only the first flag — second should remain
-    config.removeErrata(Errata.StretchFlexBasis);
-    expect(config.hasErrata(Errata.StretchFlexBasis)).toBe(false);
-    expect(config.hasErrata(Errata.AbsolutePositionWithoutInsetsExcludesPadding)).toBe(true);
-
-    // Remove the second flag
-    config.removeErrata(Errata.AbsolutePositionWithoutInsetsExcludesPadding);
-    expect(config.getErrata()).toBe(Errata.None);
-
-    config.free();
-  });
 });

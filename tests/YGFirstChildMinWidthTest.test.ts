@@ -7,19 +7,12 @@
 // also draining the remaining free space to exactly zero, leaving the second
 // pass with nothing to distribute. The children then collapsed to their
 // minWidths (60/30/30) instead of growing to fill the row (180/180/180).
-//
-// The fix is gated on clearing YGErrataFlexFirstPassUsesRunningTotals, which
-// new configs set by default, so both behaviors are pinned here.
 
 import { expect, test } from "vitest";
-import { Config, Direction, Errata, FlexDirection, Node } from "../src/index.ts";
+import { Config, Direction, FlexDirection, Node } from "../src/index.ts";
 
-// A config opted into the spec-correct single distribution.
 function makeFixedConfig(): Config {
-  const config = new Config();
-  const errata = config.getErrata();
-  config.setErrata(errata & ~Errata.FlexFirstPassUsesRunningTotals);
-  return config;
+  return new Config();
 }
 
 // Lay out a 540px row containing three children, each with flexGrow/
@@ -91,27 +84,3 @@ test("uniform_minwidth_row", () => {
   expectAllGrowToMax(30.0, 30.0, 30.0);
 });
 
-test("errata_preserves_prefix_geometry_by_default", () => {
-  // A default config keeps the pre-fix collapse, so existing layouts do not
-  // shift when this change lands. Removing the errata bit from the defaults is
-  // what makes this test fail.
-  const config = new Config();
-  expect(config.getErrata() & Errata.FlexFirstPassUsesRunningTotals).not.toBe(0);
-
-  const widths = layoutRow(config, 60.0, 30.0, 30.0);
-  expect(widths[0]).toBeCloseTo(60.0, 3);
-  expect(widths[1]).toBeCloseTo(30.0, 3);
-  expect(widths[2]).toBeCloseTo(30.0, 3);
-
-  config.free();
-});
-
-test("errata_bit_round_trips", () => {
-  const config = new Config();
-  expect(config.getErrata() & Errata.FlexFirstPassUsesRunningTotals).not.toBe(0);
-
-  config.setErrata(config.getErrata() & ~Errata.FlexFirstPassUsesRunningTotals);
-  expect(config.getErrata() & Errata.FlexFirstPassUsesRunningTotals).toBe(0);
-
-  config.free();
-});

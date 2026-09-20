@@ -5,7 +5,7 @@
 // a regular argument: `ordinals(Edge)`, `ordinalCount(Edge)`.
 //
 // Only meaningful for sequential enums (values 0..n-1), i.e. not for the
-// bitfield enums `Errata` and `PrintOptions`.
+// bitfield enum `PrintOptions`.
 
 /** Shape of the `as const` enum objects in `src/enums.ts`. */
 export type EnumObject = Readonly<Record<string, number>>;

@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
   Config,
   Direction,
-  ExperimentalFeature,
   FlexDirection,
   MeasureMode,
   Node,
@@ -30,16 +29,13 @@ function measureTextLike(
 // `static uint32_t measureCount` of the scroll_avoids_remeasure test.
 let measureCount = 0;
 
-// TEST_P suite, instantiated as INSTANTIATE_TEST_SUITE_P(YogaTest,
-// YGFlexBasisFitContentTest, testing::Values(false, true)).
-describe.each([false, true])("YGFlexBasisFitContentTest (param = %s)", (param) => {
+describe("YGFlexBasisFitContentTest", () => {
   let config: Config;
   let root: Node | null = null;
 
   beforeEach(() => {
     root = null;
     config = new Config();
-    config.setExperimentalFeatureEnabled(ExperimentalFeature.FixFlexBasisFitContent, param);
   });
 
   afterEach(() => {
@@ -200,41 +196,5 @@ describe.each([false, true])("YGFlexBasisFitContentTest (param = %s)", (param) =
     root.calculateLayout(undefined, undefined, Direction.LTR);
 
     expect(text.getComputedWidth()).toBe(200);
-  });
-});
-
-describe("YogaTest", () => {
-  // Feature toggle invalidates layout cache.
-  test("flex_basis_fit_content_feature_change_invalidates_cache", () => {
-    const config = new Config();
-    config.setExperimentalFeatureEnabled(ExperimentalFeature.FixFlexBasisFitContent, false);
-
-    const root = new Node(config);
-    root.setHeight(300);
-    root.setWidth(100);
-
-    const container = new Node(config);
-    container.setFlexGrow(1);
-    root.insertChild(container, 0);
-
-    const child = new Node(config);
-    child.setHeightPercent(50);
-    container.insertChild(child, 0);
-
-    const fixed = new Node(config);
-    fixed.setHeight(100);
-    root.insertChild(fixed, 1);
-
-    root.calculateLayout(undefined, undefined, Direction.LTR);
-    const heightBefore = container.getComputedHeight();
-
-    config.setExperimentalFeatureEnabled(ExperimentalFeature.FixFlexBasisFitContent, true);
-    root.calculateLayout(undefined, undefined, Direction.LTR);
-    const heightAfter = container.getComputedHeight();
-
-    expect(heightAfter).toBe(heightBefore);
-
-    root.freeRecursive();
-    config.free();
   });
 });

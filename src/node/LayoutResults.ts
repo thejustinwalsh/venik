@@ -16,9 +16,8 @@ export class LayoutResults {
   computedFlexBasis: number = NaN;
 
   // Per-flex-item floor along the main axis derived from CSS Flexbox §4.5
-  // automatic minimum sizing. Set by `resolveFlexibleLength` when the parent's
-  // config does NOT carry the `MinSizeUndefinedInsteadOfAuto` errata and the
-  // item has no explicit main-axis `min-{width,height}`. Read by the
+  // automatic minimum sizing. Set by `resolveFlexibleLength` when the item
+  // has no explicit main-axis `min-{width,height}`. Read by the
   // shrink/bound machinery to keep items at least this large. `Undefined`
   // means "no auto-min applies."
   computedAutoMinMainSize: number = NaN;

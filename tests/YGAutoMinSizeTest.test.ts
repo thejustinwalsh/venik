@@ -5,7 +5,6 @@ import {
   Config,
   Direction,
   Edge,
-  Errata,
   FlexDirection,
   MeasureMode,
   Node,
@@ -54,16 +53,9 @@ function measureFixedSize(
   return dims != null ? dims : { width: 0, height: 0 };
 }
 
-function makeWebConfig(useAutoMinSize: boolean): Config {
+function makeWebConfig(): Config {
   const config = new Config();
   config.setUseWebDefaults(true);
-  // Default config has YGErrataMinSizeUndefinedInsteadOfAuto set (preserves
-  // legacy "no auto-min" behavior). Clear the bit to opt into CSS §4.5
-  // automatic minimum sizing.
-  if (useAutoMinSize) {
-    const errata = config.getErrata();
-    config.setErrata(errata & ~Errata.MinSizeUndefinedInsteadOfAuto);
-  }
   return config;
 }
 
@@ -76,8 +68,8 @@ class ShrinkRow {
   text: Node;
   spacer: Node;
 
-  constructor(useAutoMinSize: boolean, containerWidth: number) {
-    this.config = makeWebConfig(useAutoMinSize);
+  constructor(containerWidth: number) {
+    this.config = makeWebConfig();
     this.root = new Node(this.config);
     this.text = new Node(this.config);
     this.spacer = new Node(this.config);
@@ -108,22 +100,10 @@ class ShrinkRow {
   }
 }
 
-// Default config (auto-min off): shrink path takes the text below its
-// content size — legacy Yoga behavior preserved.
-test("default_config_preserves_existing_shrink", () => {
-  const row = new ShrinkRow(/*useAutoMinSize=*/ false, /*containerWidth=*/ 20);
-  row.layout();
-  // Container 20 - spacer 10 = 10 for text. Without auto-min, text shrinks
-  // freely below kWordWidth (30).
-  expect(row.text.getComputedWidth()).toBe(10);
-
-  row.dispose();
-});
-
 // Auto-min on: text floored at min-content (kWordWidth). Container
 // overflows rather than violate the floor.
 test("auto_min_floors_text_at_min_content_width", () => {
-  const row = new ShrinkRow(/*useAutoMinSize=*/ true, /*containerWidth=*/ 20);
+  const row = new ShrinkRow(/*containerWidth=*/ 20);
   row.layout();
   // Floor = min(content=30, specified=NaN) = 30. Text stuck at 30; the
   // 10-px spacer takes its space; container of 20 overflows.
@@ -138,7 +118,7 @@ test("auto_min_floors_text_at_min_content_width", () => {
 // measure pass. Regression test: the original probe omitted them, flooring a
 // padded text at its bare longest-word width.
 test("auto_min_includes_leaf_padding_and_border_width", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(20);
@@ -173,7 +153,7 @@ test("auto_min_includes_leaf_padding_and_border_width", () => {
 // Same fix on the column (cross) axis: vertical padding must be included in the
 // height min-content.
 test("auto_min_includes_leaf_padding_height", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Column);
   root.setWidth(200);
@@ -206,7 +186,7 @@ test("auto_min_includes_leaf_padding_height", () => {
 // critique). With auto-min on, an item with `flex: 1` is still floored at
 // its min-content even though basis is 0.
 test("flex_basis_zero_floors_at_min_content", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(50);
@@ -235,7 +215,7 @@ test("flex_basis_zero_floors_at_min_content", () => {
 // Explicit width (basis) > content: floor = min(content, specified) =
 // content. So text can shrink from basis-90 down to content-30.
 test("content_smaller_than_specified_shrinks_to_content", () => {
-  const row = new ShrinkRow(/*useAutoMinSize=*/ true, /*containerWidth=*/ 20);
+  const row = new ShrinkRow(/*containerWidth=*/ 20);
   row.layout();
   // Auto-min = min(content=30, specified=NaN) = 30. (No flex-basis set as
   // a "specified main size" — Yoga's basis is set via setFlexBasis but the
@@ -248,7 +228,7 @@ test("content_smaller_than_specified_shrinks_to_content", () => {
 
 // max-width caps the auto-min.
 test("auto_min_capped_by_max_size", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(10);
@@ -273,7 +253,7 @@ test("auto_min_capped_by_max_size", () => {
 
 // Explicit min-width: 0 opts out (CSS escape hatch).
 test("explicit_min_width_zero_opts_out", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(20);
@@ -304,7 +284,7 @@ test("explicit_min_width_zero_opts_out", () => {
 // Aspect-ratio item with definite cross-size and no specified main:
 // transferred-size = cross × ratio acts as the floor.
 test("aspect_ratio_transferred_size_floors_main", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(30);
@@ -339,7 +319,7 @@ test("aspect_ratio_transferred_size_floors_main", () => {
 // Multi-level: outer column has limited height; inner wrapper has a
 // fixed-size leaf (height 50) — auto-min protects the wrapper at 50.
 test("nested_flexbox_recurses_into_min_content", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Column);
   root.setWidth(200);
@@ -369,7 +349,7 @@ test("nested_flexbox_recurses_into_min_content", () => {
 
 // overflow != visible disables auto-min on that item (CSS spec).
 test("overflow_hidden_disables_auto_min", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(20);
@@ -417,7 +397,7 @@ function measureMinContentZero(
 // Primitive case: the regular measure returns intrinsic content, but
 // min-content is 0.
 test("min_content_measure_func_preferred_during_probe", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(20);
@@ -469,7 +449,7 @@ test("has_min_content_measure_func_tracks_setter", () => {
 // intrinsic size; the static `0` says "no min-content contribution per
 // CSS-Images" and short-circuits the probe.
 test("static_min_content_width_short_circuits_probe", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(20);
@@ -510,7 +490,7 @@ test("static_min_content_width_short_circuits_probe", () => {
 // outer Row probes its child container; the child's static `0` means we
 // skip its grandchildren entirely.
 test("static_min_content_short_circuits_container_recursion", () => {
-  const config = makeWebConfig(/*useAutoMinSize=*/ true);
+  const config = makeWebConfig();
   const root = new Node(config);
   root.setFlexDirection(FlexDirection.Row);
   root.setWidth(20);
@@ -562,17 +542,3 @@ test("static_min_content_getter_setter_round_trip", () => {
   node.free();
 });
 
-// Errata smoke test: default config carries the legacy bit; clearing it
-// enables auto-min, setting it back disables.
-test("errata_bit_round_trips", () => {
-  const config = new Config();
-  expect(config.getErrata() & Errata.MinSizeUndefinedInsteadOfAuto).not.toBe(0);
-
-  config.setErrata(config.getErrata() & ~Errata.MinSizeUndefinedInsteadOfAuto);
-  expect(config.getErrata() & Errata.MinSizeUndefinedInsteadOfAuto).toBe(0);
-
-  config.setErrata(config.getErrata() | Errata.MinSizeUndefinedInsteadOfAuto);
-  expect(config.getErrata() & Errata.MinSizeUndefinedInsteadOfAuto).not.toBe(0);
-
-  config.free();
-});

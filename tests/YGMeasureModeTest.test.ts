@@ -175,13 +175,17 @@ test("flex_child", () => {
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
-  expect(constraintList.length).toBe(2);
+  expect(constraintList.length).toBe(3);
 
   expect(constraintList[0]?.height).toBe(100);
   expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
 
-  expect(constraintList[1]?.height).toBe(100);
-  expect(constraintList[1]?.heightMode).toBe(MeasureMode.Exactly);
+  // Min-content probe for the CSS Flexbox §4.5 automatic minimum size
+  expect(constraintList[1]?.height).toBe(0);
+  expect(constraintList[1]?.heightMode).toBe(MeasureMode.AtMost);
+
+  expect(constraintList[2]?.height).toBe(100);
+  expect(constraintList[2]?.heightMode).toBe(MeasureMode.Exactly);
   root.freeRecursive();
 });
 
@@ -200,10 +204,14 @@ test("flex_child_with_flex_basis", () => {
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
-  expect(constraintList.length).toBe(1);
+  expect(constraintList.length).toBe(2);
 
-  expect(constraintList[0]?.height).toBe(100);
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.Exactly);
+  // Min-content probe for the CSS Flexbox §4.5 automatic minimum size
+  expect(constraintList[0]?.height).toBe(0);
+  expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
+
+  expect(constraintList[1]?.height).toBe(100);
+  expect(constraintList[1]?.heightMode).toBe(MeasureMode.Exactly);
   root.freeRecursive();
 });
 

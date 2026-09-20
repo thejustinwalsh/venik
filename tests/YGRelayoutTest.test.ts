@@ -1,11 +1,10 @@
 // Port of yoga-cpp/tests/YGRelayoutTest.cpp
 
 import { expect, test } from "vitest";
-import { Config, Direction, Edge, ExperimentalFeature, Node, PositionType } from "../src/index.ts";
+import { Config, Direction, Edge, Node, PositionType } from "../src/index.ts";
 
 test("dont_cache_computed_flex_basis_between_layouts", () => {
   const config = new Config();
-  config.setExperimentalFeatureEnabled(ExperimentalFeature.WebFlexBasis, true);
 
   const root = new Node(config);
   root.setHeightPercent(100);

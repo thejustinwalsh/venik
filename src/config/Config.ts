@@ -1,6 +1,6 @@
 import { assertFatalWithConfig } from "../debug/AssertFatal.ts";
 import { getDefaultLogger } from "../debug/Log.ts";
-import { Errata, type ExperimentalFeature, type LogLevel } from "../enums.ts";
+import type { LogLevel } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import type { CloneNodeFunction, Logger } from "../types.ts";
 
@@ -16,10 +16,6 @@ export class Config {
   private useWebDefaults_: boolean = false;
 
   private version_: number = 0;
-  /** Bit set indexed by `ExperimentalFeature`. */
-  private experimentalFeatures_: number = 0;
-  private errata_: Errata =
-    Errata.MinSizeUndefinedInsteadOfAuto | Errata.FlexFirstPassUsesRunningTotals;
   private pointScaleFactor_: number = 1.0;
   private context_: unknown = null;
 
@@ -65,41 +61,6 @@ export class Config {
     return this.pointScaleFactor_;
   }
 
-  setErrata(errata: Errata): void {
-    if (this.errata_ !== errata) {
-      this.errata_ = errata;
-      this.version_++;
-    }
-  }
-  addErrata(errata: Errata): void {
-    if (!this.hasErrata(errata)) {
-      this.errata_ |= errata;
-      this.version_++;
-    }
-  }
-  removeErrata(errata: Errata): void {
-    if (this.hasErrata(errata)) {
-      this.errata_ &= ~errata;
-      this.version_++;
-    }
-  }
-  getErrata(): Errata {
-    return this.errata_;
-  }
-  hasErrata(errata: Errata): boolean {
-    return (this.errata_ & errata) !== Errata.None;
-  }
-
-  setExperimentalFeatureEnabled(feature: ExperimentalFeature, enabled: boolean): void {
-    if (this.isExperimentalFeatureEnabled(feature) !== enabled) {
-      this.experimentalFeatures_ ^= 1 << feature;
-      this.version_++;
-    }
-  }
-  isExperimentalFeatureEnabled(feature: ExperimentalFeature): boolean {
-    return (this.experimentalFeatures_ & (1 << feature)) !== 0;
-  }
-
   setLogger(logger: Logger | null): void {
     this.logger_ = logger ?? getDefaultLogger();
   }
@@ -127,11 +88,6 @@ export class Config {
     return clone;
   }
 
-  /** @internal The enabled experimental features, as a bit set indexed by `ExperimentalFeature`. */
-  getEnabledExperiments(): number {
-    return this.experimentalFeatures_;
-  }
-
   /** @internal */
   log(node: Node | null, level: LogLevel, message: string): void {
     this.logger_(this, node, level, message);
@@ -146,8 +102,6 @@ export class Config {
 /** @internal Whether layouts computed under `oldConfig` must be recomputed under `newConfig`. */
 export function configUpdateInvalidatesLayout(oldConfig: Config, newConfig: Config): boolean {
   return (
-    oldConfig.getErrata() !== newConfig.getErrata() ||
-    oldConfig.getEnabledExperiments() !== newConfig.getEnabledExperiments() ||
     oldConfig.getPointScaleFactor() !== newConfig.getPointScaleFactor() ||
     oldConfig.useWebDefaults() !== newConfig.useWebDefaults()
   );

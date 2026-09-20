@@ -7,7 +7,6 @@ import {
   Config,
   Direction,
   Edge,
-  Errata,
   FlexDirection,
   Justify,
   Node,
@@ -122,53 +121,6 @@ test("assert_webdefault_values_reset", () => {
   expect(root.getFlexShrink()).toBe(1);
 
   root.freeRecursive();
-  config.free();
-});
-
-test("assert_legacy_stretch_behaviour", () => {
-  const config = new Config();
-  config.setErrata(Errata.StretchFlexBasis);
-  const root = new Node(config);
-  root.setWidth(500);
-  root.setHeight(500);
-
-  const root_child0 = new Node(config);
-  root_child0.setAlignItems(Align.FlexStart);
-  root.insertChild(root_child0, 0);
-
-  const root_child0_child0 = new Node(config);
-  root_child0_child0.setFlexGrow(1);
-  root_child0_child0.setFlexShrink(1);
-  root_child0.insertChild(root_child0_child0, 0);
-
-  const root_child0_child0_child0 = new Node(config);
-  root_child0_child0_child0.setFlexGrow(1);
-  root_child0_child0_child0.setFlexShrink(1);
-  root_child0_child0.insertChild(root_child0_child0_child0, 0);
-  root.calculateLayout(undefined, undefined, Direction.LTR);
-
-  expect(root.getComputedLeft()).toBe(0);
-  expect(root.getComputedTop()).toBe(0);
-  expect(root.getComputedWidth()).toBe(500);
-  expect(root.getComputedHeight()).toBe(500);
-
-  expect(root_child0.getComputedLeft()).toBe(0);
-  expect(root_child0.getComputedTop()).toBe(0);
-  expect(root_child0.getComputedWidth()).toBe(500);
-  expect(root_child0.getComputedHeight()).toBe(500);
-
-  expect(root_child0_child0.getComputedLeft()).toBe(0);
-  expect(root_child0_child0.getComputedTop()).toBe(0);
-  expect(root_child0_child0.getComputedWidth()).toBe(0);
-  expect(root_child0_child0.getComputedHeight()).toBe(500);
-
-  expect(root_child0_child0_child0.getComputedLeft()).toBe(0);
-  expect(root_child0_child0_child0.getComputedTop()).toBe(0);
-  expect(root_child0_child0_child0.getComputedWidth()).toBe(0);
-  expect(root_child0_child0_child0.getComputedHeight()).toBe(500);
-
-  root.freeRecursive();
-
   config.free();
 });
 
