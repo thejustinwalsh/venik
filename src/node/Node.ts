@@ -636,15 +636,6 @@ export class Node {
   setFlexBasisAuto(): void {
     this.updateFlexBasis(StyleSizeLength.ofAuto());
   }
-  setFlexBasisMaxContent(): void {
-    this.updateFlexBasis(StyleSizeLength.ofMaxContent());
-  }
-  setFlexBasisFitContent(): void {
-    this.updateFlexBasis(StyleSizeLength.ofFitContent());
-  }
-  setFlexBasisStretch(): void {
-    this.updateFlexBasis(StyleSizeLength.ofStretch());
-  }
   getFlexBasis(): Value {
     return this.style_.flexBasis().toValue();
   }
@@ -656,15 +647,6 @@ export class Node {
   }
   setWidthAuto(): void {
     this.updateDimension(Dimension.Width, StyleSizeLength.ofAuto());
-  }
-  setWidthMaxContent(): void {
-    this.updateDimension(Dimension.Width, StyleSizeLength.ofMaxContent());
-  }
-  setWidthFitContent(): void {
-    this.updateDimension(Dimension.Width, StyleSizeLength.ofFitContent());
-  }
-  setWidthStretch(): void {
-    this.updateDimension(Dimension.Width, StyleSizeLength.ofStretch());
   }
   getWidth(): Value {
     return this.style_.dimension(Dimension.Width).toValue();
@@ -678,15 +660,6 @@ export class Node {
   setHeightAuto(): void {
     this.updateDimension(Dimension.Height, StyleSizeLength.ofAuto());
   }
-  setHeightMaxContent(): void {
-    this.updateDimension(Dimension.Height, StyleSizeLength.ofMaxContent());
-  }
-  setHeightFitContent(): void {
-    this.updateDimension(Dimension.Height, StyleSizeLength.ofFitContent());
-  }
-  setHeightStretch(): void {
-    this.updateDimension(Dimension.Height, StyleSizeLength.ofStretch());
-  }
   getHeight(): Value {
     return this.style_.dimension(Dimension.Height).toValue();
   }
@@ -695,15 +668,6 @@ export class Node {
   }
   setMinWidthPercent(minWidth: number | undefined): void {
     this.updateMinDimension(Dimension.Width, StyleSizeLength.percent(minWidth ?? NaN));
-  }
-  setMinWidthMaxContent(): void {
-    this.updateMinDimension(Dimension.Width, StyleSizeLength.ofMaxContent());
-  }
-  setMinWidthFitContent(): void {
-    this.updateMinDimension(Dimension.Width, StyleSizeLength.ofFitContent());
-  }
-  setMinWidthStretch(): void {
-    this.updateMinDimension(Dimension.Width, StyleSizeLength.ofStretch());
   }
   getMinWidth(): Value {
     return this.style_.minDimension(Dimension.Width).toValue();
@@ -714,15 +678,6 @@ export class Node {
   setMinHeightPercent(minHeight: number | undefined): void {
     this.updateMinDimension(Dimension.Height, StyleSizeLength.percent(minHeight ?? NaN));
   }
-  setMinHeightMaxContent(): void {
-    this.updateMinDimension(Dimension.Height, StyleSizeLength.ofMaxContent());
-  }
-  setMinHeightFitContent(): void {
-    this.updateMinDimension(Dimension.Height, StyleSizeLength.ofFitContent());
-  }
-  setMinHeightStretch(): void {
-    this.updateMinDimension(Dimension.Height, StyleSizeLength.ofStretch());
-  }
   getMinHeight(): Value {
     return this.style_.minDimension(Dimension.Height).toValue();
   }
@@ -732,15 +687,6 @@ export class Node {
   setMaxWidthPercent(maxWidth: number | undefined): void {
     this.updateMaxDimension(Dimension.Width, StyleSizeLength.percent(maxWidth ?? NaN));
   }
-  setMaxWidthMaxContent(): void {
-    this.updateMaxDimension(Dimension.Width, StyleSizeLength.ofMaxContent());
-  }
-  setMaxWidthFitContent(): void {
-    this.updateMaxDimension(Dimension.Width, StyleSizeLength.ofFitContent());
-  }
-  setMaxWidthStretch(): void {
-    this.updateMaxDimension(Dimension.Width, StyleSizeLength.ofStretch());
-  }
   getMaxWidth(): Value {
     return this.style_.maxDimension(Dimension.Width).toValue();
   }
@@ -749,15 +695,6 @@ export class Node {
   }
   setMaxHeightPercent(maxHeight: number | undefined): void {
     this.updateMaxDimension(Dimension.Height, StyleSizeLength.percent(maxHeight ?? NaN));
-  }
-  setMaxHeightMaxContent(): void {
-    this.updateMaxDimension(Dimension.Height, StyleSizeLength.ofMaxContent());
-  }
-  setMaxHeightFitContent(): void {
-    this.updateMaxDimension(Dimension.Height, StyleSizeLength.ofFitContent());
-  }
-  setMaxHeightStretch(): void {
-    this.updateMaxDimension(Dimension.Height, StyleSizeLength.ofStretch());
   }
   getMaxHeight(): Value {
     return this.style_.maxDimension(Dimension.Height).toValue();

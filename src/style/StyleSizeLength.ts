@@ -9,7 +9,7 @@ import type { Value } from "../types.ts";
  * This class represents a CSS Value for sizes (e.g. width, height, min-width,
  * etc.). It may be one of:
  * 1. Undefined
- * 2. A keyword (e.g. auto, max-content, stretch, etc.)
+ * 2. The `auto` keyword
  * 3. A CSS <length-percentage> value:
  *    a. <length> value (e.g. 10px)
  *    b. <percentage> value of a reference <length>
@@ -38,9 +38,6 @@ export class StyleSizeLength {
 
   private static readonly UNDEFINED = new StyleSizeLength();
   private static readonly AUTO = StyleSizeLength.make(NaN, Unit.Auto);
-  private static readonly MAXCONTENT = StyleSizeLength.make(NaN, Unit.MaxContent);
-  private static readonly FITCONTENT = StyleSizeLength.make(NaN, Unit.FitContent);
-  private static readonly STRETCH = StyleSizeLength.make(NaN, Unit.Stretch);
 
   /** Undefined if `value` is NaN or infinite. */
   static points(value: number): StyleSizeLength {
@@ -52,25 +49,8 @@ export class StyleSizeLength {
     return Number.isFinite(value) ? StyleSizeLength.make(value, Unit.Percent) : StyleSizeLength.UNDEFINED;
   }
 
-  /** A flex fraction (`fr`), stored with `Unit.Stretch`. Undefined if `fraction` is NaN or infinite. */
-  static stretch(fraction: number): StyleSizeLength {
-    return Number.isFinite(fraction) ? StyleSizeLength.make(fraction, Unit.Stretch) : StyleSizeLength.UNDEFINED;
-  }
-
   static ofAuto(): StyleSizeLength {
     return StyleSizeLength.AUTO;
-  }
-
-  static ofMaxContent(): StyleSizeLength {
-    return StyleSizeLength.MAXCONTENT;
-  }
-
-  static ofFitContent(): StyleSizeLength {
-    return StyleSizeLength.FITCONTENT;
-  }
-
-  static ofStretch(): StyleSizeLength {
-    return StyleSizeLength.STRETCH;
   }
 
   static undefined(): StyleSizeLength {
@@ -79,18 +59,6 @@ export class StyleSizeLength {
 
   isAuto(): boolean {
     return this.unit_ === Unit.Auto;
-  }
-
-  isMaxContent(): boolean {
-    return this.unit_ === Unit.MaxContent;
-  }
-
-  isFitContent(): boolean {
-    return this.unit_ === Unit.FitContent;
-  }
-
-  isStretch(): boolean {
-    return this.unit_ === Unit.Stretch;
   }
 
   isUndefined(): boolean {

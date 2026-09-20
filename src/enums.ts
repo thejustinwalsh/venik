@@ -125,9 +125,6 @@ export const Unit = {
   Point: 1,
   Percent: 2,
   Auto: 3,
-  MaxContent: 4,
-  FitContent: 5,
-  Stretch: 6,
 } as const;
 export type Unit = (typeof Unit)[keyof typeof Unit];
 
@@ -207,9 +204,6 @@ export const UNIT_UNDEFINED = Unit.Undefined;
 export const UNIT_POINT = Unit.Point;
 export const UNIT_PERCENT = Unit.Percent;
 export const UNIT_AUTO = Unit.Auto;
-export const UNIT_MAX_CONTENT = Unit.MaxContent;
-export const UNIT_FIT_CONTENT = Unit.FitContent;
-export const UNIT_STRETCH = Unit.Stretch;
 export const WRAP_NO_WRAP = Wrap.NoWrap;
 export const WRAP_WRAP = Wrap.Wrap;
 export const WRAP_WRAP_REVERSE = Wrap.WrapReverse;
