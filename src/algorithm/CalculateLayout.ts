@@ -72,11 +72,11 @@ function isColumnStretchEdge(owner: Node | null, child: Node | null): boolean {
   const childStyle = child.style();
   const childWidth = child.getProcessedDimension(Dimension.Width);
   return (
-    ownerStyle.display() === Display.Flex &&
-    isColumn(ownerStyle.flexDirection()) &&
-    ownerStyle.flexWrap() === Wrap.NoWrap &&
-    childStyle.positionType() !== PositionType.Absolute &&
-    !childStyle.aspectRatio().isDefined() &&
+    ownerStyle.display === Display.Flex &&
+    isColumn(ownerStyle.flexDirection) &&
+    ownerStyle.flexWrap === Wrap.NoWrap &&
+    childStyle.positionType !== PositionType.Absolute &&
+    !childStyle.aspectRatio.isDefined() &&
     (childWidth.isAuto() || childWidth.isUndefined()) &&
     !hasAutoHorizontalMargin(childStyle) &&
     resolveChildAlignment(owner, child) === Align.Stretch
@@ -87,13 +87,13 @@ function isInColumnStretchScrollSubtree(node: Node): boolean {
   let current: Node | null = node;
   while (current !== null) {
     let owner = current.getOwner();
-    while (owner !== null && owner.style().display() === Display.Contents) {
+    while (owner !== null && owner.style().display === Display.Contents) {
       owner = owner.getOwner();
     }
     if (owner === null || !isColumnStretchEdge(owner, current)) {
       return false;
     }
-    if (owner.style().overflow() === Overflow.Scroll) {
+    if (owner.style().overflow === Overflow.Scroll) {
       return true;
     }
     current = owner;
@@ -112,9 +112,9 @@ function hasNonZeroVerticalSpacing(style: Style): boolean {
   for (let i = 0, length = VERTICAL_EDGES.length; i < length; i++) {
     const edge = VERTICAL_EDGES[i]!;
     if (
-      isNonZeroLength(style.margin(edge)) ||
-      isNonZeroLength(style.padding(edge)) ||
-      isNonZeroLength(style.border(edge))
+      isNonZeroLength(style.margin[edge]) ||
+      isNonZeroLength(style.padding[edge]) ||
+      isNonZeroLength(style.border[edge])
     ) {
       return true;
     }
@@ -140,10 +140,10 @@ function hasPercentageLength(style: Style): boolean {
   for (let i = 0, length = ALL_EDGES.length; i < length; i++) {
     const edge = ALL_EDGES[i]!;
     if (
-      style.margin(edge).isPercent() ||
-      style.position(edge).isPercent() ||
-      style.padding(edge).isPercent() ||
-      style.border(edge).isPercent()
+      style.margin[edge].isPercent() ||
+      style.position[edge].isPercent() ||
+      style.padding[edge].isPercent() ||
+      style.border[edge].isPercent()
     ) {
       return true;
     }
@@ -152,27 +152,27 @@ function hasPercentageLength(style: Style): boolean {
   for (let i = 0, length = DIMENSIONS.length; i < length; i++) {
     const dim = DIMENSIONS[i]!;
     if (
-      style.dimension(dim).isPercent() ||
-      style.minDimension(dim).isPercent() ||
-      style.maxDimension(dim).isPercent()
+      style.dimensions[dim].isPercent() ||
+      style.minDimensions[dim].isPercent() ||
+      style.maxDimensions[dim].isPercent()
     ) {
       return true;
     }
   }
 
   return (
-    style.flexBasis().isPercent() ||
-    style.gap(Gutter.Column).isPercent() ||
-    style.gap(Gutter.Row).isPercent() ||
-    style.gap(Gutter.All).isPercent()
+    style.flexBasis.isPercent() ||
+    style.gap[Gutter.Column].isPercent() ||
+    style.gap[Gutter.Row].isPercent() ||
+    style.gap[Gutter.All].isPercent()
   );
 }
 
 function hasNonZeroFlex(node: Node): boolean {
   const style = node.style();
-  const flex = style.flex().unwrap();
-  const flexGrow = style.flexGrow().unwrap();
-  const flexShrink = style.flexShrink().unwrap();
+  const flex = style.flex.unwrap();
+  const flexGrow = style.flexGrow.unwrap();
+  const flexShrink = style.flexShrink.unwrap();
 
   const canGrow = flexGrow === flexGrow ? flexGrow !== 0.0 : flex > 0.0;
   // An unset flex-shrink is the CSS default of 1.
@@ -182,13 +182,13 @@ function hasNonZeroFlex(node: Node): boolean {
 
 function isHeightFitContentIndependent(node: Node): boolean {
   const style = node.style();
-  const height = style.dimension(Dimension.Height);
-  const flexBasis = style.flexBasis();
+  const height = style.dimensions[Dimension.Height];
+  const flexBasis = style.flexBasis;
   const hasRelativePercentPosition =
-    style.position(Edge.Top).isPercent() ||
-    style.position(Edge.Bottom).isPercent() ||
-    style.position(Edge.Vertical).isPercent() ||
-    style.position(Edge.All).isPercent();
+    style.position[Edge.Top].isPercent() ||
+    style.position[Edge.Bottom].isPercent() ||
+    style.position[Edge.Vertical].isPercent() ||
+    style.position[Edge.All].isPercent();
 
   return (
     !node.hasMeasureFunc() &&
@@ -196,22 +196,22 @@ function isHeightFitContentIndependent(node: Node): boolean {
     !node.hasBaselineFunc() &&
     !node.isReferenceBaseline() &&
     (height.isAuto() || height.isUndefined()) &&
-    style.minDimension(Dimension.Height).isUndefined() &&
-    style.maxDimension(Dimension.Height).isUndefined() &&
+    style.minDimensions[Dimension.Height].isUndefined() &&
+    style.maxDimensions[Dimension.Height].isUndefined() &&
     (flexBasis.isAuto() || flexBasis.isUndefined()) &&
     !hasNonZeroFlex(node) &&
-    style.boxSizing() === BoxSizing.BorderBox &&
-    !style.aspectRatio().isDefined() &&
-    style.positionType() !== PositionType.Absolute &&
-    style.overflow() !== Overflow.Scroll &&
-    style.display() === Display.Flex &&
-    isColumn(style.flexDirection()) &&
-    style.alignItems() === Align.Stretch &&
-    (style.alignSelf() === Align.Auto || style.alignSelf() === Align.Stretch) &&
-    style.justifyContent() === Justify.FlexStart &&
-    style.flexWrap() === Wrap.NoWrap &&
-    !style.gap(Gutter.All).isDefined() &&
-    !style.gap(Gutter.Row).isDefined() &&
+    style.boxSizing === BoxSizing.BorderBox &&
+    !style.aspectRatio.isDefined() &&
+    style.positionType !== PositionType.Absolute &&
+    style.overflow !== Overflow.Scroll &&
+    style.display === Display.Flex &&
+    isColumn(style.flexDirection) &&
+    style.alignItems === Align.Stretch &&
+    (style.alignSelf === Align.Auto || style.alignSelf === Align.Stretch) &&
+    style.justifyContent === Justify.FlexStart &&
+    style.flexWrap === Wrap.NoWrap &&
+    !style.gap[Gutter.All].isDefined() &&
+    !style.gap[Gutter.Row].isDefined() &&
     !hasRelativePercentPosition &&
     !hasNonZeroVerticalSpacing(style) &&
     !hasPercentageLength(style)
@@ -289,7 +289,7 @@ function computeFlexBasisForChild(
   depth: number,
   generationCount: number,
 ): void {
-  const mainAxis = resolveDirection(node.style().flexDirection(), direction);
+  const mainAxis = resolveDirection(node.style().flexDirection, direction);
   const isMainAxisRow = isRow(mainAxis);
   const mainAxisSize = isMainAxisRow ? width : height;
   const mainAxisOwnerSize = isMainAxisRow ? ownerWidth : ownerHeight;
@@ -369,8 +369,8 @@ function computeFlexBasisForChild(
     // The W3C spec doesn't say anything about the 'overflow' property, but all
     // major browsers appear to implement the following logic.
     if (
-      (!isMainAxisRow && node.style().overflow() === Overflow.Scroll) ||
-      node.style().overflow() !== Overflow.Scroll
+      (!isMainAxisRow && node.style().overflow === Overflow.Scroll) ||
+      node.style().overflow !== Overflow.Scroll
     ) {
       if (childWidth !== childWidth && width === width) {
         childWidth = width;
@@ -381,7 +381,7 @@ function computeFlexBasisForChild(
     // A zero-intrinsic-height column subtree has the same layout with an
     // unbounded height, allowing its measurement cache to survive unrelated
     // size changes elsewhere in a vertical scroll subtree.
-    const parentDoesNotScroll = node.style().overflow() !== Overflow.Scroll;
+    const parentDoesNotScroll = node.style().overflow !== Overflow.Scroll;
     let applyHeightFitContent = isMainAxisRow || parentDoesNotScroll;
     const childHadOverflow = child.isDirty() && child.getLayout().hadOverflow();
     const hasHeightIndependentSubtree =
@@ -404,7 +404,7 @@ function computeFlexBasisForChild(
       childHeightSizingMode = SizingMode.FitContent;
     }
 
-    const aspectRatio = child.style().aspectRatio().unwrap();
+    const aspectRatio = child.style().aspectRatio.unwrap();
     const hasAspectRatio = aspectRatio === aspectRatio;
     if (hasAspectRatio) {
       if (!isMainAxisRow && childWidthSizingMode === SizingMode.StretchFit) {
@@ -718,7 +718,7 @@ export function cleanupContentsNodesRecursively(node: Node, didPerformLayout: bo
     const children = node.getChildren();
     for (let i = 0, length = children.length; i < length; i++) {
       const child = children[i]!;
-      if (child.style().display() === Display.Contents) {
+      if (child.style().display === Display.Contents) {
         resetLayout(child);
         if (didPerformLayout) {
           child.setHasNewLayout(true);
@@ -811,7 +811,7 @@ function computeFlexBasisForChildren(
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
     child.processDimensions();
-    if (child.style().display() === Display.None) {
+    if (child.style().display === Display.None) {
       // Only mutate display: none children during layout passes. Zeroing them
       // out during measure-only passes contributes nothing to the measurement,
       // but sets `hasNewLayout` on nodes the parent's layout pass may never
@@ -832,7 +832,7 @@ function computeFlexBasisForChildren(
       child.setLayoutPositionFromStyle(childDirection, availableInnerWidth, availableInnerHeight);
     }
 
-    if (child.style().positionType() === PositionType.Absolute) {
+    if (child.style().positionType === PositionType.Absolute) {
       continue;
     }
     if (child === singleFlexChild) {
@@ -941,7 +941,7 @@ function computeMinContentMainSize(
   }
 
   const direction = node.resolveDirection(ownerDirection);
-  const nodeMainAxis = resolveDirection(node.style().flexDirection(), direction);
+  const nodeMainAxis = resolveDirection(node.style().flexDirection, direction);
   const nodeCrossAxis = resolveCrossDirection(nodeMainAxis, direction);
 
   let mainTotal = 0.0;
@@ -950,8 +950,8 @@ function computeMinContentMainSize(
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
     if (
-      child.style().display() === Display.None ||
-      child.style().positionType() === PositionType.Absolute
+      child.style().display === Display.None ||
+      child.style().positionType === PositionType.Absolute
     ) {
       continue;
     }
@@ -1009,18 +1009,18 @@ function computeAutoMinMainSize(
   ownerWidth: number,
   ownerHeight: number,
 ): number {
-  if (child.style().display() === Display.None) {
+  if (child.style().display === Display.None) {
     return NaN;
   }
   // Explicit `min-{w,h}` (including `0`) wins over auto. This is the
   // CSS-spec opt-out (§4.5).
-  if (child.style().minDimension(dimension(mainAxis)).isDefined()) {
+  if (child.style().minDimensions[dimension(mainAxis)].isDefined()) {
     return NaN;
   }
   // Per CSS §4.5: a flex item whose own `overflow` is not `visible` gets
   // auto-min = 0 (let scroll/clip handle overflow rather than enforce a
   // content-based minimum).
-  if (child.style().overflow() !== Overflow.Visible) {
+  if (child.style().overflow !== Overflow.Visible) {
     return 0.0;
   }
 
@@ -1038,7 +1038,7 @@ function computeAutoMinMainSize(
 
   // Transferred size suggestion: cross × aspect-ratio, if both are definite.
   let transferredMain = NaN;
-  const ratio = child.style().aspectRatio().unwrap();
+  const ratio = child.style().aspectRatio.unwrap();
   if (ratio === ratio) {
     const crossOwner = isMainAxisRow ? ownerHeight : ownerWidth;
     const crossValue = child.getResolvedDimension(direction, crossDim, crossOwner, ownerWidth);
@@ -1133,7 +1133,7 @@ function distributeFreeSpaceSecondPass(
   let flexGrowFactor = 0;
   let deltaFreeSpace = 0;
   const isMainAxisRow = isRow(mainAxis);
-  const isNodeFlexWrap = node.style().flexWrap() !== Wrap.NoWrap;
+  const isNodeFlexWrap = node.style().flexWrap !== Wrap.NoWrap;
 
   for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
@@ -1206,7 +1206,7 @@ function distributeFreeSpaceSecondPass(
     let childCrossSizingMode: SizingMode;
     let childMainSizingMode: SizingMode = SizingMode.StretchFit;
 
-    const aspectRatio = childStyle.aspectRatio().unwrap();
+    const aspectRatio = childStyle.aspectRatio.unwrap();
     if (aspectRatio === aspectRatio) {
       childCrossSize = isMainAxisRow
         ? (childMainSize - marginMain) / aspectRatio
@@ -1548,7 +1548,7 @@ function justifyMainAxis(
       mainAxisOwnerSize,
       ownerWidth,
     );
-    if (style.minDimension(dimension(mainAxis)).isDefined() && minMainDim === minMainDim) {
+    if (style.minDimensions[dimension(mainAxis)].isDefined() && minMainDim === minMainDim) {
       // This condition makes sure that if the size of main dimension(after
       // considering child nodes main dim, leading and trailing padding etc)
       // falls below min dimension, then the remainingFreeSpace is reassigned
@@ -1575,8 +1575,8 @@ function justifyMainAxis(
   let betweenMainDim = gap;
   const justifyContent =
     flexLine.layout.remainingFreeSpace >= 0
-      ? style.justifyContent()
-      : fallbackJustification(style.justifyContent());
+      ? style.justifyContent
+      : fallbackJustification(style.justifyContent);
 
   const itemCount = flexLine.itemsInFlow.length;
   if (flexLine.numberOfAutoMargins === 0) {
@@ -1922,10 +1922,10 @@ function calculateLayoutImpl(
   cleanupContentsNodesRecursively(node, performLayout);
 
   // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
-  const mainAxis = resolveDirection(style.flexDirection(), direction);
+  const mainAxis = resolveDirection(style.flexDirection, direction);
   const crossAxis = resolveCrossDirection(mainAxis, direction);
   const isMainAxisRow = isRow(mainAxis);
-  const isNodeFlexWrap = style.flexWrap() !== Wrap.NoWrap;
+  const isNodeFlexWrap = style.flexWrap !== Wrap.NoWrap;
 
   const mainAxisOwnerSize = isMainAxisRow ? ownerWidth : ownerHeight;
   const crossAxisOwnerSize = isMainAxisRow ? ownerHeight : ownerWidth;
@@ -2192,7 +2192,7 @@ function calculateLayoutImpl(
           // no need to stretch.
           if (!child.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim)) {
             let childMainSize = child.getLayout().measuredDimension(dimension(mainAxis));
-            const aspectRatio = childStyle.aspectRatio().unwrap();
+            const aspectRatio = childStyle.aspectRatio.unwrap();
             let childCrossSize =
               aspectRatio === aspectRatio
                 ? childStyle.computeMarginForAxis(crossAxis, availableInnerWidth) +
@@ -2223,7 +2223,7 @@ function calculateLayoutImpl(
             const childWidth = isMainAxisRow ? childMainSize : childCrossSize;
             const childHeight = !isMainAxisRow ? childMainSize : childCrossSize;
 
-            const alignContent = style.alignContent();
+            const alignContent = style.alignContent;
             const crossAxisDoesNotGrow = alignContent !== Align.Stretch && isNodeFlexWrap;
             const childWidthSizingMode =
               childWidth !== childWidth || (!isMainAxisRow && crossAxisDoesNotGrow)
@@ -2315,8 +2315,8 @@ function calculateLayoutImpl(
 
     const alignContent =
       remainingAlignContentDim >= 0
-        ? style.alignContent()
-        : fallbackAlignment(style.alignContent());
+        ? style.alignContent
+        : fallbackAlignment(style.alignContent);
 
     switch (alignContent) {
       case Align.Start:
@@ -2362,10 +2362,10 @@ function calculateLayoutImpl(
       for (; index < layoutChildren.length; index++) {
         const child = layoutChildren[index]!;
         const childStyle = child.style();
-        if (childStyle.display() === Display.None) {
+        if (childStyle.display === Display.None) {
           continue;
         }
-        if (childStyle.positionType() !== PositionType.Absolute) {
+        if (childStyle.positionType !== PositionType.Absolute) {
           if (child.getLineIndex() !== i) {
             break;
           }
@@ -2405,10 +2405,10 @@ function calculateLayoutImpl(
         const child = layoutChildren[index]!;
         const childStyle = child.style();
         const childLayout = child.getLayout();
-        if (childStyle.display() === Display.None) {
+        if (childStyle.display === Display.None) {
           continue;
         }
-        if (childStyle.positionType() !== PositionType.Absolute) {
+        if (childStyle.positionType !== PositionType.Absolute) {
           switch (resolveChildAlignment(node, child)) {
             case Align.Start:
             case Align.End:
@@ -2544,7 +2544,7 @@ function calculateLayoutImpl(
   // dimensions based on the children.
   if (
     sizingModeMainDim === SizingMode.MaxContent ||
-    (style.overflow() !== Overflow.Scroll && sizingModeMainDim === SizingMode.FitContent)
+    (style.overflow !== Overflow.Scroll && sizingModeMainDim === SizingMode.FitContent)
   ) {
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
@@ -2552,7 +2552,7 @@ function calculateLayoutImpl(
       dimension(mainAxis),
       boundAxis(node, mainAxis, direction, maxLineMainDim, mainAxisOwnerSize, ownerWidth),
     );
-  } else if (sizingModeMainDim === SizingMode.FitContent && style.overflow() === Overflow.Scroll) {
+  } else if (sizingModeMainDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
     layout.setMeasuredDimension(
       dimension(mainAxis),
       maxOrDefined(
@@ -2574,7 +2574,7 @@ function calculateLayoutImpl(
 
   if (
     sizingModeCrossDim === SizingMode.MaxContent ||
-    (style.overflow() !== Overflow.Scroll && sizingModeCrossDim === SizingMode.FitContent)
+    (style.overflow !== Overflow.Scroll && sizingModeCrossDim === SizingMode.FitContent)
   ) {
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
@@ -2589,7 +2589,7 @@ function calculateLayoutImpl(
         ownerWidth,
       ),
     );
-  } else if (sizingModeCrossDim === SizingMode.FitContent && style.overflow() === Overflow.Scroll) {
+  } else if (sizingModeCrossDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
     layout.setMeasuredDimension(
       dimension(crossAxis),
       maxOrDefined(
@@ -2611,10 +2611,10 @@ function calculateLayoutImpl(
 
   // As we only wrapped in normal direction yet, we need to reverse the
   // positions on wrap-reverse.
-  if (performLayout && style.flexWrap() === Wrap.WrapReverse) {
+  if (performLayout && style.flexWrap === Wrap.WrapReverse) {
     for (let i = 0, length = layoutChildren.length; i < length; i++) {
       const child = layoutChildren[i]!;
-      if (child.style().positionType() !== PositionType.Absolute) {
+      if (child.style().positionType !== PositionType.Absolute) {
         const childLayout = child.getLayout();
         childLayout.setPosition(
           flexStartEdge(crossAxis),
@@ -2638,8 +2638,8 @@ function calculateLayoutImpl(
         // cannot guarantee that their positions are set when their parents are
         // done with layout.
         if (
-          child.style().display() === Display.None ||
-          child.style().positionType() === PositionType.Absolute
+          child.style().display === Display.None ||
+          child.style().positionType === PositionType.Absolute
         ) {
           continue;
         }
@@ -2656,7 +2656,7 @@ function calculateLayoutImpl(
 
     // STEP 11: SIZING AND POSITIONING ABSOLUTE CHILDREN
     // Let the containing block layout its absolute descendants.
-    if (style.positionType() !== PositionType.Static || depth === 1) {
+    if (style.positionType !== PositionType.Static || depth === 1) {
       layoutAbsoluteDescendants(
         node,
         node,

@@ -30,8 +30,8 @@ import { StyleLength } from "./StyleLength.ts";
 import { StyleSizeLength } from "./StyleSizeLength.ts";
 
 /**
- * The style of a node. Accessors are `style.flexDirection()` /
- * `style.setFlexDirection(v)`.
+ * The style of a node: plain fields, plus the methods that resolve them
+ * against a direction or a reference length.
  *
  * Defaults of a new Style follow CSS: direction Inherit, flexDirection Row,
  * justifyContent FlexStart,
@@ -44,37 +44,34 @@ export class Style {
   static readonly DefaultFlexGrow: number = 0.0;
   static readonly DefaultFlexShrink: number = 1.0;
 
-  private direction_: Direction = Direction.Inherit;
-  private flexDirection_: FlexDirection = FlexDirection.Row;
-  private justifyContent_: Justify = Justify.FlexStart;
-  private alignContent_: Align = Align.Stretch;
-  private alignItems_: Align = Align.Stretch;
-  private alignSelf_: Align = Align.Auto;
-  private positionType_: PositionType = PositionType.Relative;
-  private flexWrap_: Wrap = Wrap.NoWrap;
-  private overflow_: Overflow = Overflow.Visible;
-  private display_: Display = Display.Flex;
-  private boxSizing_: BoxSizing = BoxSizing.BorderBox;
+  direction: Direction = Direction.Inherit;
+  flexDirection: FlexDirection = FlexDirection.Row;
+  justifyContent: Justify = Justify.FlexStart;
+  alignContent: Align = Align.Stretch;
+  alignItems: Align = Align.Stretch;
+  alignSelf: Align = Align.Auto;
+  positionType: PositionType = PositionType.Relative;
+  flexWrap: Wrap = Wrap.NoWrap;
+  overflow: Overflow = Overflow.Visible;
+  display: Display = Display.Flex;
+  boxSizing: BoxSizing = BoxSizing.BorderBox;
 
-  private flex_: FloatOptional = UNDEFINED_NUMBER;
-  private flexGrow_: FloatOptional = UNDEFINED_NUMBER;
-  private flexShrink_: FloatOptional = UNDEFINED_NUMBER;
-  private flexBasis_: StyleSizeLength = StyleSizeLength.ofAuto();
-  private margin_: StyleLength[] = undefinedLengths(EDGE_COUNT);
-  private position_: StyleLength[] = undefinedLengths(EDGE_COUNT);
-  private padding_: StyleLength[] = undefinedLengths(EDGE_COUNT);
-  private border_: StyleLength[] = undefinedLengths(EDGE_COUNT);
-  private gap_: StyleLength[] = undefinedLengths(GUTTER_COUNT);
-  private dimensions_: StyleSizeLength[] = [StyleSizeLength.ofAuto(), StyleSizeLength.ofAuto()];
-  private minDimensions_: StyleSizeLength[] = [
-    StyleSizeLength.undefined(),
-    StyleSizeLength.undefined(),
-  ];
-  private maxDimensions_: StyleSizeLength[] = [
-    StyleSizeLength.undefined(),
-    StyleSizeLength.undefined(),
-  ];
-  private aspectRatio_: FloatOptional = UNDEFINED_NUMBER;
+  flex: FloatOptional = UNDEFINED_NUMBER;
+  flexGrow: FloatOptional = UNDEFINED_NUMBER;
+  flexShrink: FloatOptional = UNDEFINED_NUMBER;
+  flexBasis: StyleSizeLength = StyleSizeLength.ofAuto();
+  /** Degenerate ratios (0, infinite) are stored as undefined by `Node.setAspectRatio`. */
+  aspectRatio: FloatOptional = UNDEFINED_NUMBER;
+
+  // Indexed by `Edge`, `Gutter` and `Dimension`.
+  readonly margin: EdgeLengths = undefinedEdges();
+  readonly position: EdgeLengths = undefinedEdges();
+  readonly padding: EdgeLengths = undefinedEdges();
+  readonly border: EdgeLengths = undefinedEdges();
+  readonly gap: GutterLengths = [StyleLength.undefined(), StyleLength.undefined(), StyleLength.undefined()];
+  readonly dimensions: DimensionLengths = [StyleSizeLength.ofAuto(), StyleSizeLength.ofAuto()];
+  readonly minDimensions: DimensionLengths = [StyleSizeLength.undefined(), StyleSizeLength.undefined()];
+  readonly maxDimensions: DimensionLengths = [StyleSizeLength.undefined(), StyleSizeLength.undefined()];
 
   /** C++ copy construction (`Style copy = style;`). The copy shares no mutable state with `this`. */
   clone(): Style {
@@ -85,207 +82,60 @@ export class Style {
 
   /** C++ copy assignment (`style = other;`). `this` shares no mutable state with `other` afterwards. */
   assign(other: Style): void {
-    this.direction_ = other.direction_;
-    this.flexDirection_ = other.flexDirection_;
-    this.justifyContent_ = other.justifyContent_;
-    this.alignContent_ = other.alignContent_;
-    this.alignItems_ = other.alignItems_;
-    this.alignSelf_ = other.alignSelf_;
-    this.positionType_ = other.positionType_;
-    this.flexWrap_ = other.flexWrap_;
-    this.overflow_ = other.overflow_;
-    this.display_ = other.display_;
-    this.boxSizing_ = other.boxSizing_;
-    this.flex_ = other.flex_;
-    this.flexGrow_ = other.flexGrow_;
-    this.flexShrink_ = other.flexShrink_;
-    this.flexBasis_ = other.flexBasis_;
-    this.margin_ = other.margin_.slice();
-    this.position_ = other.position_.slice();
-    this.padding_ = other.padding_.slice();
-    this.border_ = other.border_.slice();
-    this.gap_ = other.gap_.slice();
-    this.dimensions_ = other.dimensions_.slice();
-    this.minDimensions_ = other.minDimensions_.slice();
-    this.maxDimensions_ = other.maxDimensions_.slice();
-    this.aspectRatio_ = other.aspectRatio_;
+    this.direction = other.direction;
+    this.flexDirection = other.flexDirection;
+    this.justifyContent = other.justifyContent;
+    this.alignContent = other.alignContent;
+    this.alignItems = other.alignItems;
+    this.alignSelf = other.alignSelf;
+    this.positionType = other.positionType;
+    this.flexWrap = other.flexWrap;
+    this.overflow = other.overflow;
+    this.display = other.display;
+    this.boxSizing = other.boxSizing;
+    this.flex = other.flex;
+    this.flexGrow = other.flexGrow;
+    this.flexShrink = other.flexShrink;
+    this.flexBasis = other.flexBasis;
+    copyInto(this.margin, other.margin);
+    copyInto(this.position, other.position);
+    copyInto(this.padding, other.padding);
+    copyInto(this.border, other.border);
+    copyInto(this.gap, other.gap);
+    copyInto(this.dimensions, other.dimensions);
+    copyInto(this.minDimensions, other.minDimensions);
+    copyInto(this.maxDimensions, other.maxDimensions);
+    this.aspectRatio = other.aspectRatio;
   }
 
   /** C++ `operator==`. */
   equals(other: Style): boolean {
     // Like C++, boxSizing is not part of the comparison.
     return (
-      this.direction_ === other.direction_ &&
-      this.flexDirection_ === other.flexDirection_ &&
-      this.justifyContent_ === other.justifyContent_ &&
-      this.alignContent_ === other.alignContent_ &&
-      this.alignItems_ === other.alignItems_ &&
-      this.alignSelf_ === other.alignSelf_ &&
-      this.positionType_ === other.positionType_ &&
-      this.flexWrap_ === other.flexWrap_ &&
-      this.overflow_ === other.overflow_ &&
-      this.display_ === other.display_ &&
-      this.flex_.equals(other.flex_) &&
-      this.flexGrow_.equals(other.flexGrow_) &&
-      this.flexShrink_.equals(other.flexShrink_) &&
-      this.flexBasis_.equals(other.flexBasis_) &&
-      lengthsEqual(this.margin_, other.margin_) &&
-      lengthsEqual(this.position_, other.position_) &&
-      lengthsEqual(this.padding_, other.padding_) &&
-      lengthsEqual(this.border_, other.border_) &&
-      lengthsEqual(this.gap_, other.gap_) &&
-      lengthsEqual(this.dimensions_, other.dimensions_) &&
-      lengthsEqual(this.minDimensions_, other.minDimensions_) &&
-      lengthsEqual(this.maxDimensions_, other.maxDimensions_) &&
-      this.aspectRatio_.equals(other.aspectRatio_)
+      this.direction === other.direction &&
+      this.flexDirection === other.flexDirection &&
+      this.justifyContent === other.justifyContent &&
+      this.alignContent === other.alignContent &&
+      this.alignItems === other.alignItems &&
+      this.alignSelf === other.alignSelf &&
+      this.positionType === other.positionType &&
+      this.flexWrap === other.flexWrap &&
+      this.overflow === other.overflow &&
+      this.display === other.display &&
+      this.flex.equals(other.flex) &&
+      this.flexGrow.equals(other.flexGrow) &&
+      this.flexShrink.equals(other.flexShrink) &&
+      this.flexBasis.equals(other.flexBasis) &&
+      lengthsEqual(this.margin, other.margin) &&
+      lengthsEqual(this.position, other.position) &&
+      lengthsEqual(this.padding, other.padding) &&
+      lengthsEqual(this.border, other.border) &&
+      lengthsEqual(this.gap, other.gap) &&
+      lengthsEqual(this.dimensions, other.dimensions) &&
+      lengthsEqual(this.minDimensions, other.minDimensions) &&
+      lengthsEqual(this.maxDimensions, other.maxDimensions) &&
+      this.aspectRatio.equals(other.aspectRatio)
     );
-  }
-
-  direction(): Direction {
-    return this.direction_;
-  }
-  setDirection(value: Direction): void {
-    this.direction_ = value;
-  }
-
-  flexDirection(): FlexDirection {
-    return this.flexDirection_;
-  }
-  setFlexDirection(value: FlexDirection): void {
-    this.flexDirection_ = value;
-  }
-
-  justifyContent(): Justify {
-    return this.justifyContent_;
-  }
-  setJustifyContent(value: Justify): void {
-    this.justifyContent_ = value;
-  }
-
-  alignContent(): Align {
-    return this.alignContent_;
-  }
-  setAlignContent(value: Align): void {
-    this.alignContent_ = value;
-  }
-
-  alignItems(): Align {
-    return this.alignItems_;
-  }
-  setAlignItems(value: Align): void {
-    this.alignItems_ = value;
-  }
-
-  alignSelf(): Align {
-    return this.alignSelf_;
-  }
-  setAlignSelf(value: Align): void {
-    this.alignSelf_ = value;
-  }
-
-  positionType(): PositionType {
-    return this.positionType_;
-  }
-  setPositionType(value: PositionType): void {
-    this.positionType_ = value;
-  }
-
-  flexWrap(): Wrap {
-    return this.flexWrap_;
-  }
-  setFlexWrap(value: Wrap): void {
-    this.flexWrap_ = value;
-  }
-
-  overflow(): Overflow {
-    return this.overflow_;
-  }
-  setOverflow(value: Overflow): void {
-    this.overflow_ = value;
-  }
-
-  display(): Display {
-    return this.display_;
-  }
-  setDisplay(value: Display): void {
-    this.display_ = value;
-  }
-
-  flex(): FloatOptional {
-    return this.flex_;
-  }
-  setFlex(value: FloatOptional): void {
-    this.flex_ = value;
-  }
-
-  flexGrow(): FloatOptional {
-    return this.flexGrow_;
-  }
-  setFlexGrow(value: FloatOptional): void {
-    this.flexGrow_ = value;
-  }
-
-  flexShrink(): FloatOptional {
-    return this.flexShrink_;
-  }
-  setFlexShrink(value: FloatOptional): void {
-    this.flexShrink_ = value;
-  }
-
-  flexBasis(): StyleSizeLength {
-    return this.flexBasis_;
-  }
-  setFlexBasis(value: StyleSizeLength): void {
-    this.flexBasis_ = value;
-  }
-
-  margin(edge: Edge): StyleLength {
-    return this.margin_[edge]!;
-  }
-  setMargin(edge: Edge, value: StyleLength): void {
-    this.margin_[edge] = value;
-  }
-
-  position(edge: Edge): StyleLength {
-    return this.position_[edge]!;
-  }
-  setPosition(edge: Edge, value: StyleLength): void {
-    this.position_[edge] = value;
-  }
-
-  padding(edge: Edge): StyleLength {
-    return this.padding_[edge]!;
-  }
-  setPadding(edge: Edge, value: StyleLength): void {
-    this.padding_[edge] = value;
-  }
-
-  border(edge: Edge): StyleLength {
-    return this.border_[edge]!;
-  }
-  setBorder(edge: Edge, value: StyleLength): void {
-    this.border_[edge] = value;
-  }
-
-  gap(gutter: Gutter): StyleLength {
-    return this.gap_[gutter]!;
-  }
-  setGap(gutter: Gutter, value: StyleLength): void {
-    this.gap_[gutter] = value;
-  }
-
-  dimension(axis: Dimension): StyleSizeLength {
-    return this.dimensions_[axis]!;
-  }
-  setDimension(axis: Dimension, value: StyleSizeLength): void {
-    this.dimensions_[axis] = value;
-  }
-
-  minDimension(axis: Dimension): StyleSizeLength {
-    return this.minDimensions_[axis]!;
-  }
-  setMinDimension(axis: Dimension, value: StyleSizeLength): void {
-    this.minDimensions_[axis] = value;
   }
 
   resolvedMinDimension(
@@ -297,13 +147,6 @@ export class Style {
     return new FloatOptional(this.resolvedMinDimensionValue(direction, axis, referenceLength, ownerWidth));
   }
 
-  maxDimension(axis: Dimension): StyleSizeLength {
-    return this.maxDimensions_[axis]!;
-  }
-  setMaxDimension(axis: Dimension, value: StyleSizeLength): void {
-    this.maxDimensions_[axis] = value;
-  }
-
   resolvedMaxDimension(
     direction: Direction,
     axis: Dimension,
@@ -313,27 +156,8 @@ export class Style {
     return new FloatOptional(this.resolvedMaxDimensionValue(direction, axis, referenceLength, ownerWidth));
   }
 
-  aspectRatio(): FloatOptional {
-    return this.aspectRatio_;
-  }
-
-  /** Degenerate aspect ratios (0, infinite) act as auto. See https://drafts.csswg.org/css-sizing-4/#valdef-aspect-ratio-ratio */
-  setAspectRatio(value: FloatOptional): void {
-    // degenerate aspect ratios act as auto.
-    // see https://drafts.csswg.org/css-sizing-4/#valdef-aspect-ratio-ratio
-    const ratio = value.unwrap();
-    this.aspectRatio_ = ratio === 0 || ratio === Infinity || ratio === -Infinity ? UNDEFINED_NUMBER : value;
-  }
-
-  boxSizing(): BoxSizing {
-    return this.boxSizing_;
-  }
-  setBoxSizing(value: BoxSizing): void {
-    this.boxSizing_ = value;
-  }
-
   horizontalInsetsDefined(): boolean {
-    const position = this.position_;
+    const position = this.position;
     return (
       position[Edge.Left]!.isDefined() ||
       position[Edge.Right]!.isDefined() ||
@@ -345,7 +169,7 @@ export class Style {
   }
 
   verticalInsetsDefined(): boolean {
-    const position = this.position_;
+    const position = this.position;
     return (
       position[Edge.Top]!.isDefined() ||
       position[Edge.Bottom]!.isDefined() ||
@@ -355,107 +179,107 @@ export class Style {
   }
 
   isFlexStartPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, flexStartEdge(axis), direction).isDefined();
+    return computeEdge(this.position, flexStartEdge(axis), direction).isDefined();
   }
 
   isFlexStartPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, flexStartEdge(axis), direction).isAuto();
+    return computeEdge(this.position, flexStartEdge(axis), direction).isAuto();
   }
 
   isInlineStartPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, inlineStartEdge(axis, direction), direction).isDefined();
+    return computeEdge(this.position, inlineStartEdge(axis, direction), direction).isDefined();
   }
 
   isInlineStartPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, inlineStartEdge(axis, direction), direction).isAuto();
+    return computeEdge(this.position, inlineStartEdge(axis, direction), direction).isAuto();
   }
 
   isFlexEndPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, flexEndEdge(axis), direction).isDefined();
+    return computeEdge(this.position, flexEndEdge(axis), direction).isDefined();
   }
 
   isFlexEndPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, flexEndEdge(axis), direction).isAuto();
+    return computeEdge(this.position, flexEndEdge(axis), direction).isAuto();
   }
 
   isInlineEndPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, inlineEndEdge(axis, direction), direction).isDefined();
+    return computeEdge(this.position, inlineEndEdge(axis, direction), direction).isDefined();
   }
 
   isInlineEndPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position_, inlineEndEdge(axis, direction), direction).isAuto();
+    return computeEdge(this.position, inlineEndEdge(axis, direction), direction).isAuto();
   }
 
   computeFlexStartPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position_, flexStartEdge(axis), direction).resolveValue(axisSize);
+    const value = computeEdge(this.position, flexStartEdge(axis), direction).resolveValue(axisSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineStartPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position_, inlineStartEdge(axis, direction), direction).resolveValue(axisSize);
+    const value = computeEdge(this.position, inlineStartEdge(axis, direction), direction).resolveValue(axisSize);
     return value !== value ? 0 : value;
   }
 
   computeFlexEndPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position_, flexEndEdge(axis), direction).resolveValue(axisSize);
+    const value = computeEdge(this.position, flexEndEdge(axis), direction).resolveValue(axisSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineEndPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position_, inlineEndEdge(axis, direction), direction).resolveValue(axisSize);
+    const value = computeEdge(this.position, inlineEndEdge(axis, direction), direction).resolveValue(axisSize);
     return value !== value ? 0 : value;
   }
 
   computeFlexStartMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin_, flexStartEdge(axis), direction).resolveValue(widthSize);
+    const value = computeEdge(this.margin, flexStartEdge(axis), direction).resolveValue(widthSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineStartMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin_, inlineStartEdge(axis, direction), direction).resolveValue(widthSize);
+    const value = computeEdge(this.margin, inlineStartEdge(axis, direction), direction).resolveValue(widthSize);
     return value !== value ? 0 : value;
   }
 
   computeFlexEndMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin_, flexEndEdge(axis), direction).resolveValue(widthSize);
+    const value = computeEdge(this.margin, flexEndEdge(axis), direction).resolveValue(widthSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineEndMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin_, inlineEndEdge(axis, direction), direction).resolveValue(widthSize);
+    const value = computeEdge(this.margin, inlineEndEdge(axis, direction), direction).resolveValue(widthSize);
     return value !== value ? 0 : value;
   }
 
   computeFlexStartBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border_, flexStartEdge(axis), direction).resolveValue(0), 0);
+    return maxOrDefined(computeEdge(this.border, flexStartEdge(axis), direction).resolveValue(0), 0);
   }
 
   computeInlineStartBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border_, inlineStartEdge(axis, direction), direction).resolveValue(0), 0);
+    return maxOrDefined(computeEdge(this.border, inlineStartEdge(axis, direction), direction).resolveValue(0), 0);
   }
 
   computeFlexEndBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border_, flexEndEdge(axis), direction).resolveValue(0), 0);
+    return maxOrDefined(computeEdge(this.border, flexEndEdge(axis), direction).resolveValue(0), 0);
   }
 
   computeInlineEndBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border_, inlineEndEdge(axis, direction), direction).resolveValue(0), 0);
+    return maxOrDefined(computeEdge(this.border, inlineEndEdge(axis, direction), direction).resolveValue(0), 0);
   }
 
   computeFlexStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding_, flexStartEdge(axis), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(computeEdge(this.padding, flexStartEdge(axis), direction).resolveValue(widthSize), 0);
   }
 
   computeInlineStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding_, inlineStartEdge(axis, direction), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(computeEdge(this.padding, inlineStartEdge(axis, direction), direction).resolveValue(widthSize), 0);
   }
 
   computeFlexEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding_, flexEndEdge(axis), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(computeEdge(this.padding, flexEndEdge(axis), direction).resolveValue(widthSize), 0);
   }
 
   computeInlineEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(computeEdge(this.padding_, inlineEndEdge(axis, direction), direction).resolveValue(widthSize), 0);
+    return maxOrDefined(computeEdge(this.padding, inlineEndEdge(axis, direction), direction).resolveValue(widthSize), 0);
   }
 
   computeInlineStartPaddingAndBorder(
@@ -534,11 +358,11 @@ export class Style {
   }
 
   flexStartMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.margin_, flexStartEdge(axis), direction).isAuto();
+    return computeEdge(this.margin, flexStartEdge(axis), direction).isAuto();
   }
 
   flexEndMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.margin_, flexEndEdge(axis), direction).isAuto();
+    return computeEdge(this.margin, flexEndEdge(axis), direction).isAuto();
   }
 
   /** Allocation-free `resolvedMinDimension` for the layout algorithm: NaN when undefined. */
@@ -548,7 +372,7 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    return this.resolveDimensionBound(this.minDimensions_[axis]!, direction, axis, referenceLength, ownerWidth);
+    return this.resolveDimensionBound(this.minDimensions[axis]!, direction, axis, referenceLength, ownerWidth);
   }
 
   /** Allocation-free `resolvedMaxDimension` for the layout algorithm: NaN when undefined. */
@@ -558,7 +382,7 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    return this.resolveDimensionBound(this.maxDimensions_[axis]!, direction, axis, referenceLength, ownerWidth);
+    return this.resolveDimensionBound(this.maxDimensions[axis]!, direction, axis, referenceLength, ownerWidth);
   }
 
   private resolveDimensionBound(
@@ -569,7 +393,7 @@ export class Style {
     ownerWidth: number,
   ): number {
     const value = bound.resolveValue(referenceLength);
-    if (this.boxSizing_ === BoxSizing.BorderBox || value !== value) {
+    if (this.boxSizing === BoxSizing.BorderBox || value !== value) {
       return value;
     }
 
@@ -585,22 +409,51 @@ export class Style {
   }
 
   private computeColumnGap(): StyleLength {
-    const column = this.gap_[Gutter.Column]!;
-    return column.isDefined() ? column : this.gap_[Gutter.All]!;
+    const column = this.gap[Gutter.Column]!;
+    return column.isDefined() ? column : this.gap[Gutter.All]!;
   }
 
   private computeRowGap(): StyleLength {
-    const row = this.gap_[Gutter.Row]!;
-    return row.isDefined() ? row : this.gap_[Gutter.All]!;
+    const row = this.gap[Gutter.Row]!;
+    return row.isDefined() ? row : this.gap[Gutter.All]!;
   }
 }
 
 const UNDEFINED_NUMBER = new FloatOptional();
-const EDGE_COUNT = 9;
-const GUTTER_COUNT = 3;
 
-function undefinedLengths(count: number): StyleLength[] {
-  return new Array<StyleLength>(count).fill(StyleLength.undefined());
+type EdgeLengths = [
+  StyleLength,
+  StyleLength,
+  StyleLength,
+  StyleLength,
+  StyleLength,
+  StyleLength,
+  StyleLength,
+  StyleLength,
+  StyleLength,
+];
+type GutterLengths = [StyleLength, StyleLength, StyleLength];
+type DimensionLengths = [StyleSizeLength, StyleSizeLength];
+
+function undefinedEdges(): EdgeLengths {
+  const undefinedLength = StyleLength.undefined();
+  return [
+    undefinedLength,
+    undefinedLength,
+    undefinedLength,
+    undefinedLength,
+    undefinedLength,
+    undefinedLength,
+    undefinedLength,
+    undefinedLength,
+    undefinedLength,
+  ];
+}
+
+function copyInto<T>(to: T[], from: readonly T[]): void {
+  for (let i = 0, length = from.length; i < length; i++) {
+    to[i] = from[i]!;
+  }
 }
 
 function lengthsEqual<T extends { equals(rhs: T): boolean }>(

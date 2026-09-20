@@ -76,8 +76,8 @@ export function calculateFlexLine(
 
   let sizeConsumedIncludingMinConstraint = 0;
   const direction = node.resolveDirection(ownerDirection);
-  const mainAxis = resolveDirection(node.style().flexDirection(), direction);
-  const isNodeFlexWrap = node.style().flexWrap() !== Wrap.NoWrap;
+  const mainAxis = resolveDirection(node.style().flexDirection, direction);
+  const isNodeFlexWrap = node.style().flexWrap !== Wrap.NoWrap;
   const gap = node.style().computeGapForAxis(mainAxis, availableInnerMainDim);
 
   // Add items to the current line until it's full or we run out of items.
@@ -86,8 +86,8 @@ export function calculateFlexLine(
     const child = layoutChildren[index]!;
     const childStyle = child.style();
     if (
-      childStyle.display() === Display.None ||
-      childStyle.positionType() === PositionType.Absolute
+      childStyle.display === Display.None ||
+      childStyle.positionType === PositionType.Absolute
     ) {
       continue;
     }

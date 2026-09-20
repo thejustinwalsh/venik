@@ -4,11 +4,11 @@ import { isColumn } from "./FlexDirection.ts";
 
 export function resolveChildAlignment(node: Node, child: Node): Align {
   const align =
-    child.style().alignSelf() === Align.Auto ? node.style().alignItems() : child.style().alignSelf();
+    child.style().alignSelf === Align.Auto ? node.style().alignItems : child.style().alignSelf;
   if (
-    node.style().display() === Display.Flex &&
+    node.style().display === Display.Flex &&
     align === Align.Baseline &&
-    isColumn(node.style().flexDirection())
+    isColumn(node.style().flexDirection)
   ) {
     return Align.FlexStart;
   }

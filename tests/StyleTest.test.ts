@@ -7,7 +7,7 @@ import { StyleLength } from "../src/style/StyleLength.ts";
 
 test("computed_padding_is_floored", () => {
   const style = new Style();
-  style.setPadding(Edge.All, StyleLength.points(-1.0));
+  style.padding[Edge.All] = StyleLength.points(-1.0);
   const paddingStart = style.computeInlineStartPadding(
     FlexDirection.Row,
     Direction.LTR,
@@ -18,21 +18,21 @@ test("computed_padding_is_floored", () => {
 
 test("computed_border_is_floored", () => {
   const style = new Style();
-  style.setBorder(Edge.All, StyleLength.points(-1.0));
+  style.border[Edge.All] = StyleLength.points(-1.0);
   const borderStart = style.computeInlineStartBorder(FlexDirection.Row, Direction.LTR);
   expect(borderStart).toBe(0);
 });
 
 test("computed_gap_is_floored", () => {
   const style = new Style();
-  style.setGap(Gutter.Column, StyleLength.points(-1.0));
+  style.gap[Gutter.Column] = StyleLength.points(-1.0);
   const gapBetweenColumns = style.computeGapForAxis(FlexDirection.Row, 0.0);
   expect(gapBetweenColumns).toBe(0);
 });
 
 test("computed_margin_is_not_floored", () => {
   const style = new Style();
-  style.setMargin(Edge.All, StyleLength.points(-1.0));
+  style.margin[Edge.All] = StyleLength.points(-1.0);
   const marginStart = style.computeInlineStartMargin(
     FlexDirection.Row,
     Direction.LTR,

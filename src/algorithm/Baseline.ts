@@ -29,7 +29,7 @@ export function calculateBaseline(node: Node): number {
     if (child.getLineIndex() > 0) {
       break;
     }
-    if (child.style().positionType() === PositionType.Absolute) {
+    if (child.style().positionType === PositionType.Absolute) {
       continue;
     }
     if (resolveChildAlignment(node, child) === Align.Baseline || child.isReferenceBaseline()) {
@@ -52,18 +52,18 @@ export function calculateBaseline(node: Node): number {
 
 // Whether any of the children of this node participate in baseline alignment
 export function isBaselineLayout(node: Node): boolean {
-  if (isColumn(node.style().flexDirection())) {
+  if (isColumn(node.style().flexDirection)) {
     return false;
   }
-  if (node.style().alignItems() === Align.Baseline) {
+  if (node.style().alignItems === Align.Baseline) {
     return true;
   }
   const children = node.getLayoutChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
     if (
-      child.style().positionType() !== PositionType.Absolute &&
-      child.style().alignSelf() === Align.Baseline
+      child.style().positionType !== PositionType.Absolute &&
+      child.style().alignSelf === Align.Baseline
     ) {
       return true;
     }

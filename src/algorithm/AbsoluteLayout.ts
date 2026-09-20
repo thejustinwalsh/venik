@@ -100,7 +100,7 @@ function justifyAbsoluteChild(
   mainAxis: FlexDirection,
   containingBlockWidth: number,
 ): void {
-  switch (parent.style().justifyContent()) {
+  switch (parent.style().justifyContent) {
     case Justify.Start:
     case Justify.Auto:
     case Justify.Stretch:
@@ -128,7 +128,7 @@ function alignAbsoluteChild(
   containingBlockWidth: number,
 ): void {
   let itemAlign = resolveChildAlignment(parent, child);
-  const parentWrap = parent.style().flexWrap();
+  const parentWrap = parent.style().flexWrap;
   if (parentWrap === Wrap.WrapReverse) {
     if (itemAlign === Align.FlexEnd) {
       itemAlign = Align.FlexStart;
@@ -255,7 +255,7 @@ function layoutAbsoluteChild(
   depth: number,
   generationCount: number,
 ): void {
-  const mainAxis = resolveDirection(node.style().flexDirection(), direction);
+  const mainAxis = resolveDirection(node.style().flexDirection, direction);
   const crossAxis = resolveCrossDirection(mainAxis, direction);
   const isMainAxisRow = isRow(mainAxis);
 
@@ -337,7 +337,7 @@ function layoutAbsoluteChild(
   // Exactly one dimension needs to be defined for us to be able to do aspect
   // ratio calculation. One dimension being the anchor and the other being
   // flexible.
-  const aspectRatio = childStyle.aspectRatio().unwrap();
+  const aspectRatio = childStyle.aspectRatio.unwrap();
   if ((childWidth !== childWidth) !== (childHeight !== childHeight)) {
     if (aspectRatio === aspectRatio) {
       if (childWidth !== childWidth) {
@@ -448,9 +448,9 @@ export function layoutAbsoluteDescendants(
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
     const childStyle = child.style();
-    if (childStyle.display() === Display.None) {
+    if (childStyle.display === Display.None) {
       continue;
-    } else if (childStyle.positionType() === PositionType.Absolute) {
+    } else if (childStyle.positionType === PositionType.Absolute) {
       const containingBlockWidth =
         containingNode.getLayout().measuredDimension(Dimension.Width) -
         containingNode.style().computeBorderForAxis(FlexDirection.Row);
@@ -483,7 +483,7 @@ export function layoutAbsoluteDescendants(
        * axes.
        */
       const parentMainAxis = resolveDirection(
-        currentNode.style().flexDirection(),
+        currentNode.style().flexDirection,
         currentNodeDirection,
       );
       const parentCrossAxis = resolveCrossDirection(parentMainAxis, currentNodeDirection);
@@ -527,7 +527,7 @@ export function layoutAbsoluteDescendants(
 
       childLayout.setPosition(PhysicalEdge.Left, childLeftOffsetFromParent);
       childLayout.setPosition(PhysicalEdge.Top, childTopOffsetFromParent);
-    } else if (childStyle.positionType() === PositionType.Static) {
+    } else if (childStyle.positionType === PositionType.Static) {
       // We may write new layout results for absolute descendants of "child"
       // which are positioned relative to the current containing block instead
       // of their parent. "child" may not be dirty, or have new constraints, so
