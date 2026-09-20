@@ -16,7 +16,7 @@ import {
 type Counter = { count: number };
 
 const _measure: MeasureFunction = (_width, _widthMode, _height, _heightMode, node) => {
-  const measureCount = node.getContext() as Counter | null;
+  const measureCount = node.context as Counter | null;
   if (measureCount != null) {
     measureCount.count++;
   }
@@ -48,7 +48,7 @@ describe("YogaTest", () => {
     const measureCount: Counter = { count: 0 };
 
     const root_child0 = newFixtureNode();
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure);
     root_child0.setFlexGrow(1);
     root_child0.setFlexShrink(1);
@@ -73,7 +73,7 @@ describe("YogaTest", () => {
 
     const root_child0_child0 = newFixtureNode();
     root_child0_child0.setPositionType(PositionType.Absolute);
-    root_child0_child0.setContext(measureCount);
+    root_child0_child0.context = measureCount;
     root_child0_child0.setMeasureFunc(_measure);
     root_child0.insertChild(root_child0_child0, 0);
 
@@ -93,7 +93,7 @@ describe("YogaTest", () => {
     const measureCount: Counter = { count: 0 };
 
     const root_child0 = newFixtureNode();
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure);
     root_child0.setMinWidth(10);
     root_child0.setMaxWidth(10);
@@ -121,7 +121,7 @@ describe("YogaTest", () => {
     const measureCount: Counter = { count: 0 };
 
     const root_child0 = newFixtureNode();
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure);
     root_child0.setMinWidthPercent(10);
     root_child0.setMaxWidthPercent(10);
@@ -169,7 +169,7 @@ describe("YogaTest", () => {
     const measureCount: Counter = { count: 0 };
 
     const root_child0 = newFixtureNode();
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure);
     root_child0.setMinWidthPercent(10);
     root_child0.setMaxWidthPercent(10);
@@ -197,7 +197,7 @@ describe("YogaTest", () => {
     const measureCount: Counter = { count: 0 };
 
     const root_child0 = newFixtureNode();
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure);
     root_child0.setMinWidth(10);
     root_child0.setMaxWidth(10);
@@ -262,7 +262,7 @@ describe("YogaTest", () => {
     const root_child0 = newFixtureNode();
     root_child0.setFlexDirection(FlexDirection.Column);
     root_child0.setPadding(Edge.All, 100);
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure);
 
     root.insertChild(root_child0, 0);
@@ -882,7 +882,7 @@ describe("YogaTest", () => {
     _heightMode,
     node,
   ) => {
-    const measureCount = node.getContext() as Counter | null;
+    const measureCount = node.context as Counter | null;
     if (measureCount != null) {
       measureCount.count++;
     }
@@ -901,7 +901,7 @@ describe("YogaTest", () => {
     const measureCount: Counter = { count: 0 };
 
     const root_child0 = newFixtureNode();
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure_half_width_height);
     root.insertChild(root_child0, 0);
 
@@ -933,7 +933,7 @@ describe("YogaTest", () => {
     const measureCount: Counter = { count: 0 };
 
     const root_child0 = newFixtureNode();
-    root_child0.setContext(measureCount);
+    root_child0.context = measureCount;
     root_child0.setMeasureFunc(_measure_half_width_height);
     root.insertChild(root_child0, 0);
 

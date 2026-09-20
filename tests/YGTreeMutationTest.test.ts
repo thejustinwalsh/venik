@@ -29,7 +29,7 @@ test("set_children_adds_children_to_parent", () => {
   const expectedChildren: (Node | null)[] = [root_child0, root_child1];
   expectSameNodes(getChildren(root), expectedChildren);
 
-  const owners = [root_child0.getOwner(), root_child1.getOwner()];
+  const owners = [root_child0.owner, root_child1.owner];
   const expectedOwners: (Node | null)[] = [root, root];
   expectSameNodes(owners, expectedOwners);
 
@@ -48,7 +48,7 @@ test("set_children_to_empty_removes_old_children", () => {
   const expectedChildren: (Node | null)[] = [];
   expectSameNodes(getChildren(root), expectedChildren);
 
-  const owners = [root_child0.getOwner(), root_child1.getOwner()];
+  const owners = [root_child0.owner, root_child1.owner];
   const expectedOwners: (Node | null)[] = [null, null];
   expectSameNodes(owners, expectedOwners);
 
@@ -72,7 +72,7 @@ test("set_children_replaces_non_common_children", () => {
   const expectedChildren: (Node | null)[] = [root_child2, root_child3];
   expectSameNodes(getChildren(root), expectedChildren);
 
-  const owners = [root_child0.getOwner(), root_child1.getOwner()];
+  const owners = [root_child0.owner, root_child1.owner];
   const expectedOwners: (Node | null)[] = [null, null];
   expectSameNodes(owners, expectedOwners);
 
@@ -99,10 +99,10 @@ test("set_children_keeps_and_reorders_common_children", () => {
   expectSameNodes(getChildren(root), expectedChildren);
 
   const owners = [
-    root_child0.getOwner(),
-    root_child1.getOwner(),
-    root_child2.getOwner(),
-    root_child3.getOwner(),
+    root_child0.owner,
+    root_child1.owner,
+    root_child2.owner,
+    root_child3.owner,
   ];
   const expectedOwners: (Node | null)[] = [null, root, root, root];
   expectSameNodes(owners, expectedOwners);

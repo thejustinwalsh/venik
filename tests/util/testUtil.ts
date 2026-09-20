@@ -82,7 +82,7 @@ export function intrinsicSizeMeasure(
   heightMode: MeasureMode,
   node: Node,
 ): Size {
-  const innerText = node.getContext() as string;
+  const innerText = node.context as string;
   const heightPerChar = 10;
   const widthPerChar = 10;
   let measuredWidth: number;

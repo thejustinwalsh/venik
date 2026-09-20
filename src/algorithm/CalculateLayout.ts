@@ -68,8 +68,8 @@ function isColumnStretchEdge(owner: Node | null, child: Node | null): boolean {
     return false;
   }
 
-  const ownerStyle = owner.style();
-  const childStyle = child.style();
+  const ownerStyle = owner.style;
+  const childStyle = child.style;
   const childWidth = child.getProcessedDimension(Dimension.Width);
   return (
     ownerStyle.display === Display.Flex &&
@@ -86,14 +86,14 @@ function isColumnStretchEdge(owner: Node | null, child: Node | null): boolean {
 function isInColumnStretchScrollSubtree(node: Node): boolean {
   let current: Node | null = node;
   while (current !== null) {
-    let owner = current.getOwner();
-    while (owner !== null && owner.style().display === Display.Contents) {
-      owner = owner.getOwner();
+    let owner: Node | null = current.owner;
+    while (owner !== null && owner.style.display === Display.Contents) {
+      owner = owner.owner;
     }
     if (owner === null || !isColumnStretchEdge(owner, current)) {
       return false;
     }
-    if (owner.style().overflow === Overflow.Scroll) {
+    if (owner.style.overflow === Overflow.Scroll) {
       return true;
     }
     current = owner;
@@ -169,7 +169,7 @@ function hasPercentageLength(style: Style): boolean {
 }
 
 function hasNonZeroFlex(node: Node): boolean {
-  const style = node.style();
+  const style = node.style;
   const flex = style.flex.unwrap();
   const flexGrow = style.flexGrow.unwrap();
   const flexShrink = style.flexShrink.unwrap();
@@ -181,7 +181,7 @@ function hasNonZeroFlex(node: Node): boolean {
 }
 
 function isHeightFitContentIndependent(node: Node): boolean {
-  const style = node.style();
+  const style = node.style;
   const height = style.dimensions[Dimension.Height];
   const flexBasis = style.flexBasis;
   const hasRelativePercentPosition =
@@ -254,8 +254,8 @@ function maxSizeForMode(
   ownerWidth: number,
 ): number {
   return (
-    node.style().resolvedMaxDimensionValue(direction, dimension(axis), ownerAxisSize, ownerWidth) +
-    node.style().computeMarginForAxis(axis, ownerWidth)
+    node.style.resolvedMaxDimensionValue(direction, dimension(axis), ownerAxisSize, ownerWidth) +
+    node.style.computeMarginForAxis(axis, ownerWidth)
   );
 }
 
@@ -289,7 +289,7 @@ function computeFlexBasisForChild(
   depth: number,
   generationCount: number,
 ): void {
-  const mainAxis = resolveDirection(node.style().flexDirection, direction);
+  const mainAxis = resolveDirection(node.style.flexDirection, direction);
   const isMainAxisRow = isRow(mainAxis);
   const mainAxisSize = isMainAxisRow ? width : height;
   const mainAxisOwnerSize = isMainAxisRow ? ownerWidth : ownerHeight;
@@ -312,7 +312,7 @@ function computeFlexBasisForChild(
     resolvedFlexBasis === resolvedFlexBasis && mainAxisSize === mainAxisSize;
 
   if (useResolvedFlexBasis) {
-    const childLayout = child.getLayout();
+    const childLayout = child.layout;
     if (
       childLayout.computedFlexBasis !== childLayout.computedFlexBasis ||
       childLayout.computedFlexBasisGeneration !== generationCount
@@ -329,7 +329,7 @@ function computeFlexBasisForChild(
       ownerWidth,
     );
 
-    child.getLayout().computedFlexBasis = maxOrDefined(
+    child.layout.computedFlexBasis = maxOrDefined(
       child.getResolvedDimension(direction, Dimension.Width, ownerWidth, ownerWidth),
       paddingAndBorder,
     );
@@ -341,7 +341,7 @@ function computeFlexBasisForChild(
       direction,
       ownerWidth,
     );
-    child.getLayout().computedFlexBasis = maxOrDefined(
+    child.layout.computedFlexBasis = maxOrDefined(
       child.getResolvedDimension(direction, Dimension.Height, ownerHeight, ownerWidth),
       paddingAndBorder,
     );
@@ -351,8 +351,8 @@ function computeFlexBasisForChild(
     childWidthSizingMode = SizingMode.MaxContent;
     childHeightSizingMode = SizingMode.MaxContent;
 
-    const marginRow = child.style().computeMarginForAxis(FlexDirection.Row, ownerWidth);
-    const marginColumn = child.style().computeMarginForAxis(FlexDirection.Column, ownerWidth);
+    const marginRow = child.style.computeMarginForAxis(FlexDirection.Row, ownerWidth);
+    const marginColumn = child.style.computeMarginForAxis(FlexDirection.Column, ownerWidth);
 
     if (isRowStyleDimDefined) {
       childWidth =
@@ -369,8 +369,8 @@ function computeFlexBasisForChild(
     // The W3C spec doesn't say anything about the 'overflow' property, but all
     // major browsers appear to implement the following logic.
     if (
-      (!isMainAxisRow && node.style().overflow === Overflow.Scroll) ||
-      node.style().overflow !== Overflow.Scroll
+      (!isMainAxisRow && node.style.overflow === Overflow.Scroll) ||
+      node.style.overflow !== Overflow.Scroll
     ) {
       if (childWidth !== childWidth && width === width) {
         childWidth = width;
@@ -381,9 +381,9 @@ function computeFlexBasisForChild(
     // A zero-intrinsic-height column subtree has the same layout with an
     // unbounded height, allowing its measurement cache to survive unrelated
     // size changes elsewhere in a vertical scroll subtree.
-    const parentDoesNotScroll = node.style().overflow !== Overflow.Scroll;
+    const parentDoesNotScroll = node.style.overflow !== Overflow.Scroll;
     let applyHeightFitContent = isMainAxisRow || parentDoesNotScroll;
-    const childHadOverflow = child.isDirty() && child.getLayout().hadOverflow;
+    const childHadOverflow = child.isDirty() && child.layout.hadOverflow;
     const hasHeightIndependentSubtree =
       !isMainAxisRow &&
       parentDoesNotScroll &&
@@ -393,7 +393,7 @@ function computeFlexBasisForChild(
       isInColumnStretchScrollSubtree(node) &&
       canSkipHeightFitContent(child);
     if (hasHeightIndependentSubtree && childHadOverflow) {
-      child.getLayout().hadOverflow = false;
+      child.layout.hadOverflow = false;
     }
     if (hasHeightIndependentSubtree) {
       applyHeightFitContent = false;
@@ -404,7 +404,7 @@ function computeFlexBasisForChild(
       childHeightSizingMode = SizingMode.FitContent;
     }
 
-    const aspectRatio = child.style().aspectRatio.unwrap();
+    const aspectRatio = child.style.aspectRatio.unwrap();
     const hasAspectRatio = aspectRatio === aspectRatio;
     if (hasAspectRatio) {
       if (!isMainAxisRow && childWidthSizingMode === SizingMode.StretchFit) {
@@ -476,12 +476,12 @@ function computeFlexBasisForChild(
       generationCount,
     );
 
-    child.getLayout().computedFlexBasis = maxOrDefined(
-      child.getLayout().measuredDimensions[dimension(mainAxis)],
+    child.layout.computedFlexBasis = maxOrDefined(
+      child.layout.measuredDimensions[dimension(mainAxis)],
       paddingAndBorderForAxis(child, mainAxis, direction, ownerWidth),
     );
   }
-  child.getLayout().computedFlexBasisGeneration = generationCount;
+  child.layout.computedFlexBasisGeneration = generationCount;
 }
 
 function measureNodeWithMeasureFunc(
@@ -507,7 +507,7 @@ function measureNodeWithMeasureFunc(
     availableHeight = NaN;
   }
 
-  const layout = node.getLayout();
+  const layout = node.layout;
   const paddingAndBorderAxisRow =
     layout.padding[PhysicalEdge.Left] +
     layout.padding[PhysicalEdge.Right] +
@@ -597,7 +597,7 @@ function measureNodeWithoutChildren(
   ownerWidth: number,
   ownerHeight: number,
 ): void {
-  const layout = node.getLayout();
+  const layout = node.layout;
 
   let width = availableWidth;
   if (widthSizingMode === SizingMode.MaxContent || widthSizingMode === SizingMode.FitContent) {
@@ -640,7 +640,7 @@ function measureNodeWithFixedSize(
     isFixedSize(availableWidth, widthSizingMode) &&
     isFixedSize(availableHeight, heightSizingMode)
   ) {
-    const layout = node.getLayout();
+    const layout = node.layout;
     layout.measuredDimensions[Dimension.Width] = boundAxis(
         node,
         FlexDirection.Row,
@@ -671,14 +671,14 @@ function measureNodeWithFixedSize(
 }
 
 function resetLayout(node: Node): void {
-  node.setLayout(new LayoutResults());
+  node.layout = new LayoutResults();
   node.setLayoutDimension(0, Dimension.Width);
   node.setLayoutDimension(0, Dimension.Height);
 }
 
 function zeroOutLayoutRecursively(node: Node): void {
   resetLayout(node);
-  node.setHasNewLayout(true);
+  node.hasNewLayout = true;
 
   node.cloneChildrenIfNeeded();
   const children = node.getChildren();
@@ -694,10 +694,10 @@ export function cleanupContentsNodesRecursively(node: Node, didPerformLayout: bo
     const children = node.getChildren();
     for (let i = 0, length = children.length; i < length; i++) {
       const child = children[i]!;
-      if (child.style().display === Display.Contents) {
+      if (child.style.display === Display.Contents) {
         resetLayout(child);
         if (didPerformLayout) {
-          child.setHasNewLayout(true);
+          child.hasNewLayout = true;
         }
         child.setDirty(false);
         child.cloneChildrenIfNeeded();
@@ -726,13 +726,11 @@ function calculateAvailableInnerDimension(
   if (availableInnerDim === availableInnerDim) {
     // We want to make sure our available height does not violate min and max
     // constraints
-    const minDimension = node
-      .style()
+    const minDimension = node.style
       .resolvedMinDimensionValue(direction, dimension, ownerDim, ownerWidth);
     const minInnerDim = minDimension !== minDimension ? 0.0 : minDimension - paddingAndBorder;
 
-    const maxDimension = node
-      .style()
+    const maxDimension = node.style
       .resolvedMaxDimensionValue(direction, dimension, ownerDim, ownerWidth);
 
     const maxInnerDim = maxDimension !== maxDimension ? FLT_MAX : maxDimension - paddingAndBorder;
@@ -787,7 +785,7 @@ function computeFlexBasisForChildren(
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
     child.processDimensions();
-    if (child.style().display === Display.None) {
+    if (child.style.display === Display.None) {
       // Only mutate display: none children during layout passes. Zeroing them
       // out during measure-only passes contributes nothing to the measurement,
       // but sets `hasNewLayout` on nodes the parent's layout pass may never
@@ -797,7 +795,7 @@ function computeFlexBasisForChildren(
       // assertion in `YogaLayoutableShadowNode::layout`.
       if (performLayout) {
         zeroOutLayoutRecursively(child);
-        child.setHasNewLayout(true);
+        child.hasNewLayout = true;
         child.setDirty(false);
       }
       continue;
@@ -808,12 +806,12 @@ function computeFlexBasisForChildren(
       child.setLayoutPositionFromStyle(childDirection, availableInnerWidth, availableInnerHeight);
     }
 
-    if (child.style().positionType === PositionType.Absolute) {
+    if (child.style.positionType === PositionType.Absolute) {
       continue;
     }
     if (child === singleFlexChild) {
-      child.getLayout().computedFlexBasisGeneration = generationCount;
-      child.getLayout().computedFlexBasis = 0;
+      child.layout.computedFlexBasisGeneration = generationCount;
+      child.layout.computedFlexBasis = 0;
     } else {
       computeFlexBasisForChild(
         node,
@@ -832,8 +830,8 @@ function computeFlexBasisForChildren(
     }
 
     totalOuterFlexBasis +=
-      child.getLayout().computedFlexBasis +
-      child.style().computeMarginForAxis(mainAxis, availableInnerWidth);
+      child.layout.computedFlexBasis +
+      child.style.computeMarginForAxis(mainAxis, availableInnerWidth);
   }
 
   return totalOuterFlexBasis;
@@ -907,8 +905,8 @@ function computeMinContentMainSize(
     // Add the leaf's own padding and border, like the container branch below.
     const leafDirection = node.resolveDirection(ownerDirection);
     const paddingAndBorder =
-      node.style().computeFlexStartPaddingAndBorder(requestedAxis, leafDirection, ownerWidth) +
-      node.style().computeFlexEndPaddingAndBorder(requestedAxis, leafDirection, ownerWidth);
+      node.style.computeFlexStartPaddingAndBorder(requestedAxis, leafDirection, ownerWidth) +
+      node.style.computeFlexEndPaddingAndBorder(requestedAxis, leafDirection, ownerWidth);
     return (wantRow ? size.width : size.height) + paddingAndBorder;
   }
 
@@ -917,7 +915,7 @@ function computeMinContentMainSize(
   }
 
   const direction = node.resolveDirection(ownerDirection);
-  const nodeMainAxis = resolveDirection(node.style().flexDirection, direction);
+  const nodeMainAxis = resolveDirection(node.style.flexDirection, direction);
   const nodeCrossAxis = resolveCrossDirection(nodeMainAxis, direction);
 
   let mainTotal = 0.0;
@@ -926,8 +924,8 @@ function computeMinContentMainSize(
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
     if (
-      child.style().display === Display.None ||
-      child.style().positionType === PositionType.Absolute
+      child.style.display === Display.None ||
+      child.style.positionType === PositionType.Absolute
     ) {
       continue;
     }
@@ -938,7 +936,7 @@ function computeMinContentMainSize(
       ownerWidth,
       ownerHeight,
     );
-    childMain += child.style().computeMarginForAxis(nodeMainAxis, ownerWidth);
+    childMain += child.style.computeMarginForAxis(nodeMainAxis, ownerWidth);
 
     let childCross = computeMinContentMainSize(
       child,
@@ -947,7 +945,7 @@ function computeMinContentMainSize(
       ownerWidth,
       ownerHeight,
     );
-    childCross += child.style().computeMarginForAxis(nodeCrossAxis, ownerWidth);
+    childCross += child.style.computeMarginForAxis(nodeCrossAxis, ownerWidth);
 
     mainTotal += childMain;
     // std::max(crossMax, childCross): keeps crossMax when childCross is NaN.
@@ -955,11 +953,11 @@ function computeMinContentMainSize(
   }
 
   mainTotal +=
-    node.style().computeFlexStartPaddingAndBorder(nodeMainAxis, direction, ownerWidth) +
-    node.style().computeFlexEndPaddingAndBorder(nodeMainAxis, direction, ownerWidth);
+    node.style.computeFlexStartPaddingAndBorder(nodeMainAxis, direction, ownerWidth) +
+    node.style.computeFlexEndPaddingAndBorder(nodeMainAxis, direction, ownerWidth);
   crossMax +=
-    node.style().computeFlexStartPaddingAndBorder(nodeCrossAxis, direction, ownerWidth) +
-    node.style().computeFlexEndPaddingAndBorder(nodeCrossAxis, direction, ownerWidth);
+    node.style.computeFlexStartPaddingAndBorder(nodeCrossAxis, direction, ownerWidth) +
+    node.style.computeFlexEndPaddingAndBorder(nodeCrossAxis, direction, ownerWidth);
 
   const nodeMainIsRow = isRow(nodeMainAxis);
   const widthMin = nodeMainIsRow ? mainTotal : crossMax;
@@ -985,18 +983,18 @@ function computeAutoMinMainSize(
   ownerWidth: number,
   ownerHeight: number,
 ): number {
-  if (child.style().display === Display.None) {
+  if (child.style.display === Display.None) {
     return NaN;
   }
   // Explicit `min-{w,h}` (including `0`) wins over auto. This is the
   // CSS-spec opt-out (§4.5).
-  if (child.style().minDimensions[dimension(mainAxis)].isDefined()) {
+  if (child.style.minDimensions[dimension(mainAxis)].isDefined()) {
     return NaN;
   }
   // Per CSS §4.5: a flex item whose own `overflow` is not `visible` gets
   // auto-min = 0 (let scroll/clip handle overflow rather than enforce a
   // content-based minimum).
-  if (child.style().overflow !== Overflow.Visible) {
+  if (child.style.overflow !== Overflow.Visible) {
     return 0.0;
   }
 
@@ -1014,7 +1012,7 @@ function computeAutoMinMainSize(
 
   // Transferred size suggestion: cross × aspect-ratio, if both are definite.
   let transferredMain = NaN;
-  const ratio = child.style().aspectRatio.unwrap();
+  const ratio = child.style.aspectRatio.unwrap();
   if (ratio === ratio) {
     const crossOwner = isMainAxisRow ? ownerHeight : ownerWidth;
     const crossValue = child.getResolvedDimension(direction, crossDim, crossOwner, ownerWidth);
@@ -1048,8 +1046,7 @@ function computeAutoMinMainSize(
   }
 
   // §4.5: cap by the max main size.
-  const maxMain = child
-    .style()
+  const maxMain = child.style
     .resolvedMaxDimensionValue(direction, mainDim, ownerMainAxisSize, ownerWidth);
   if (floor > maxMain) {
     floor = maxMain;
@@ -1074,7 +1071,7 @@ function boundAxisWithAutoMin(
   widthSize: number,
 ): number {
   let bounded = boundAxis(child, axis, direction, value, axisSize, widthSize);
-  const autoMin = child.getLayout().computedAutoMinMainSize;
+  const autoMin = child.layout.computedAutoMinMainSize;
   if (bounded < autoMin) {
     bounded = autoMin;
   }
@@ -1109,7 +1106,7 @@ function distributeFreeSpaceSecondPass(
   let flexGrowFactor = 0;
   let deltaFreeSpace = 0;
   const isMainAxisRow = isRow(mainAxis);
-  const isNodeFlexWrap = node.style().flexWrap !== Wrap.NoWrap;
+  const isNodeFlexWrap = node.style.flexWrap !== Wrap.NoWrap;
 
   for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
@@ -1117,7 +1114,7 @@ function distributeFreeSpaceSecondPass(
       currentLineChild,
       direction,
       mainAxis,
-      currentLineChild.getLayout().computedFlexBasis,
+      currentLineChild.layout.computedFlexBasis,
       mainAxisOwnerSize,
       ownerWidth,
     );
@@ -1173,7 +1170,7 @@ function distributeFreeSpaceSecondPass(
 
     deltaFreeSpace += updatedMainSize - childFlexBasis;
 
-    const childStyle = currentLineChild.style();
+    const childStyle = currentLineChild.style;
     const marginMain = childStyle.computeMarginForAxis(mainAxis, availableInnerWidth);
     const marginCross = childStyle.computeMarginForAxis(crossAxis, availableInnerWidth);
 
@@ -1260,7 +1257,7 @@ function distributeFreeSpaceSecondPass(
       currentLineChild,
       childWidth,
       childHeight,
-      node.getLayout().direction,
+      node.layout.direction,
       childWidthSizingMode,
       childHeightSizingMode,
       availableInnerWidth,
@@ -1271,8 +1268,7 @@ function distributeFreeSpaceSecondPass(
       depth,
       generationCount,
     );
-    node
-      .getLayout().hadOverflow = node.getLayout().hadOverflow || currentLineChild.getLayout().hadOverflow;
+    node.layout.hadOverflow = node.layout.hadOverflow || currentLineChild.layout.hadOverflow;
   }
   return deltaFreeSpace;
 }
@@ -1312,7 +1308,7 @@ function distributeFreeSpaceFirstPass(
       currentLineChild,
       direction,
       mainAxis,
-      currentLineChild.getLayout().computedFlexBasis,
+      currentLineChild.layout.computedFlexBasis,
       mainAxisOwnerSize,
       ownerWidth,
     );
@@ -1345,7 +1341,7 @@ function distributeFreeSpaceFirstPass(
           // first and second passes.
           deltaFreeSpace += boundMainSize - childFlexBasis;
           flexLine.layout.totalFlexShrinkScaledFactors -=
-            -currentLineChild.resolveFlexShrink() * currentLineChild.getLayout().computedFlexBasis;
+            -currentLineChild.resolveFlexShrink() * currentLineChild.layout.computedFlexBasis;
         }
       }
     } else if (flexLine.layout.remainingFreeSpace > 0) {
@@ -1436,7 +1432,7 @@ function resolveFlexibleLength(
   // size can mean an extra measure call, so inflexible items skip it.
   for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
-    currentLineChild.getLayout().computedAutoMinMainSize = currentLineChild.isNodeFlexible()
+    currentLineChild.layout.computedAutoMinMainSize = currentLineChild.isNodeFlexible()
       ? computeAutoMinMainSize(
           currentLineChild,
           mainAxis,
@@ -1498,7 +1494,7 @@ function justifyMainAxis(
   availableInnerWidth: number,
   performLayout: boolean,
 ): void {
-  const style = node.style();
+  const style = node.style;
 
   const leadingPaddingAndBorderMain = style.computeFlexStartPaddingAndBorder(
     mainAxis,
@@ -1597,8 +1593,8 @@ function justifyMainAxis(
   const lastChild = flexLine.itemsInFlow[itemCount - 1];
   for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
     const child = flexLine.itemsInFlow[i]!;
-    const childLayout = child.getLayout();
-    const childStyle = child.style();
+    const childLayout = child.layout;
+    const childStyle = child.style;
     if (
       childStyle.flexStartMarginIsAuto(mainAxis, direction) &&
       flexLine.layout.remainingFreeSpace > 0.0
@@ -1758,8 +1754,8 @@ function calculateLayoutImpl(
     }
   }
 
-  const style = node.style();
-  const layout = node.getLayout();
+  const style = node.style;
+  const layout = node.layout;
 
   // Set the resolved resolution in the node's layout.
   const direction = node.resolveDirection(ownerDirection);
@@ -2127,7 +2123,7 @@ function calculateLayoutImpl(
     if (performLayout) {
       for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
         const child = flexLine.itemsInFlow[i]!;
-        const childStyle = child.style();
+        const childStyle = child.style;
         let leadingCrossDim = leadingPaddingAndBorderCross;
 
         // For a relative children, we're either using alignItems (owner) or
@@ -2146,7 +2142,7 @@ function calculateLayoutImpl(
           // If the child defines a definite size for its cross axis, there's
           // no need to stretch.
           if (!child.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim)) {
-            let childMainSize = child.getLayout().measuredDimensions[dimension(mainAxis)];
+            let childMainSize = child.layout.measuredDimensions[dimension(mainAxis)];
             const aspectRatio = childStyle.aspectRatio.unwrap();
             let childCrossSize =
               aspectRatio === aspectRatio
@@ -2227,8 +2223,7 @@ function calculateLayoutImpl(
           }
         }
         // And we apply the position
-        child
-          .getLayout().position[flexStartEdge(crossAxis)] = child.getLayout().position[flexStartEdge(crossAxis)] +
+        child.layout.position[flexStartEdge(crossAxis)] = child.layout.position[flexStartEdge(crossAxis)] +
               totalLineCrossDim +
               leadingCrossDim;
       }
@@ -2312,18 +2307,18 @@ function calculateLayoutImpl(
       let maxDescentForCurrentLine = 0;
       for (; index < layoutChildren.length; index++) {
         const child = layoutChildren[index]!;
-        const childStyle = child.style();
+        const childStyle = child.style;
         if (childStyle.display === Display.None) {
           continue;
         }
         if (childStyle.positionType !== PositionType.Absolute) {
-          if (child.getLineIndex() !== i) {
+          if (child.lineIndex !== i) {
             break;
           }
           if (child.isLayoutDimensionDefined(crossAxis)) {
             lineHeight = maxOrDefined(
               lineHeight,
-              child.getLayout().measuredDimensions[dimension(crossAxis)] +
+              child.layout.measuredDimensions[dimension(crossAxis)] +
                 childStyle.computeMarginForAxis(crossAxis, availableInnerWidth),
             );
           }
@@ -2336,7 +2331,7 @@ function calculateLayoutImpl(
                 availableInnerWidth,
               );
             const descent =
-              child.getLayout().measuredDimensions[Dimension.Height] +
+              child.layout.measuredDimensions[Dimension.Height] +
               childStyle.computeMarginForAxis(FlexDirection.Column, availableInnerWidth) -
               ascent;
             maxAscentForCurrentLine = maxOrDefined(maxAscentForCurrentLine, ascent);
@@ -2354,8 +2349,8 @@ function calculateLayoutImpl(
 
       for (index = startIndex; index < endIndex; index++) {
         const child = layoutChildren[index]!;
-        const childStyle = child.style();
-        const childLayout = child.getLayout();
+        const childStyle = child.style;
+        const childLayout = child.layout;
         if (childStyle.display === Display.None) {
           continue;
         }
@@ -2532,8 +2527,8 @@ function calculateLayoutImpl(
   if (performLayout && style.flexWrap === Wrap.WrapReverse) {
     for (let i = 0, length = layoutChildren.length; i < length; i++) {
       const child = layoutChildren[i]!;
-      if (child.style().positionType !== PositionType.Absolute) {
-        const childLayout = child.getLayout();
+      if (child.style.positionType !== PositionType.Absolute) {
+        const childLayout = child.layout;
         childLayout.position[flexStartEdge(crossAxis)] = layout.measuredDimensions[dimension(crossAxis)] -
             childLayout.position[flexStartEdge(crossAxis)] -
             childLayout.measuredDimensions[dimension(crossAxis)];
@@ -2553,8 +2548,8 @@ function calculateLayoutImpl(
         // cannot guarantee that their positions are set when their parents are
         // done with layout.
         if (
-          child.style().display === Display.None ||
-          child.style().positionType === PositionType.Absolute
+          child.style.display === Display.None ||
+          child.style.positionType === PositionType.Absolute
         ) {
           continue;
         }
@@ -2610,7 +2605,7 @@ export function calculateLayoutInternal(
   depth: number,
   generationCount: number,
 ): boolean {
-  const layout = node.getLayout();
+  const layout = node.layout;
 
   depth++;
 
@@ -2641,8 +2636,8 @@ export function calculateLayoutInternal(
   // they are the most expensive to measure, so it's worth avoiding redundant
   // measurements if at all possible.
   if (node.hasMeasureFunc()) {
-    const marginAxisRow = node.style().computeMarginForAxis(FlexDirection.Row, ownerWidth);
-    const marginAxisColumn = node.style().computeMarginForAxis(FlexDirection.Column, ownerWidth);
+    const marginAxisRow = node.style.computeMarginForAxis(FlexDirection.Row, ownerWidth);
+    const marginAxisColumn = node.style.computeMarginForAxis(FlexDirection.Column, ownerWidth);
 
     // First, try to use the layout cache.
     if (
@@ -2779,7 +2774,7 @@ export function calculateLayoutInternal(
     node.setLayoutDimension(layout.measuredDimensions[Dimension.Width], Dimension.Width);
     node.setLayoutDimension(layout.measuredDimensions[Dimension.Height], Dimension.Height);
 
-    node.setHasNewLayout(true);
+    node.hasNewLayout = true;
     node.setDirty(false);
   }
 
@@ -2819,7 +2814,7 @@ export function calculateLayout(
   const direction = node.resolveDirection(ownerDirection);
   let width: number;
   let widthSizingMode: SizingMode;
-  const style = node.style();
+  const style = node.style;
   const maxWidth = style.resolvedMaxDimensionValue(
     direction,
     Dimension.Width,
@@ -2883,7 +2878,7 @@ export function calculateLayout(
       generationCount,
     )
   ) {
-    node.setLayoutPositionFromStyle(node.getLayout().direction, ownerWidth, ownerHeight);
+    node.setLayoutPositionFromStyle(node.layout.direction, ownerWidth, ownerHeight);
     roundLayoutResultsToPixelGrid(node, 0.0, 0.0);
   }
 

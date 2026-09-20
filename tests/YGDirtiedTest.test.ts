@@ -5,7 +5,7 @@ import { Align, Direction, Node } from "../src/index.ts";
 type DirtiedCounter = { dirtiedCount: number };
 
 function _dirtied(node: Node): void {
-  const counter = node.getContext() as DirtiedCounter;
+  const counter = node.context as DirtiedCounter;
   counter.dirtiedCount++;
 }
 
@@ -18,7 +18,7 @@ test("dirtied", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
   const counter: DirtiedCounter = { dirtiedCount: 0 };
-  root.setContext(counter);
+  root.context = counter;
   root.setDirtiedFunc(_dirtied);
 
   expect(counter.dirtiedCount).toBe(0);
@@ -51,7 +51,7 @@ test("dirtied_propagation", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
   const counter: DirtiedCounter = { dirtiedCount: 0 };
-  root.setContext(counter);
+  root.context = counter;
   root.setDirtiedFunc(_dirtied);
 
   expect(counter.dirtiedCount).toBe(0);
@@ -84,7 +84,7 @@ test("dirtied_hierarchy", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
   const counter: DirtiedCounter = { dirtiedCount: 0 };
-  root_child0.setContext(counter);
+  root_child0.context = counter;
   root_child0.setDirtiedFunc(_dirtied);
 
   expect(counter.dirtiedCount).toBe(0);

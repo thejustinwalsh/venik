@@ -47,7 +47,7 @@ function measureFixedSize(
   _heightMode: MeasureMode,
   node: Node,
 ): Size {
-  const dims = node.getContext() as Size | null | undefined;
+  const dims = node.context as Size | null | undefined;
   return dims != null ? dims : { width: 0, height: 0 };
 }
 
@@ -330,7 +330,7 @@ test("nested_flexbox_recurses_into_min_content", () => {
 
   const dims: Size = { width: 200.0, height: 50.0 };
   const leaf = new Node(config);
-  leaf.setContext(dims);
+  leaf.context = dims;
   leaf.setMeasureFunc(measureFixedSize);
   wrapper.insertChild(leaf, 0);
 

@@ -273,7 +273,7 @@ test("mixed_shared_and_owned_children", () => {
   root1.calculateLayout(undefined, undefined, Direction.LTR);
   secondChild = root1.getChild(1)!;
   expect(secondChild).not.toBe(root0.getChild(0));
-  expect(secondChild.getOwner()).toBe(root1);
+  expect(secondChild.owner).toBe(root1);
   expect(secondChild.getChild(0)).not.toBe(root0_child0.getChild(0));
-  expect(secondChild.getChild(0)!.getOwner()).toBe(secondChild);
+  expect(secondChild.getChild(0)!.owner).toBe(secondChild);
 });

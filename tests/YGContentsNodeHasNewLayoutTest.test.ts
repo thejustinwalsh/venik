@@ -37,16 +37,16 @@ test("contents_child_hasNewLayout_not_stamped_on_measure_only_visit", () => {
 
   // Simulate a consumer (e.g. React Native's layout pass) reading and
   // clearing the hasNewLayout flags.
-  root.setHasNewLayout(false);
-  parent.setHasNewLayout(false);
-  contents.setHasNewLayout(false);
-  leaf.setHasNewLayout(false);
+  root.hasNewLayout = false;
+  parent.hasNewLayout = false;
+  contents.hasNewLayout = false;
+  leaf.hasNewLayout = false;
 
   root.setOverflow(Overflow.Scroll);
   root.calculateLayout(200, 200, Direction.LTR);
 
   expect(
-    contents.hasNewLayout(),
+    contents.hasNewLayout,
     "contents.hasNewLayout was stamped during a measure-only visit " +
       "(cleanupContentsNodesRecursively ran with performLayout=false " +
       "but no matching performLayout=true visit occurred this pass)",
@@ -96,18 +96,18 @@ test("absolute_descendant_through_contents_is_reachable_via_hasNewLayout", () =>
 
   // Simulate a consumer (e.g. React Native's layout pass) reading and
   // clearing the hasNewLayout flags.
-  root.setHasNewLayout(false);
-  staticChild.setHasNewLayout(false);
-  contents.setHasNewLayout(false);
-  absoluteChild.setHasNewLayout(false);
+  root.hasNewLayout = false;
+  staticChild.hasNewLayout = false;
+  contents.hasNewLayout = false;
+  absoluteChild.hasNewLayout = false;
 
   root.setWidth(150);
   root.calculateLayout(150, 100, Direction.LTR);
 
-  expect(absoluteChild.hasNewLayout()).toBe(true);
-  expect(staticChild.hasNewLayout()).toBe(true);
+  expect(absoluteChild.hasNewLayout).toBe(true);
+  expect(staticChild.hasNewLayout).toBe(true);
   expect(
-    contents.hasNewLayout(),
+    contents.hasNewLayout,
     "contents node on the path to a freshly-positioned absolute " +
       "descendant must have hasNewLayout=true so consumers can traverse " +
       "to it",
@@ -161,18 +161,18 @@ test("absolute_phase_cleanup_does_not_stamp_when_parent_layout_skipped", () => {
 
   // Simulate a consumer (e.g. React Native's layout pass) reading and
   // clearing the hasNewLayout flags.
-  root.setHasNewLayout(false);
-  a.setHasNewLayout(false);
-  b.setHasNewLayout(false);
-  contents.setHasNewLayout(false);
-  leaf.setHasNewLayout(false);
+  root.hasNewLayout = false;
+  a.hasNewLayout = false;
+  b.hasNewLayout = false;
+  contents.hasNewLayout = false;
+  leaf.hasNewLayout = false;
 
   root.setOverflow(Overflow.Scroll);
   root.calculateLayout(200, 200, Direction.LTR);
 
-  expect(b.hasNewLayout()).toBe(false);
+  expect(b.hasNewLayout).toBe(false);
   expect(
-    contents.hasNewLayout(),
+    contents.hasNewLayout,
     "contents.hasNewLayout was stamped during a walk where its " +
       "parent's hasNewLayout remained false this pass",
   ).toBe(false);

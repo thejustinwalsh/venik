@@ -76,15 +76,15 @@ export function calculateFlexLine(
 
   let sizeConsumedIncludingMinConstraint = 0;
   const direction = node.resolveDirection(ownerDirection);
-  const mainAxis = resolveDirection(node.style().flexDirection, direction);
-  const isNodeFlexWrap = node.style().flexWrap !== Wrap.NoWrap;
-  const gap = node.style().computeGapForAxis(mainAxis, availableInnerMainDim);
+  const mainAxis = resolveDirection(node.style.flexDirection, direction);
+  const isNodeFlexWrap = node.style.flexWrap !== Wrap.NoWrap;
+  const gap = node.style.computeGapForAxis(mainAxis, availableInnerMainDim);
 
   // Add items to the current line until it's full or we run out of items.
   let index = startOfLineIndex;
   for (; index < layoutChildren.length; index++) {
     const child = layoutChildren[index]!;
-    const childStyle = child.style();
+    const childStyle = child.style;
     if (
       childStyle.display === Display.None ||
       childStyle.positionType === PositionType.Absolute
@@ -103,14 +103,14 @@ export function calculateFlexLine(
       numberOfAutoMargins++;
     }
 
-    child.setLineIndex(lineCount);
+    child.lineIndex = lineCount;
     const childMarginMainAxis = childStyle.computeMarginForAxis(mainAxis, availableInnerWidth);
     const childLeadingGapMainAxis = child === firstElementInLine ? 0.0 : gap;
     const flexBasisWithMinAndMaxConstraints = boundAxisWithinMinAndMax(
       child,
       direction,
       mainAxis,
-      child.getLayout().computedFlexBasis,
+      child.layout.computedFlexBasis,
       mainAxisOwnerSize,
       ownerWidth,
     );
@@ -141,7 +141,7 @@ export function calculateFlexLine(
       // Unlike the grow factor, the shrink factor is scaled relative to the
       // child dimension.
       totalFlexShrinkScaledFactors +=
-        -child.resolveFlexShrink() * child.getLayout().computedFlexBasis;
+        -child.resolveFlexShrink() * child.layout.computedFlexBasis;
     }
 
     itemsInFlow.push(child);

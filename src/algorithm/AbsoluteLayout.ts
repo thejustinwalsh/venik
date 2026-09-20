@@ -38,11 +38,11 @@ function setFlexStartLayoutPosition(
   containingBlockWidth: number,
 ): void {
   const position =
-    child.style().computeFlexStartMargin(axis, direction, containingBlockWidth) +
-    parent.getLayout().border[flexStartEdge(axis)] +
-    parent.getLayout().padding[flexStartEdge(axis)];
+    child.style.computeFlexStartMargin(axis, direction, containingBlockWidth) +
+    parent.layout.border[flexStartEdge(axis)] +
+    parent.layout.padding[flexStartEdge(axis)];
 
-  child.getLayout().position[flexStartEdge(axis)] = position;
+  child.layout.position[flexStartEdge(axis)] = position;
 }
 
 function setFlexEndLayoutPosition(
@@ -53,12 +53,11 @@ function setFlexEndLayoutPosition(
   containingBlockWidth: number,
 ): void {
   const flexEndPosition =
-    parent.getLayout().border[flexEndEdge(axis)] +
-    parent.getLayout().padding[flexEndEdge(axis)] +
-    child.style().computeFlexEndMargin(axis, direction, containingBlockWidth);
+    parent.layout.border[flexEndEdge(axis)] +
+    parent.layout.padding[flexEndEdge(axis)] +
+    child.style.computeFlexEndMargin(axis, direction, containingBlockWidth);
 
-  child
-    .getLayout().position[flexStartEdge(axis)] = getPositionOfOppositeEdge(flexEndPosition, axis, parent, child);
+  child.layout.position[flexStartEdge(axis)] = getPositionOfOppositeEdge(flexEndPosition, axis, parent, child);
 }
 
 function setCenterLayoutPosition(
@@ -68,7 +67,7 @@ function setCenterLayoutPosition(
   axis: FlexDirection,
   containingBlockWidth: number,
 ): void {
-  const parentLayout = parent.getLayout();
+  const parentLayout = parent.layout;
   const parentContentBoxSize =
     parentLayout.measuredDimensions[dimension(axis)] -
     parentLayout.border[flexStartEdge(axis)] -
@@ -77,16 +76,16 @@ function setCenterLayoutPosition(
     parentLayout.padding[flexEndEdge(axis)];
 
   const childOuterSize =
-    child.getLayout().measuredDimensions[dimension(axis)] +
-    child.style().computeMarginForAxis(axis, containingBlockWidth);
+    child.layout.measuredDimensions[dimension(axis)] +
+    child.style.computeMarginForAxis(axis, containingBlockWidth);
 
   const position =
     (parentContentBoxSize - childOuterSize) / 2.0 +
     parentLayout.border[flexStartEdge(axis)] +
     parentLayout.padding[flexStartEdge(axis)] +
-    child.style().computeFlexStartMargin(axis, direction, containingBlockWidth);
+    child.style.computeFlexStartMargin(axis, direction, containingBlockWidth);
 
-  child.getLayout().position[flexStartEdge(axis)] = position;
+  child.layout.position[flexStartEdge(axis)] = position;
 }
 
 function justifyAbsoluteChild(
@@ -96,7 +95,7 @@ function justifyAbsoluteChild(
   mainAxis: FlexDirection,
   containingBlockWidth: number,
 ): void {
-  switch (parent.style().justifyContent) {
+  switch (parent.style.justifyContent) {
     case Justify.Start:
     case Justify.Auto:
     case Justify.Stretch:
@@ -124,7 +123,7 @@ function alignAbsoluteChild(
   containingBlockWidth: number,
 ): void {
   let itemAlign = resolveChildAlignment(parent, child);
-  const parentWrap = parent.style().flexWrap;
+  const parentWrap = parent.style.flexWrap;
   if (parentWrap === Wrap.WrapReverse) {
     if (itemAlign === Align.FlexEnd) {
       itemAlign = Align.FlexStart;
@@ -182,7 +181,7 @@ function positionAbsoluteChild(
 ): void {
   const isAxisRow = isRow(axis);
   const containingBlockSize = isAxisRow ? containingBlockWidth : containingBlockHeight;
-  const childStyle = child.style();
+  const childStyle = child.style;
 
   // The inline-start position takes priority over the end position in the case
   // that they are both set and the node has a fixed width. Thus we only have 2
@@ -198,22 +197,22 @@ function positionAbsoluteChild(
   ) {
     const positionRelativeToInlineStart =
       childStyle.computeInlineStartPosition(axis, direction, containingBlockSize) +
-      containingNode.style().computeInlineStartBorder(axis, direction) +
+      containingNode.style.computeInlineStartBorder(axis, direction) +
       childStyle.computeInlineStartMargin(axis, direction, containingBlockSize);
     const positionRelativeToFlexStart =
       inlineStartEdge(axis, direction) !== flexStartEdge(axis)
         ? getPositionOfOppositeEdge(positionRelativeToInlineStart, axis, containingNode, child)
         : positionRelativeToInlineStart;
 
-    child.getLayout().position[flexStartEdge(axis)] = positionRelativeToFlexStart;
+    child.layout.position[flexStartEdge(axis)] = positionRelativeToFlexStart;
   } else if (
     childStyle.isInlineEndPositionDefined(axis, direction) &&
     !childStyle.isInlineEndPositionAuto(axis, direction)
   ) {
     const positionRelativeToInlineStart =
-      containingNode.getLayout().measuredDimensions[dimension(axis)] -
-      child.getLayout().measuredDimensions[dimension(axis)] -
-      containingNode.style().computeInlineEndBorder(axis, direction) -
+      containingNode.layout.measuredDimensions[dimension(axis)] -
+      child.layout.measuredDimensions[dimension(axis)] -
+      containingNode.style.computeInlineEndBorder(axis, direction) -
       childStyle.computeInlineEndMargin(axis, direction, containingBlockSize) -
       childStyle.computeInlineEndPosition(axis, direction, containingBlockSize);
     const positionRelativeToFlexStart =
@@ -221,7 +220,7 @@ function positionAbsoluteChild(
         ? getPositionOfOppositeEdge(positionRelativeToInlineStart, axis, containingNode, child)
         : positionRelativeToInlineStart;
 
-    child.getLayout().position[flexStartEdge(axis)] = positionRelativeToFlexStart;
+    child.layout.position[flexStartEdge(axis)] = positionRelativeToFlexStart;
   } else if (isMainAxis) {
     justifyAbsoluteChild(parent, child, direction, axis, containingBlockWidth);
   } else {
@@ -230,7 +229,7 @@ function positionAbsoluteChild(
 }
 
 function hasBothInsets(child: Node, axis: FlexDirection, direction: Direction): boolean {
-  const style = child.style();
+  const style = child.style;
   return (
     style.isFlexStartPositionDefined(axis, direction) &&
     style.isFlexEndPositionDefined(axis, direction) &&
@@ -251,7 +250,7 @@ function layoutAbsoluteChild(
   depth: number,
   generationCount: number,
 ): void {
-  const mainAxis = resolveDirection(node.style().flexDirection, direction);
+  const mainAxis = resolveDirection(node.style.flexDirection, direction);
   const crossAxis = resolveCrossDirection(mainAxis, direction);
   const isMainAxisRow = isRow(mainAxis);
 
@@ -260,7 +259,7 @@ function layoutAbsoluteChild(
   let childWidthSizingMode: SizingMode;
   let childHeightSizingMode: SizingMode;
 
-  const childStyle = child.style();
+  const childStyle = child.style;
   const marginRow = childStyle.computeMarginForAxis(FlexDirection.Row, containingBlockWidth);
   const marginColumn = childStyle.computeMarginForAxis(FlexDirection.Column, containingBlockWidth);
 
@@ -277,9 +276,9 @@ function layoutAbsoluteChild(
     // the left/right offsets if they're defined.
     if (hasBothInsets(child, FlexDirection.Row, direction)) {
       childWidth =
-        containingNode.getLayout().measuredDimensions[Dimension.Width] -
-        (containingNode.style().computeFlexStartBorder(FlexDirection.Row, direction) +
-          containingNode.style().computeFlexEndBorder(FlexDirection.Row, direction)) -
+        containingNode.layout.measuredDimensions[Dimension.Width] -
+        (containingNode.style.computeFlexStartBorder(FlexDirection.Row, direction) +
+          containingNode.style.computeFlexEndBorder(FlexDirection.Row, direction)) -
         (childStyle.computeFlexStartPosition(FlexDirection.Row, direction, containingBlockWidth) +
           childStyle.computeFlexEndPosition(FlexDirection.Row, direction, containingBlockWidth));
       childWidth = boundAxis(
@@ -306,9 +305,9 @@ function layoutAbsoluteChild(
     // on the top/bottom offsets if they're defined.
     if (hasBothInsets(child, FlexDirection.Column, direction)) {
       childHeight =
-        containingNode.getLayout().measuredDimensions[Dimension.Height] -
-        (containingNode.style().computeFlexStartBorder(FlexDirection.Column, direction) +
-          containingNode.style().computeFlexEndBorder(FlexDirection.Column, direction)) -
+        containingNode.layout.measuredDimensions[Dimension.Height] -
+        (containingNode.style.computeFlexStartBorder(FlexDirection.Column, direction) +
+          containingNode.style.computeFlexEndBorder(FlexDirection.Column, direction)) -
         (childStyle.computeFlexStartPosition(
           FlexDirection.Column,
           direction,
@@ -381,10 +380,10 @@ function layoutAbsoluteChild(
       generationCount,
     );
     childWidth =
-      child.getLayout().measuredDimensions[Dimension.Width] +
+      child.layout.measuredDimensions[Dimension.Width] +
       childStyle.computeMarginForAxis(FlexDirection.Row, containingBlockWidth);
     childHeight =
-      child.getLayout().measuredDimensions[Dimension.Height] +
+      child.layout.measuredDimensions[Dimension.Height] +
       childStyle.computeMarginForAxis(FlexDirection.Column, containingBlockWidth);
   }
 
@@ -443,16 +442,16 @@ export function layoutAbsoluteDescendants(
   const children = currentNode.getLayoutChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
-    const childStyle = child.style();
+    const childStyle = child.style;
     if (childStyle.display === Display.None) {
       continue;
     } else if (childStyle.positionType === PositionType.Absolute) {
       const containingBlockWidth =
-        containingNode.getLayout().measuredDimensions[Dimension.Width] -
-        containingNode.style().computeBorderForAxis(FlexDirection.Row);
+        containingNode.layout.measuredDimensions[Dimension.Width] -
+        containingNode.style.computeBorderForAxis(FlexDirection.Row);
       const containingBlockHeight =
-        containingNode.getLayout().measuredDimensions[Dimension.Height] -
-        containingNode.style().computeBorderForAxis(FlexDirection.Column);
+        containingNode.layout.measuredDimensions[Dimension.Height] -
+        containingNode.style.computeBorderForAxis(FlexDirection.Column);
 
       layoutAbsoluteChild(
         containingNode,
@@ -467,7 +466,7 @@ export function layoutAbsoluteDescendants(
         generationCount,
       );
 
-      hasNewLayout = hasNewLayout || child.hasNewLayout();
+      hasNewLayout = hasNewLayout || child.hasNewLayout;
 
       /*
        * At this point the child has its position set but only on its the
@@ -479,7 +478,7 @@ export function layoutAbsoluteDescendants(
        * axes.
        */
       const parentMainAxis = resolveDirection(
-        currentNode.style().flexDirection,
+        currentNode.style.flexDirection,
         currentNodeDirection,
       );
       const parentCrossAxis = resolveCrossDirection(parentMainAxis, currentNodeDirection);
@@ -510,7 +509,7 @@ export function layoutAbsoluteDescendants(
        * set with positions that are relative to the containing block if insets
        * are defined
        */
-      const childLayout = child.getLayout();
+      const childLayout = child.layout;
       const childLeftPosition = childLayout.position[PhysicalEdge.Left];
       const childTopPosition = childLayout.position[PhysicalEdge.Top];
 
@@ -535,9 +534,9 @@ export function layoutAbsoluteDescendants(
       // By now all descendants of the containing block that are not absolute
       // will have their positions set for left and top.
       const childLeftOffsetFromContainingBlock =
-        currentNodeLeftOffsetFromContainingBlock + child.getLayout().position[PhysicalEdge.Left];
+        currentNodeLeftOffsetFromContainingBlock + child.layout.position[PhysicalEdge.Left];
       const childTopOffsetFromContainingBlock =
-        currentNodeTopOffsetFromContainingBlock + child.getLayout().position[PhysicalEdge.Top];
+        currentNodeTopOffsetFromContainingBlock + child.layout.position[PhysicalEdge.Top];
 
       hasNewLayout =
         layoutAbsoluteDescendants(
@@ -555,7 +554,7 @@ export function layoutAbsoluteDescendants(
       cleanupContentsNodesRecursively(child, /* didPerformLayout */ hasNewLayout);
 
       if (hasNewLayout) {
-        child.setHasNewLayout(hasNewLayout);
+        child.hasNewLayout = hasNewLayout;
       }
     }
   }

@@ -16,7 +16,7 @@ describe("YGPersistentNodeCloningTest", () => {
     private constructor(node: Node, children: NodeWrapper[]) {
       this.node = node;
       this.children = children;
-      this.node.setContext(this);
+      this.node.context = this;
       wrappers.push(this);
     }
 
@@ -29,8 +29,8 @@ describe("YGPersistentNodeCloningTest", () => {
         const privateChild = child.node;
         // Claim first ownership of not yet owned nodes, to avoid immediately
         // cloning them
-        if (child.node.getOwner() === null) {
-          privateChild.setOwner(privateNode);
+        if (child.node.owner === null) {
+          privateChild.owner = privateNode;
         }
         // yoga::Node::insertChild: does not touch the owner of the child
         privateNode.insertChildRaw(privateChild, privateNode.getChildCount());
@@ -44,7 +44,7 @@ describe("YGPersistentNodeCloningTest", () => {
       const wrapper = new NodeWrapper(other.node.clone(), [...other.children]);
 
       const privateNode = wrapper.node;
-      privateNode.setOwner(null);
+      privateNode.owner = null;
       return wrapper;
     }
 
@@ -54,7 +54,7 @@ describe("YGPersistentNodeCloningTest", () => {
       const wrapper = new NodeWrapper(other.node.clone(), children);
 
       const privateNode = wrapper.node;
-      privateNode.setOwner(null);
+      privateNode.owner = null;
       privateNode.setChildrenRaw([]);
       privateNode.setDirty(true);
 
@@ -62,8 +62,8 @@ describe("YGPersistentNodeCloningTest", () => {
         const privateChild = child.node;
         // Claim first ownership of not yet owned nodes, to avoid immediately
         // cloning them
-        if (child.node.getOwner() === null) {
-          privateChild.setOwner(privateNode);
+        if (child.node.owner === null) {
+          privateChild.owner = privateNode;
         }
         // yoga::Node::insertChild: does not touch the owner of the child
         privateNode.insertChildRaw(privateChild, privateNode.getChildCount());
@@ -77,8 +77,8 @@ describe("YGPersistentNodeCloningTest", () => {
     const config = new Config();
     config.setCloneNodeFunc((oldNode, owner, childIndex) => {
       onClone(oldNode, owner, childIndex);
-      const wrapper = owner.getContext() as NodeWrapper;
-      const old = oldNode.getContext() as NodeWrapper;
+      const wrapper = owner.context as NodeWrapper;
+      const old = oldNode.context as NodeWrapper;
 
       const clone = NodeWrapper.clone(old);
       wrapper.children[childIndex] = clone;
@@ -150,7 +150,7 @@ describe("YGPersistentNodeCloningTest", () => {
     const nodesCloned: NodeWrapper[] = [];
     // We should only need to clone "A"
     onClone = (oldNode, _owner, _childIndex) => {
-      nodesCloned.push(oldNode.getContext() as NodeWrapper);
+      nodesCloned.push(oldNode.context as NodeWrapper);
     };
 
     scrollViewPrime.node.calculateLayout(undefined, undefined, Direction.LTR);
@@ -180,7 +180,7 @@ describe("YGPersistentNodeCloningTest", () => {
     const nodesCloned: NodeWrapper[] = [];
     // We should clone "C"
     onClone = (oldNode, _owner, _childIndex) => {
-      nodesCloned.push(oldNode.getContext() as NodeWrapper);
+      nodesCloned.push(oldNode.context as NodeWrapper);
     };
 
     aPrime.node.calculateLayout(100, 100, Direction.LTR);

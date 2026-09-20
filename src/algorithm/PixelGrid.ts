@@ -66,7 +66,7 @@ export function roundLayoutResultsToPixelGrid(
   absoluteTop: number,
 ): void {
   const pointScaleFactor = node.getConfig().getPointScaleFactor();
-  const layout = node.getLayout();
+  const layout = node.layout;
 
   const nodeLeft = layout.position[PhysicalEdge.Left];
   const nodeTop = layout.position[PhysicalEdge.Top];
@@ -117,7 +117,7 @@ export function roundLayoutResultsToPixelGrid(
   const children = node.getChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
-    if (child.getOwner() !== node) {
+    if (child.owner !== node) {
       continue;
     }
     roundLayoutResultsToPixelGrid(child, absoluteNodeLeft, absoluteNodeTop);

@@ -229,18 +229,18 @@ test("has_new_layout_flag_set_static", () => {
   root_child0_child0.insertChild(root_child0_child0_child0, 0);
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
-  root.setHasNewLayout(false);
-  root_child0.setHasNewLayout(false);
-  root_child0_child0.setHasNewLayout(false);
-  root_child0_child0_child0.setHasNewLayout(false);
+  root.hasNewLayout = false;
+  root_child0.hasNewLayout = false;
+  root_child0_child0.hasNewLayout = false;
+  root_child0_child0_child0.hasNewLayout = false;
 
   root.setWidth(110);
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
-  expect(root.hasNewLayout()).toBe(true);
-  expect(root_child0.hasNewLayout()).toBe(true);
-  expect(root_child0_child0.hasNewLayout()).toBe(true);
-  expect(root_child0_child0_child0.hasNewLayout()).toBe(true);
+  expect(root.hasNewLayout).toBe(true);
+  expect(root_child0.hasNewLayout).toBe(true);
+  expect(root_child0_child0.hasNewLayout).toBe(true);
+  expect(root_child0_child0_child0.hasNewLayout).toBe(true);
 
   root.freeRecursive();
 });

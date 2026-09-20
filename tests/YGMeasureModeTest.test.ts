@@ -19,7 +19,7 @@ type MeasureConstraint = {
 // The C++ keeps a malloc'd array + length in the node context; here the
 // context is a plain array that the measure function appends to.
 const _measure: MeasureFunction = (width, widthMode, height, heightMode, node) => {
-  const constraintList = node.getContext() as MeasureConstraint[];
+  const constraintList = node.context as MeasureConstraint[];
   constraintList.push({ width, widthMode, height, heightMode });
 
   return {
@@ -36,7 +36,7 @@ test("exactly_measure_stretched_child_column", () => {
   root.setHeight(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -58,7 +58,7 @@ test("exactly_measure_stretched_child_row", () => {
   root.setHeight(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -79,7 +79,7 @@ test("at_most_main_axis_column", () => {
   root.setHeight(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -101,7 +101,7 @@ test("at_most_cross_axis_column", () => {
   root.setHeight(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -123,7 +123,7 @@ test("at_most_main_axis_row", () => {
   root.setHeight(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -146,7 +146,7 @@ test("at_most_cross_axis_row", () => {
   root.setHeight(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -167,7 +167,7 @@ test("flex_child", () => {
 
   const root_child0 = newFixtureNode();
   root_child0.setFlexGrow(1);
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -196,7 +196,7 @@ test("flex_child_with_flex_basis", () => {
   const root_child0 = newFixtureNode();
   root_child0.setFlexGrow(1);
   root_child0.setFlexBasis(0);
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -223,7 +223,7 @@ test("overflow_scroll_column", () => {
   root.setWidth(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 
@@ -250,7 +250,7 @@ test("overflow_scroll_row", () => {
   root.setWidth(100);
 
   const root_child0 = newFixtureNode();
-  root_child0.setContext(constraintList);
+  root_child0.context = constraintList;
   root_child0.setMeasureFunc(_measure);
   root.insertChild(root_child0, 0);
 

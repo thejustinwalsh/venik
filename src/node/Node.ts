@@ -47,21 +47,28 @@ import { LayoutResults } from "./LayoutResults.ts";
  * `undefined` and NaN are both accepted wherever a value may be unset.
  */
 export class Node {
-  private hasNewLayout_: boolean = true;
+  /** Set by layout when this node was laid out again; cleared by the caller once it has read the results. */
+  hasNewLayout: boolean = true;
+  context: unknown = null;
+  /** The node whose child list this node was last inserted into. Maintained by the child list methods. */
+  owner: Node | null = null;
+
+  /** @internal */
+  style: Style = new Style();
+  /** @internal */
+  layout: LayoutResults = new LayoutResults();
+  /** @internal */
+  lineIndex: number = 0;
+
   private isReferenceBaseline_: boolean = false;
   private isDirty_: boolean = true;
-  private context_: unknown = null;
   private measureFunc_: MeasureFunction | null = null;
   private minContentMeasureFunc_: MeasureFunction | null = null;
   private minContentWidth_: number = NaN;
   private minContentHeight_: number = NaN;
   private baselineFunc_: BaselineFunction | null = null;
   private dirtiedFunc_: DirtiedFunction | null = null;
-  private style_: Style = new Style();
-  private layout_: LayoutResults = new LayoutResults();
-  private lineIndex_: number = 0;
   private contentsChildrenCount_: number = 0;
-  private owner_: Node | null = null;
   private children_: Node[] = [];
   private config_: Config;
   private processedDimensions_: StyleSizeLength[] = [
@@ -82,21 +89,21 @@ export class Node {
   clone(): Node {
     // Does not expose true value semantics, as children are not cloned eagerly.
     const node: Node = Object.create(Node.prototype);
-    node.hasNewLayout_ = this.hasNewLayout_;
+    node.hasNewLayout = this.hasNewLayout;
     node.isReferenceBaseline_ = this.isReferenceBaseline_;
     node.isDirty_ = this.isDirty_;
-    node.context_ = this.context_;
+    node.context = this.context;
     node.measureFunc_ = this.measureFunc_;
     node.minContentMeasureFunc_ = this.minContentMeasureFunc_;
     node.minContentWidth_ = this.minContentWidth_;
     node.minContentHeight_ = this.minContentHeight_;
     node.baselineFunc_ = this.baselineFunc_;
     node.dirtiedFunc_ = this.dirtiedFunc_;
-    node.style_ = this.style_.clone();
-    node.layout_ = this.layout_.clone();
-    node.lineIndex_ = this.lineIndex_;
+    node.style = this.style.clone();
+    node.layout = this.layout.clone();
+    node.lineIndex = this.lineIndex;
     node.contentsChildrenCount_ = this.contentsChildrenCount_;
-    node.owner_ = null;
+    node.owner = null;
     node.children_ = this.children_.slice();
     node.config_ = this.config_;
     node.processedDimensions_ = this.processedDimensions_.slice();
@@ -104,16 +111,16 @@ export class Node {
     return node;
   }
   free(): void {
-    const owner = this.owner_;
+    const owner = this.owner;
     if (owner !== null) {
       owner.removeChildRaw(this);
-      this.owner_ = null;
+      this.owner = null;
       owner.markDirtyAndPropagate();
     }
 
     for (let i = 0, length = this.children_.length; i < length; i++) {
       const child = this.children_[i]!;
-      child.setOwner(null);
+      child.owner = null;
     }
 
     this.clearChildren();
@@ -123,7 +130,7 @@ export class Node {
     let skipped = 0;
     while (this.children_.length > skipped) {
       const child = this.children_[skipped]!;
-      if (child.getOwner() !== this) {
+      if (child.owner !== this) {
         // Don't free shared nodes that we don't own.
         skipped += 1;
       } else {
@@ -137,23 +144,23 @@ export class Node {
     if (this.children_.length !== 0) {
       throw new Error("Cannot reset a node which still has children attached");
     }
-    if (this.owner_ !== null) {
+    if (this.owner !== null) {
       throw new Error("Cannot reset a node still attached to a owner");
     }
 
-    this.hasNewLayout_ = true;
+    this.hasNewLayout = true;
     this.isReferenceBaseline_ = false;
     this.isDirty_ = true;
-    this.context_ = null;
+    this.context = null;
     this.measureFunc_ = null;
     this.minContentMeasureFunc_ = null;
     this.minContentWidth_ = NaN;
     this.minContentHeight_ = NaN;
     this.baselineFunc_ = null;
     this.dirtiedFunc_ = null;
-    this.style_ = new Style();
-    this.layout_ = new LayoutResults();
-    this.lineIndex_ = 0;
+    this.style = new Style();
+    this.layout = new LayoutResults();
+    this.lineIndex = 0;
     this.contentsChildrenCount_ = 0;
     this.processedDimensions_ = [StyleSizeLength.undefined(), StyleSizeLength.undefined()];
   }
@@ -170,12 +177,6 @@ export class Node {
       height === undefined || height === "auto" ? NaN : height,
       direction ?? Direction.LTR,
     );
-  }
-  hasNewLayout(): boolean {
-    return this.hasNewLayout_;
-  }
-  setHasNewLayout(hasNewLayout: boolean): void {
-    this.hasNewLayout_ = hasNewLayout;
   }
   isDirty(): boolean {
     return this.isDirty_;
@@ -196,7 +197,7 @@ export class Node {
 
   // Tree
   insertChild(child: Node, index: number): void {
-    if (child.getOwner() !== null) {
+    if (child.owner !== null) {
       throw new Error("Child already has a owner, it must be removed first.");
     }
 
@@ -205,12 +206,12 @@ export class Node {
     }
 
     this.insertChildRaw(child, index);
-    child.setOwner(this);
+    child.owner = this;
     this.markDirtyAndPropagate();
   }
   swapChild(child: Node, index: number): void {
     this.replaceChildAt(child, index);
-    child.setOwner(this);
+    child.owner = this;
   }
   removeChild(child: Node): void {
     if (this.children_.length === 0) {
@@ -221,7 +222,7 @@ export class Node {
     // Children may be shared between parents, which is indicated by not having an
     // owner. We only want to reset the child completely if it is owned
     // exclusively by one node.
-    const childOwner = child.getOwner();
+    const childOwner = child.owner;
     if (this.removeChildRaw(child)) {
       if (this === childOwner) {
         child.detachFromOwner();
@@ -236,7 +237,7 @@ export class Node {
       return;
     }
     const firstChild = this.children_[0]!;
-    if (firstChild.getOwner() === this) {
+    if (firstChild.owner === this) {
       // If the first child has this node as its owner, we assume that this child
       // set is unique.
       for (let i = 0, length = this.children_.length; i < length; i++) {
@@ -257,8 +258,8 @@ export class Node {
       if (this.children_.length > 0) {
         for (let i = 0, length = this.children_.length; i < length; i++) {
           const child = this.children_[i]!;
-          child.setLayout(new LayoutResults());
-          child.setOwner(null);
+          child.layout = new LayoutResults();
+          child.owner = null;
         }
         this.setChildrenRaw([]);
         this.markDirtyAndPropagate();
@@ -270,15 +271,15 @@ export class Node {
           // Our new children may have nodes in common with the old children. We
           // don't reset these common nodes.
           if (!children.includes(oldChild)) {
-            oldChild.setLayout(new LayoutResults());
-            oldChild.setOwner(null);
+            oldChild.layout = new LayoutResults();
+            oldChild.owner = null;
           }
         }
       }
       this.setChildrenRaw(children);
       for (let i = 0, length = children.length; i < length; i++) {
         const child = children[i]!;
-        child.setOwner(this);
+        child.owner = this;
       }
       this.markDirtyAndPropagate();
     }
@@ -289,12 +290,6 @@ export class Node {
   getChildCount(): number {
     return this.children_.length;
   }
-  getOwner(): Node | null {
-    return this.owner_;
-  }
-  getParent(): Node | null {
-    return this.owner_;
-  }
 
   // Config, context and callbacks
   setConfig(config: Config | null): void {
@@ -304,23 +299,17 @@ export class Node {
 
     if (configUpdateInvalidatesLayout(this.config_, config)) {
       this.markDirtyAndPropagate();
-      this.layout_.configVersion = 0;
+      this.layout.configVersion = 0;
     } else {
       // If the config is functionally the same, then align the configVersion so
       // that we can reuse the layout cache
-      this.layout_.configVersion = config.getVersion();
+      this.layout.configVersion = config.getVersion();
     }
 
     this.config_ = config;
   }
   getConfig(): Config {
     return this.config_;
-  }
-  setContext(context: unknown): void {
-    this.context_ = context;
-  }
-  getContext(): unknown {
-    return this.context_;
   }
   setMeasureFunc(measureFunc: MeasureFunction | null): void {
     if (measureFunc !== null) {
@@ -373,28 +362,28 @@ export class Node {
 
   // Computed layout (YGNodeLayoutGet*)
   getComputedLeft(): number {
-    return this.layout_.position[PhysicalEdge.Left];
+    return this.layout.position[PhysicalEdge.Left];
   }
   getComputedTop(): number {
-    return this.layout_.position[PhysicalEdge.Top];
+    return this.layout.position[PhysicalEdge.Top];
   }
   getComputedRight(): number {
-    return this.layout_.position[PhysicalEdge.Right];
+    return this.layout.position[PhysicalEdge.Right];
   }
   getComputedBottom(): number {
-    return this.layout_.position[PhysicalEdge.Bottom];
+    return this.layout.position[PhysicalEdge.Bottom];
   }
   getComputedWidth(): number {
-    return this.layout_.dimensions[Dimension.Width];
+    return this.layout.dimensions[Dimension.Width];
   }
   getComputedHeight(): number {
-    return this.layout_.dimensions[Dimension.Height];
+    return this.layout.dimensions[Dimension.Height];
   }
   getComputedRawWidth(): number {
-    return this.layout_.rawDimensions[Dimension.Width];
+    return this.layout.rawDimensions[Dimension.Width];
   }
   getComputedRawHeight(): number {
-    return this.layout_.rawDimensions[Dimension.Height];
+    return this.layout.rawDimensions[Dimension.Height];
   }
   getComputedLayout(): Layout {
     return {
@@ -407,169 +396,169 @@ export class Node {
     };
   }
   getComputedDirection(): Direction {
-    return this.layout_.direction;
+    return this.layout.direction;
   }
   getComputedHadOverflow(): boolean {
-    return this.layout_.hadOverflow;
+    return this.layout.hadOverflow;
   }
   getComputedMargin(edge: Edge): number {
-    return this.layout_.margin[this.resolveLayoutEdge(edge)];
+    return this.layout.margin[this.resolveLayoutEdge(edge)];
   }
   getComputedBorder(edge: Edge): number {
-    return this.layout_.border[this.resolveLayoutEdge(edge)];
+    return this.layout.border[this.resolveLayoutEdge(edge)];
   }
   getComputedPadding(edge: Edge): number {
-    return this.layout_.padding[this.resolveLayoutEdge(edge)];
+    return this.layout.padding[this.resolveLayoutEdge(edge)];
   }
 
   // Style
   copyStyle(node: Node): void {
-    if (!this.style_.equals(node.style_)) {
-      this.style_.assign(node.style_);
+    if (!this.style.equals(node.style)) {
+      this.style.assign(node.style);
       this.markDirtyAndPropagate();
     }
   }
   setDirection(direction: Direction): void {
-    if (this.style_.direction !== direction) {
-      this.style_.direction = direction;
+    if (this.style.direction !== direction) {
+      this.style.direction = direction;
       this.markDirtyAndPropagate();
     }
   }
   getDirection(): Direction {
-    return this.style_.direction;
+    return this.style.direction;
   }
   setFlexDirection(flexDirection: FlexDirection): void {
-    if (this.style_.flexDirection !== flexDirection) {
-      this.style_.flexDirection = flexDirection;
+    if (this.style.flexDirection !== flexDirection) {
+      this.style.flexDirection = flexDirection;
       this.markDirtyAndPropagate();
     }
   }
   getFlexDirection(): FlexDirection {
-    return this.style_.flexDirection;
+    return this.style.flexDirection;
   }
   setJustifyContent(justifyContent: Justify): void {
-    if (this.style_.justifyContent !== justifyContent) {
-      this.style_.justifyContent = justifyContent;
+    if (this.style.justifyContent !== justifyContent) {
+      this.style.justifyContent = justifyContent;
       this.markDirtyAndPropagate();
     }
   }
   getJustifyContent(): Justify {
-    return this.style_.justifyContent;
+    return this.style.justifyContent;
   }
   setAlignContent(alignContent: Align): void {
-    if (this.style_.alignContent !== alignContent) {
-      this.style_.alignContent = alignContent;
+    if (this.style.alignContent !== alignContent) {
+      this.style.alignContent = alignContent;
       this.markDirtyAndPropagate();
     }
   }
   getAlignContent(): Align {
-    return this.style_.alignContent;
+    return this.style.alignContent;
   }
   setAlignItems(alignItems: Align): void {
-    if (this.style_.alignItems !== alignItems) {
-      this.style_.alignItems = alignItems;
+    if (this.style.alignItems !== alignItems) {
+      this.style.alignItems = alignItems;
       this.markDirtyAndPropagate();
     }
   }
   getAlignItems(): Align {
-    return this.style_.alignItems;
+    return this.style.alignItems;
   }
   setAlignSelf(alignSelf: Align): void {
-    if (this.style_.alignSelf !== alignSelf) {
-      this.style_.alignSelf = alignSelf;
+    if (this.style.alignSelf !== alignSelf) {
+      this.style.alignSelf = alignSelf;
       this.markDirtyAndPropagate();
     }
   }
   getAlignSelf(): Align {
-    return this.style_.alignSelf;
+    return this.style.alignSelf;
   }
   setPositionType(positionType: PositionType): void {
-    if (this.style_.positionType !== positionType) {
-      this.style_.positionType = positionType;
+    if (this.style.positionType !== positionType) {
+      this.style.positionType = positionType;
       this.markDirtyAndPropagate();
     }
   }
   getPositionType(): PositionType {
-    return this.style_.positionType;
+    return this.style.positionType;
   }
   setFlexWrap(flexWrap: Wrap): void {
-    if (this.style_.flexWrap !== flexWrap) {
-      this.style_.flexWrap = flexWrap;
+    if (this.style.flexWrap !== flexWrap) {
+      this.style.flexWrap = flexWrap;
       this.markDirtyAndPropagate();
     }
   }
   getFlexWrap(): Wrap {
-    return this.style_.flexWrap;
+    return this.style.flexWrap;
   }
   setOverflow(overflow: Overflow): void {
-    if (this.style_.overflow !== overflow) {
-      this.style_.overflow = overflow;
+    if (this.style.overflow !== overflow) {
+      this.style.overflow = overflow;
       this.markDirtyAndPropagate();
     }
   }
   getOverflow(): Overflow {
-    return this.style_.overflow;
+    return this.style.overflow;
   }
   setDisplay(display: Display): void {
-    if (this.style_.display !== display) {
-      this.style_.display = display;
+    if (this.style.display !== display) {
+      this.style.display = display;
       this.markDirtyAndPropagate();
     }
   }
   getDisplay(): Display {
-    return this.style_.display;
+    return this.style.display;
   }
   setBoxSizing(boxSizing: BoxSizing): void {
-    if (this.style_.boxSizing !== boxSizing) {
-      this.style_.boxSizing = boxSizing;
+    if (this.style.boxSizing !== boxSizing) {
+      this.style.boxSizing = boxSizing;
       this.markDirtyAndPropagate();
     }
   }
   getBoxSizing(): BoxSizing {
-    return this.style_.boxSizing;
+    return this.style.boxSizing;
   }
   setFlex(flex: number | undefined): void {
     const value = new FloatOptional(flex ?? NaN);
-    if (!this.style_.flex.equals(value)) {
-      this.style_.flex = value;
+    if (!this.style.flex.equals(value)) {
+      this.style.flex = value;
       this.markDirtyAndPropagate();
     }
   }
   getFlex(): number {
-    return this.style_.flex.unwrap();
+    return this.style.flex.unwrap();
   }
   setFlexGrow(flexGrow: number | undefined): void {
     const value = new FloatOptional(flexGrow ?? NaN);
-    if (!this.style_.flexGrow.equals(value)) {
-      this.style_.flexGrow = value;
+    if (!this.style.flexGrow.equals(value)) {
+      this.style.flexGrow = value;
       this.markDirtyAndPropagate();
     }
   }
   getFlexGrow(): number {
-    return this.style_.flexGrow.unwrapOrDefault(Style.DefaultFlexGrow);
+    return this.style.flexGrow.unwrapOrDefault(Style.DefaultFlexGrow);
   }
   setFlexShrink(flexShrink: number | undefined): void {
     const value = new FloatOptional(flexShrink ?? NaN);
-    if (!this.style_.flexShrink.equals(value)) {
-      this.style_.flexShrink = value;
+    if (!this.style.flexShrink.equals(value)) {
+      this.style.flexShrink = value;
       this.markDirtyAndPropagate();
     }
   }
   getFlexShrink(): number {
-    return this.style_.flexShrink.unwrapOrDefault(Style.DefaultFlexShrink);
+    return this.style.flexShrink.unwrapOrDefault(Style.DefaultFlexShrink);
   }
   setAspectRatio(aspectRatio: number | undefined): void {
     // Degenerate aspect ratios (0, infinite) act as auto.
     // See https://drafts.csswg.org/css-sizing-4/#valdef-aspect-ratio-ratio
     const ratio = aspectRatio ?? NaN;
     const value = new FloatOptional(ratio === 0 || ratio === Infinity || ratio === -Infinity ? NaN : ratio);
-    if (!this.style_.aspectRatio.equals(value)) {
-      this.style_.aspectRatio = value;
+    if (!this.style.aspectRatio.equals(value)) {
+      this.style.aspectRatio = value;
       this.markDirtyAndPropagate();
     }
   }
   getAspectRatio(): number {
-    return this.style_.aspectRatio.unwrap();
+    return this.style.aspectRatio.unwrap();
   }
 
   // Style: flex basis and dimensions
@@ -583,7 +572,7 @@ export class Node {
     this.updateFlexBasis(StyleSizeLength.ofAuto());
   }
   getFlexBasis(): Value {
-    return this.style_.flexBasis.toValue();
+    return this.style.flexBasis.toValue();
   }
   setWidth(width: number | "auto" | Percent | undefined): void {
     this.updateDimension(Dimension.Width, parseSizeLength(width));
@@ -595,7 +584,7 @@ export class Node {
     this.updateDimension(Dimension.Width, StyleSizeLength.ofAuto());
   }
   getWidth(): Value {
-    return this.style_.dimensions[Dimension.Width].toValue();
+    return this.style.dimensions[Dimension.Width].toValue();
   }
   setHeight(height: number | "auto" | Percent | undefined): void {
     this.updateDimension(Dimension.Height, parseSizeLength(height));
@@ -607,7 +596,7 @@ export class Node {
     this.updateDimension(Dimension.Height, StyleSizeLength.ofAuto());
   }
   getHeight(): Value {
-    return this.style_.dimensions[Dimension.Height].toValue();
+    return this.style.dimensions[Dimension.Height].toValue();
   }
   setMinWidth(minWidth: number | Percent | undefined): void {
     this.updateMinDimension(Dimension.Width, parseSizeLength(minWidth));
@@ -616,7 +605,7 @@ export class Node {
     this.updateMinDimension(Dimension.Width, StyleSizeLength.percent(minWidth ?? NaN));
   }
   getMinWidth(): Value {
-    return this.style_.minDimensions[Dimension.Width].toValue();
+    return this.style.minDimensions[Dimension.Width].toValue();
   }
   setMinHeight(minHeight: number | Percent | undefined): void {
     this.updateMinDimension(Dimension.Height, parseSizeLength(minHeight));
@@ -625,7 +614,7 @@ export class Node {
     this.updateMinDimension(Dimension.Height, StyleSizeLength.percent(minHeight ?? NaN));
   }
   getMinHeight(): Value {
-    return this.style_.minDimensions[Dimension.Height].toValue();
+    return this.style.minDimensions[Dimension.Height].toValue();
   }
   setMaxWidth(maxWidth: number | Percent | undefined): void {
     this.updateMaxDimension(Dimension.Width, parseSizeLength(maxWidth));
@@ -634,7 +623,7 @@ export class Node {
     this.updateMaxDimension(Dimension.Width, StyleSizeLength.percent(maxWidth ?? NaN));
   }
   getMaxWidth(): Value {
-    return this.style_.maxDimensions[Dimension.Width].toValue();
+    return this.style.maxDimensions[Dimension.Width].toValue();
   }
   setMaxHeight(maxHeight: number | Percent | undefined): void {
     this.updateMaxDimension(Dimension.Height, parseSizeLength(maxHeight));
@@ -643,48 +632,48 @@ export class Node {
     this.updateMaxDimension(Dimension.Height, StyleSizeLength.percent(maxHeight ?? NaN));
   }
   getMaxHeight(): Value {
-    return this.style_.maxDimensions[Dimension.Height].toValue();
+    return this.style.maxDimensions[Dimension.Height].toValue();
   }
 
   // Style: edges and gutters
   setPosition(edge: Edge, position: number | "auto" | Percent | undefined): void {
-    this.updateEdge(this.style_.position, edge, parseLength(position));
+    this.updateEdge(this.style.position, edge, parseLength(position));
   }
   setPositionPercent(edge: Edge, position: number | undefined): void {
-    this.updateEdge(this.style_.position, edge, StyleLength.percent(position ?? NaN));
+    this.updateEdge(this.style.position, edge, StyleLength.percent(position ?? NaN));
   }
   setPositionAuto(edge: Edge): void {
-    this.updateEdge(this.style_.position, edge, StyleLength.ofAuto());
+    this.updateEdge(this.style.position, edge, StyleLength.ofAuto());
   }
   getPosition(edge: Edge): Value {
-    return this.style_.position[edge].toValue();
+    return this.style.position[edge].toValue();
   }
   setMargin(edge: Edge, margin: number | "auto" | Percent | undefined): void {
-    this.updateEdge(this.style_.margin, edge, parseLength(margin));
+    this.updateEdge(this.style.margin, edge, parseLength(margin));
   }
   setMarginPercent(edge: Edge, margin: number | undefined): void {
-    this.updateEdge(this.style_.margin, edge, StyleLength.percent(margin ?? NaN));
+    this.updateEdge(this.style.margin, edge, StyleLength.percent(margin ?? NaN));
   }
   setMarginAuto(edge: Edge): void {
-    this.updateEdge(this.style_.margin, edge, StyleLength.ofAuto());
+    this.updateEdge(this.style.margin, edge, StyleLength.ofAuto());
   }
   getMargin(edge: Edge): Value {
-    return this.style_.margin[edge].toValue();
+    return this.style.margin[edge].toValue();
   }
   setPadding(edge: Edge, padding: number | Percent | undefined): void {
-    this.updateEdge(this.style_.padding, edge, parseLength(padding));
+    this.updateEdge(this.style.padding, edge, parseLength(padding));
   }
   setPaddingPercent(edge: Edge, padding: number | undefined): void {
-    this.updateEdge(this.style_.padding, edge, StyleLength.percent(padding ?? NaN));
+    this.updateEdge(this.style.padding, edge, StyleLength.percent(padding ?? NaN));
   }
   getPadding(edge: Edge): Value {
-    return this.style_.padding[edge].toValue();
+    return this.style.padding[edge].toValue();
   }
   setBorder(edge: Edge, border: number | undefined): void {
-    this.updateEdge(this.style_.border, edge, StyleLength.points(border ?? NaN));
+    this.updateEdge(this.style.border, edge, StyleLength.points(border ?? NaN));
   }
   getBorder(edge: Edge): number {
-    const border = this.style_.border[edge];
+    const border = this.style.border[edge];
     if (border.isUndefined() || border.isAuto()) {
       return NaN;
     }
@@ -692,21 +681,17 @@ export class Node {
     return border.toValue().value;
   }
   setGap(gutter: Gutter, gapLength: number | Percent | undefined): void {
-    this.updateEdge(this.style_.gap, gutter, parseLength(gapLength));
+    this.updateEdge(this.style.gap, gutter, parseLength(gapLength));
   }
   setGapPercent(gutter: Gutter, gapLength: number | undefined): void {
-    this.updateEdge(this.style_.gap, gutter, StyleLength.percent(gapLength ?? NaN));
+    this.updateEdge(this.style.gap, gutter, StyleLength.percent(gapLength ?? NaN));
   }
   getGap(gutter: Gutter): Value {
-    return this.style_.gap[gutter].toValue();
+    return this.style.gap[gutter].toValue();
   }
 
   // Internal API (`yoga::Node` members that have no C API equivalent)
 
-  /** @internal */
-  style(): Style {
-    return this.style_;
-  }
   /** @internal The raw child list, including `display: contents` nodes. */
   getChildren(): readonly Node[] {
     return this.children_;
@@ -728,13 +713,9 @@ export class Node {
   getLayoutChildCount(): number {
     return this.getLayoutChildren().length;
   }
-  /** @internal Sets the owner without touching the owner's child list. */
-  setOwner(owner: Node | null): void {
-    this.owner_ = owner;
-  }
   /** @internal `yoga::Node::insertChild`: inserts into the child list without setting the owner, asserting or dirtying. */
   insertChildRaw(child: Node, index: number): void {
-    if (child.style_.display === Display.Contents) {
+    if (child.style.display === Display.Contents) {
       this.contentsChildrenCount_++;
     }
 
@@ -747,7 +728,7 @@ export class Node {
     this.contentsChildrenCount_ = 0;
     for (let i = 0, length = children.length; i < length; i++) {
       const child = children[i]!;
-      if (child.style_.display === Display.Contents) {
+      if (child.style.display === Display.Contents) {
         this.contentsChildrenCount_++;
       }
     }
@@ -766,9 +747,9 @@ export class Node {
   markDirtyAndPropagate(): void {
     if (!this.isDirty_) {
       this.setDirty(true);
-      this.layout_.computedFlexBasis = NaN;
-      if (this.owner_ !== null) {
-        this.owner_.markDirtyAndPropagate();
+      this.layout.computedFlexBasis = NaN;
+      if (this.owner !== null) {
+        this.owner.markDirtyAndPropagate();
       }
     }
   }
@@ -815,14 +796,14 @@ export class Node {
   /** @internal */
   dimensionWithMargin(axis: FlexDirection, widthSize: number): number {
     return (
-      this.layout_.measuredDimensions[dimension(axis)] +
-      this.style_.computeMarginForAxis(axis, widthSize)
+      this.layout.measuredDimensions[dimension(axis)] +
+      this.style.computeMarginForAxis(axis, widthSize)
     );
   }
 
   /** @internal */
   isLayoutDimensionDefined(axis: FlexDirection): boolean {
-    const value = this.layout_.measuredDimensions[dimension(axis)];
+    const value = this.layout.measuredDimensions[dimension(axis)];
     return value >= 0;
   }
 
@@ -846,26 +827,6 @@ export class Node {
   }
 
   /** @internal */
-  getLayout(): LayoutResults {
-    return this.layout_;
-  }
-
-  /** @internal */
-  setLayout(layout: LayoutResults): void {
-    this.layout_ = layout;
-  }
-
-  /** @internal */
-  getLineIndex(): number {
-    return this.lineIndex_;
-  }
-
-  /** @internal */
-  setLineIndex(lineIndex: number): void {
-    this.lineIndex_ = lineIndex;
-  }
-
-  /** @internal */
   getProcessedDimension(dimension: Dimension): StyleSizeLength {
     return this.processedDimensions_[dimension]!;
   }
@@ -878,11 +839,11 @@ export class Node {
     ownerWidth: number,
   ): number {
     const value = this.processedDimensions_[dimension]!.resolveValue(referenceLength);
-    if (this.style_.boxSizing === BoxSizing.BorderBox) {
+    if (this.style.boxSizing === BoxSizing.BorderBox) {
       return value;
     }
 
-    const paddingAndBorder = this.style_.computePaddingAndBorderForDimension(
+    const paddingAndBorder = this.style.computePaddingAndBorderForDimension(
       direction,
       dimension,
       ownerWidth,
@@ -893,8 +854,8 @@ export class Node {
 
   /** @internal */
   setLayoutDimension(lengthValue: number, dimension: Dimension): void {
-    this.layout_.dimensions[dimension] = lengthValue;
-    this.layout_.rawDimensions[dimension] = lengthValue;
+    this.layout.dimensions[dimension] = lengthValue;
+    this.layout.rawDimensions[dimension] = lengthValue;
   }
 
   // If both left and right are defined, then use left. Otherwise return +left or
@@ -902,7 +863,7 @@ export class Node {
   // insets do not apply to them.
   /** @internal */
   relativePosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const style = this.style_;
+    const style = this.style;
     if (style.positionType === PositionType.Static) {
       return 0;
     }
@@ -920,9 +881,9 @@ export class Node {
   setLayoutPositionFromStyle(direction: Direction, ownerWidth: number, ownerHeight: number): void {
     /* Root nodes should be always layouted as LTR, so we don't return negative
      * values. */
-    const directionRespectingRoot = this.owner_ !== null ? direction : Direction.LTR;
-    const style = this.style_;
-    const layout = this.layout_;
+    const directionRespectingRoot = this.owner !== null ? direction : Direction.LTR;
+    const style = this.style;
+    const layout = this.layout;
     const mainAxis = resolveDirection(style.flexDirection, directionRespectingRoot);
     const crossAxis = resolveCrossDirection(mainAxis, directionRespectingRoot);
 
@@ -952,12 +913,12 @@ export class Node {
 
   /** @internal */
   processFlexBasis(): StyleSizeLength {
-    const flexBasis = this.style_.flexBasis;
+    const flexBasis = this.style.flexBasis;
     if (!flexBasis.isAuto() && !flexBasis.isUndefined()) {
       return flexBasis;
     }
     // `flex: <positive number>` is `<number> 1 0` in CSS
-    if (this.style_.flex.unwrap() > 0) {
+    if (this.style.flex.unwrap() > 0) {
       return StyleSizeLength.points(0);
     }
     return StyleSizeLength.ofAuto();
@@ -971,11 +932,11 @@ export class Node {
     ownerWidth: number,
   ): number {
     const value = this.processFlexBasis().resolveValue(referenceLength);
-    if (this.style_.boxSizing === BoxSizing.BorderBox) {
+    if (this.style.boxSizing === BoxSizing.BorderBox) {
       return value;
     }
 
-    const paddingAndBorder = this.style_.computePaddingAndBorderForDimension(
+    const paddingAndBorder = this.style.computePaddingAndBorderForDimension(
       direction,
       dimension(flexDirection),
       ownerWidth,
@@ -986,7 +947,7 @@ export class Node {
 
   /** @internal */
   processDimensions(): void {
-    const style = this.style_;
+    const style = this.style;
     for (let i = 0, length = DIMENSIONS.length; i < length; i++) {
       const dim = DIMENSIONS[i]!;
       if (
@@ -1002,10 +963,10 @@ export class Node {
 
   /** @internal */
   resolveDirection(ownerDirection: Direction): Direction {
-    if (this.style_.direction === Direction.Inherit) {
+    if (this.style.direction === Direction.Inherit) {
       return ownerDirection !== Direction.Inherit ? ownerDirection : Direction.LTR;
     } else {
-      return this.style_.direction;
+      return this.style.direction;
     }
   }
 
@@ -1027,8 +988,8 @@ export class Node {
   }
 
   private trackContentsReplacement(oldChild: Node, newChild: Node): void {
-    const oldIsContents = oldChild.style_.display === Display.Contents;
-    const newIsContents = newChild.style_.display === Display.Contents;
+    const oldIsContents = oldChild.style.display === Display.Contents;
+    const newIsContents = newChild.style.display === Display.Contents;
     if (oldIsContents && !newIsContents) {
       this.contentsChildrenCount_--;
     } else if (!oldIsContents && newIsContents) {
@@ -1048,7 +1009,7 @@ export class Node {
 
   /** @internal `yoga::Node::removeChild(size_t)` */
   removeChildAt(index: number): void {
-    if (this.children_[index]!.style_.display === Display.Contents) {
+    if (this.children_[index]!.style.display === Display.Contents) {
       this.contentsChildrenCount_--;
     }
     this.children_.splice(index, 1);
@@ -1059,12 +1020,12 @@ export class Node {
     const children = this.children_;
     for (let i = 0; i < children.length; i++) {
       let child = children[i]!;
-      if (child.getOwner() !== this) {
+      if (child.owner !== this) {
         child = this.config_.cloneNode(child, this, i);
         children[i] = child;
-        child.setOwner(this);
+        child.owner = this;
 
-        if (child.style_.display === Display.Contents) {
+        if (child.style.display === Display.Contents) {
           // The contents node's children are treated as children of the
           // contents node's parent for layout purposes, so they need
           // to be cloned as well.
@@ -1081,10 +1042,10 @@ export class Node {
     const children = this.children_;
     for (let i = 0; i < children.length; i++) {
       let child = children[i]!;
-      if (child.style_.display === Display.Contents && child.getOwner() !== this) {
+      if (child.style.display === Display.Contents && child.owner !== this) {
         child = this.config_.cloneNode(child, this, i);
         children[i] = child;
-        child.setOwner(this);
+        child.owner = this;
         child.cloneChildrenIfNeeded();
       }
     }
@@ -1093,14 +1054,14 @@ export class Node {
   /** @internal */
   resolveFlexGrow(): number {
     // Root nodes flexGrow should always be 0
-    if (this.owner_ === null) {
+    if (this.owner === null) {
       return 0.0;
     }
-    const flexGrow = this.style_.flexGrow.unwrap();
+    const flexGrow = this.style.flexGrow.unwrap();
     if (flexGrow === flexGrow) {
       return flexGrow;
     }
-    const flex = this.style_.flex.unwrap();
+    const flex = this.style.flex.unwrap();
     if (flex > 0) {
       return flex;
     }
@@ -1109,10 +1070,10 @@ export class Node {
 
   /** @internal */
   resolveFlexShrink(): number {
-    if (this.owner_ === null) {
+    if (this.owner === null) {
       return 0.0;
     }
-    const flexShrink = this.style_.flexShrink.unwrap();
+    const flexShrink = this.style.flexShrink.unwrap();
     if (flexShrink === flexShrink) {
       return flexShrink;
     }
@@ -1122,15 +1083,15 @@ export class Node {
   /** @internal */
   isNodeFlexible(): boolean {
     return (
-      this.style_.positionType !== PositionType.Absolute &&
+      this.style.positionType !== PositionType.Absolute &&
       (this.resolveFlexGrow() !== 0 || this.resolveFlexShrink() !== 0)
     );
   }
 
   /** The layout of a node removed from its exclusive owner is no longer valid. */
   private detachFromOwner(): void {
-    this.layout_ = new LayoutResults();
-    this.owner_ = null;
+    this.layout = new LayoutResults();
+    this.owner = null;
     // Mark dirty to invalidate cache, but suppress the dirtied callback
     // since the node is being detached from the tree and should not
     // propagate dirty signals through external callback mechanisms.
@@ -1146,40 +1107,40 @@ export class Node {
     }
 
     if (edge === Edge.Start) {
-      return this.layout_.direction === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;
+      return this.layout.direction === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;
     }
 
     if (edge === Edge.End) {
-      return this.layout_.direction === Direction.RTL ? PhysicalEdge.Left : PhysicalEdge.Right;
+      return this.layout.direction === Direction.RTL ? PhysicalEdge.Left : PhysicalEdge.Right;
     }
 
     return edge as PhysicalEdge;
   }
 
   private updateFlexBasis(value: StyleSizeLength): void {
-    if (!this.style_.flexBasis.equals(value)) {
-      this.style_.flexBasis = value;
+    if (!this.style.flexBasis.equals(value)) {
+      this.style.flexBasis = value;
       this.markDirtyAndPropagate();
     }
   }
 
   private updateDimension(axis: Dimension, value: StyleSizeLength): void {
-    if (!this.style_.dimensions[axis].equals(value)) {
-      this.style_.dimensions[axis] = value;
+    if (!this.style.dimensions[axis].equals(value)) {
+      this.style.dimensions[axis] = value;
       this.markDirtyAndPropagate();
     }
   }
 
   private updateMinDimension(axis: Dimension, value: StyleSizeLength): void {
-    if (!this.style_.minDimensions[axis].equals(value)) {
-      this.style_.minDimensions[axis] = value;
+    if (!this.style.minDimensions[axis].equals(value)) {
+      this.style.minDimensions[axis] = value;
       this.markDirtyAndPropagate();
     }
   }
 
   private updateMaxDimension(axis: Dimension, value: StyleSizeLength): void {
-    if (!this.style_.maxDimensions[axis].equals(value)) {
-      this.style_.maxDimensions[axis] = value;
+    if (!this.style.maxDimensions[axis].equals(value)) {
+      this.style.maxDimensions[axis] = value;
       this.markDirtyAndPropagate();
     }
   }
@@ -1195,14 +1156,14 @@ export class Node {
 const DIMENSIONS = [Dimension.Width, Dimension.Height] as const;
 
 function isContentsNode(node: Node): boolean {
-  return node.style().display === Display.Contents;
+  return node.style.display === Display.Contents;
 }
 
 function collectLayoutChildren(node: Node, out: Node[]): void {
   const children = node.getChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
-    if (child.style().display === Display.Contents) {
+    if (child.style.display === Display.Contents) {
       collectLayoutChildren(child, out);
     } else {
       out.push(child);

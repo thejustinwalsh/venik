@@ -12,7 +12,7 @@ import {
 type Counter = { count: number };
 
 const _measureMax: MeasureFunction = (width, widthMode, height, heightMode, node) => {
-  const measureCount = node.getContext() as Counter;
+  const measureCount = node.context as Counter;
   measureCount.count++;
 
   return {
@@ -22,7 +22,7 @@ const _measureMax: MeasureFunction = (width, widthMode, height, heightMode, node
 };
 
 const _measureMin: MeasureFunction = (width, widthMode, height, heightMode, node) => {
-  const measureCount = node.getContext() as Counter;
+  const measureCount = node.context as Counter;
   measureCount.count = measureCount.count + 1;
   return {
     width:
@@ -37,7 +37,7 @@ const _measureMin: MeasureFunction = (width, widthMode, height, heightMode, node
 };
 
 const _measure_84_49: MeasureFunction = (_width, _widthMode, _height, _heightMode, node) => {
-  const measureCount = node.getContext() as Counter | null;
+  const measureCount = node.context as Counter | null;
   if (measureCount != null) {
     measureCount.count++;
   }
@@ -54,7 +54,7 @@ test("measure_once_single_flexible_child", () => {
 
   const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
-  root_child0.setContext(measureCount);
+  root_child0.context = measureCount;
   root_child0.setMeasureFunc(_measureMax);
   root_child0.setFlexGrow(1);
   root.insertChild(root_child0, 0);
@@ -73,7 +73,7 @@ test("remeasure_with_same_exact_width_larger_than_needed_height", () => {
 
   const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
-  root_child0.setContext(measureCount);
+  root_child0.context = measureCount;
   root_child0.setMeasureFunc(_measureMin);
   root.insertChild(root_child0, 0);
 
@@ -91,7 +91,7 @@ test("remeasure_with_same_atmost_width_larger_than_needed_height", () => {
 
   const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
-  root_child0.setContext(measureCount);
+  root_child0.context = measureCount;
   root_child0.setMeasureFunc(_measureMin);
   root.insertChild(root_child0, 0);
 
@@ -109,7 +109,7 @@ test("remeasure_with_computed_width_larger_than_needed_height", () => {
 
   const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
-  root_child0.setContext(measureCount);
+  root_child0.context = measureCount;
   root_child0.setMeasureFunc(_measureMin);
   root.insertChild(root_child0, 0);
 
@@ -128,7 +128,7 @@ test("remeasure_with_atmost_computed_width_undefined_height", () => {
 
   const root_child0 = newFixtureNode();
   const measureCount: Counter = { count: 0 };
-  root_child0.setContext(measureCount);
+  root_child0.context = measureCount;
   root_child0.setMeasureFunc(_measureMin);
   root.insertChild(root_child0, 0);
 
@@ -156,7 +156,7 @@ test("remeasure_with_already_measured_value_smaller_but_still_float_equal", () =
   root.insertChild(root_child0, 0);
 
   const root_child0_child0 = newFixtureNode();
-  root_child0_child0.setContext(measureCount);
+  root_child0_child0.context = measureCount;
   root_child0_child0.setMeasureFunc(_measure_84_49);
   root_child0.insertChild(root_child0_child0, 0);
 

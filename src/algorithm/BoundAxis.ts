@@ -11,7 +11,7 @@ export function paddingAndBorderForAxis(
   direction: Direction,
   widthSize: number,
 ): number {
-  const style = node.style();
+  const style = node.style;
   return (
     style.computeInlineStartPaddingAndBorder(axis, direction, widthSize) +
     style.computeInlineEndPaddingAndBorder(axis, direction, widthSize)
@@ -26,7 +26,7 @@ export function boundAxisWithinMinAndMax(
   axisSize: number,
   widthSize: number,
 ): number {
-  const style = node.style();
+  const style = node.style;
   const dim = isColumn(axis) ? Dimension.Height : Dimension.Width;
   const min = style.resolvedMinDimensionValue(direction, dim, axisSize, widthSize);
   const max = style.resolvedMaxDimensionValue(direction, dim, axisSize, widthSize);

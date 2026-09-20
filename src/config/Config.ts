@@ -10,7 +10,7 @@ export class Config {
 
   private version_: number = 0;
   private pointScaleFactor_: number = 1.0;
-  private context_: unknown = null;
+  context: unknown = null;
 
   private static default_: Config | null = null;
 
@@ -35,13 +35,6 @@ export class Config {
   }
   getPointScaleFactor(): number {
     return this.pointScaleFactor_;
-  }
-
-  setContext(context: unknown): void {
-    this.context_ = context;
-  }
-  getContext(): unknown {
-    return this.context_;
   }
 
   setCloneNodeFunc(cloneNodeFunc: CloneNodeFunction | null): void {

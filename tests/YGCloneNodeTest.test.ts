@@ -4,7 +4,7 @@ import { Direction, Display, Node, PositionType } from "../src/index.ts";
 function recursivelyAssertProperNodeOwnership(node: Node): void {
   for (let i = 0; i < node.getChildCount(); ++i) {
     const child = node.getChild(i)!;
-    expect(child.getOwner()).toBe(node);
+    expect(child.owner).toBe(node);
     recursivelyAssertProperNodeOwnership(child);
   }
 }
