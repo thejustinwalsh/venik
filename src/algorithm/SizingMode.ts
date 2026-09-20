@@ -1,4 +1,3 @@
-import { fatalWithMessage } from "../debug/AssertFatal.ts";
 import { MeasureMode } from "../enums.ts";
 
 /**
@@ -41,6 +40,6 @@ export function measureMode(mode: SizingMode): MeasureMode {
     case SizingMode.FitContent:
       return MeasureMode.AtMost;
     default:
-      fatalWithMessage("Invalid SizingMode");
+      throw new Error("Invalid SizingMode");
   }
 }
