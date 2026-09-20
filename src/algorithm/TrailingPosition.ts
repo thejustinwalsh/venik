@@ -12,24 +12,20 @@ export function getPositionOfOppositeEdge(
   node: Node,
 ): number {
   return (
-    containingNode.getLayout().measuredDimension(dimension(axis)) -
-    node.getLayout().measuredDimension(dimension(axis)) -
+    containingNode.getLayout().measuredDimensions[dimension(axis)] -
+    node.getLayout().measuredDimensions[dimension(axis)] -
     position
   );
 }
 
 export function setChildTrailingPosition(node: Node, child: Node, axis: FlexDirection): void {
   child
-    .getLayout()
-    .setPosition(
-      flexEndEdge(axis),
-      getPositionOfOppositeEdge(
-        child.getLayout().position(flexStartEdge(axis)),
+    .getLayout().position[flexEndEdge(axis)] = getPositionOfOppositeEdge(
+        child.getLayout().position[flexStartEdge(axis)],
         axis,
         node,
         child,
-      ),
-    );
+      );
 }
 
 export function needsTrailingPosition(axis: FlexDirection): boolean {

@@ -1,7 +1,6 @@
 // `FloatOptional` members are plain numbers here (NaN is undefined).
 
-import type { PhysicalEdge } from "../algorithm/FlexDirection.ts";
-import { type Dimension, Direction } from "../enums.ts";
+import { Direction } from "../enums.ts";
 import { inexactEqualsArray } from "../numeric/Comparison.ts";
 import { CachedMeasurement } from "./CachedMeasurement.ts";
 
@@ -31,99 +30,29 @@ export class LayoutResults {
 
   cachedLayout: CachedMeasurement = new CachedMeasurement();
 
-  private direction_: Direction = Direction.Inherit;
-  private hadOverflow_: boolean = false;
+  direction: Direction = Direction.Inherit;
+  hadOverflow: boolean = false;
 
-  private dimensions_: number[] = [NaN, NaN];
-  private measuredDimensions_: number[] = [NaN, NaN];
-  private rawDimensions_: number[] = [NaN, NaN];
-  private position_: number[] = [0, 0, 0, 0];
-  private margin_: number[] = [0, 0, 0, 0];
-  private border_: number[] = [0, 0, 0, 0];
-  private padding_: number[] = [0, 0, 0, 0];
-
-  direction(): Direction {
-    return this.direction_;
-  }
-
-  setDirection(direction: Direction): void {
-    this.direction_ = direction;
-  }
-
-  hadOverflow(): boolean {
-    return this.hadOverflow_;
-  }
-
-  setHadOverflow(hadOverflow: boolean): void {
-    this.hadOverflow_ = hadOverflow;
-  }
-
-  dimension(axis: Dimension): number {
-    return this.dimensions_[axis]!;
-  }
-
-  setDimension(axis: Dimension, dimension: number): void {
-    this.dimensions_[axis] = dimension;
-  }
-
-  measuredDimension(axis: Dimension): number {
-    return this.measuredDimensions_[axis]!;
-  }
-
-  rawDimension(axis: Dimension): number {
-    return this.rawDimensions_[axis]!;
-  }
-
-  setMeasuredDimension(axis: Dimension, dimension: number): void {
-    this.measuredDimensions_[axis] = dimension;
-  }
-
-  setRawDimension(axis: Dimension, dimension: number): void {
-    this.rawDimensions_[axis] = dimension;
-  }
-
-  position(physicalEdge: PhysicalEdge): number {
-    return this.position_[physicalEdge]!;
-  }
-
-  setPosition(physicalEdge: PhysicalEdge, dimension: number): void {
-    this.position_[physicalEdge] = dimension;
-  }
-
-  margin(physicalEdge: PhysicalEdge): number {
-    return this.margin_[physicalEdge]!;
-  }
-
-  setMargin(physicalEdge: PhysicalEdge, dimension: number): void {
-    this.margin_[physicalEdge] = dimension;
-  }
-
-  border(physicalEdge: PhysicalEdge): number {
-    return this.border_[physicalEdge]!;
-  }
-
-  setBorder(physicalEdge: PhysicalEdge, dimension: number): void {
-    this.border_[physicalEdge] = dimension;
-  }
-
-  padding(physicalEdge: PhysicalEdge): number {
-    return this.padding_[physicalEdge]!;
-  }
-
-  setPadding(physicalEdge: PhysicalEdge, dimension: number): void {
-    this.padding_[physicalEdge] = dimension;
-  }
+  // Indexed by `Dimension`.
+  readonly dimensions: [number, number] = [NaN, NaN];
+  readonly measuredDimensions: [number, number] = [NaN, NaN];
+  readonly rawDimensions: [number, number] = [NaN, NaN];
+  // Indexed by `PhysicalEdge`.
+  readonly position: PhysicalEdges = [0, 0, 0, 0];
+  readonly margin: PhysicalEdges = [0, 0, 0, 0];
+  readonly border: PhysicalEdges = [0, 0, 0, 0];
+  readonly padding: PhysicalEdges = [0, 0, 0, 0];
 
   /** C++ `operator==`. */
   equals(layout: LayoutResults): boolean {
     let isEqual =
-      inexactEqualsArray(this.position_, layout.position_) &&
-      inexactEqualsArray(this.dimensions_, layout.dimensions_) &&
-      inexactEqualsArray(this.margin_, layout.margin_) &&
-      inexactEqualsArray(this.border_, layout.border_) &&
-      inexactEqualsArray(this.padding_, layout.padding_) &&
-      this.direction() === layout.direction() &&
-      this.hadOverflow() === layout.hadOverflow() &&
+      inexactEqualsArray(this.position, layout.position) &&
+      inexactEqualsArray(this.dimensions, layout.dimensions) &&
+      inexactEqualsArray(this.margin, layout.margin) &&
+      inexactEqualsArray(this.border, layout.border) &&
+      inexactEqualsArray(this.padding, layout.padding) &&
+      this.direction === layout.direction &&
+      this.hadOverflow === layout.hadOverflow &&
       this.lastOwnerDirection === layout.lastOwnerDirection &&
       this.configVersion === layout.configVersion &&
       this.nextCachedMeasurementsIndex === layout.nextCachedMeasurementsIndex &&
@@ -136,8 +65,8 @@ export class LayoutResults {
 
     return (
       isEqual &&
-      sameOrBothUndefined(this.measuredDimensions_[0]!, layout.measuredDimensions_[0]!) &&
-      sameOrBothUndefined(this.measuredDimensions_[1]!, layout.measuredDimensions_[1]!)
+      sameOrBothUndefined(this.measuredDimensions[0]!, layout.measuredDimensions[0]!) &&
+      sameOrBothUndefined(this.measuredDimensions[1]!, layout.measuredDimensions[1]!)
     );
   }
 
@@ -155,16 +84,24 @@ export class LayoutResults {
       copy.cachedMeasurements[i]!.assign(this.cachedMeasurements[i]!);
     }
     copy.cachedLayout.assign(this.cachedLayout);
-    copy.direction_ = this.direction_;
-    copy.hadOverflow_ = this.hadOverflow_;
-    copy.dimensions_ = this.dimensions_.slice();
-    copy.measuredDimensions_ = this.measuredDimensions_.slice();
-    copy.rawDimensions_ = this.rawDimensions_.slice();
-    copy.position_ = this.position_.slice();
-    copy.margin_ = this.margin_.slice();
-    copy.border_ = this.border_.slice();
-    copy.padding_ = this.padding_.slice();
+    copy.direction = this.direction;
+    copy.hadOverflow = this.hadOverflow;
+    copyInto(copy.dimensions, this.dimensions);
+    copyInto(copy.measuredDimensions, this.measuredDimensions);
+    copyInto(copy.rawDimensions, this.rawDimensions);
+    copyInto(copy.position, this.position);
+    copyInto(copy.margin, this.margin);
+    copyInto(copy.border, this.border);
+    copyInto(copy.padding, this.padding);
     return copy;
+  }
+}
+
+type PhysicalEdges = [number, number, number, number];
+
+function copyInto(to: number[], from: readonly number[]): void {
+  for (let i = 0, length = from.length; i < length; i++) {
+    to[i] = from[i]!;
   }
 }
 

@@ -39,10 +39,10 @@ function setFlexStartLayoutPosition(
 ): void {
   const position =
     child.style().computeFlexStartMargin(axis, direction, containingBlockWidth) +
-    parent.getLayout().border(flexStartEdge(axis)) +
-    parent.getLayout().padding(flexStartEdge(axis));
+    parent.getLayout().border[flexStartEdge(axis)] +
+    parent.getLayout().padding[flexStartEdge(axis)];
 
-  child.getLayout().setPosition(flexStartEdge(axis), position);
+  child.getLayout().position[flexStartEdge(axis)] = position;
 }
 
 function setFlexEndLayoutPosition(
@@ -53,16 +53,12 @@ function setFlexEndLayoutPosition(
   containingBlockWidth: number,
 ): void {
   const flexEndPosition =
-    parent.getLayout().border(flexEndEdge(axis)) +
-    parent.getLayout().padding(flexEndEdge(axis)) +
+    parent.getLayout().border[flexEndEdge(axis)] +
+    parent.getLayout().padding[flexEndEdge(axis)] +
     child.style().computeFlexEndMargin(axis, direction, containingBlockWidth);
 
   child
-    .getLayout()
-    .setPosition(
-      flexStartEdge(axis),
-      getPositionOfOppositeEdge(flexEndPosition, axis, parent, child),
-    );
+    .getLayout().position[flexStartEdge(axis)] = getPositionOfOppositeEdge(flexEndPosition, axis, parent, child);
 }
 
 function setCenterLayoutPosition(
@@ -74,23 +70,23 @@ function setCenterLayoutPosition(
 ): void {
   const parentLayout = parent.getLayout();
   const parentContentBoxSize =
-    parentLayout.measuredDimension(dimension(axis)) -
-    parentLayout.border(flexStartEdge(axis)) -
-    parentLayout.border(flexEndEdge(axis)) -
-    parentLayout.padding(flexStartEdge(axis)) -
-    parentLayout.padding(flexEndEdge(axis));
+    parentLayout.measuredDimensions[dimension(axis)] -
+    parentLayout.border[flexStartEdge(axis)] -
+    parentLayout.border[flexEndEdge(axis)] -
+    parentLayout.padding[flexStartEdge(axis)] -
+    parentLayout.padding[flexEndEdge(axis)];
 
   const childOuterSize =
-    child.getLayout().measuredDimension(dimension(axis)) +
+    child.getLayout().measuredDimensions[dimension(axis)] +
     child.style().computeMarginForAxis(axis, containingBlockWidth);
 
   const position =
     (parentContentBoxSize - childOuterSize) / 2.0 +
-    parentLayout.border(flexStartEdge(axis)) +
-    parentLayout.padding(flexStartEdge(axis)) +
+    parentLayout.border[flexStartEdge(axis)] +
+    parentLayout.padding[flexStartEdge(axis)] +
     child.style().computeFlexStartMargin(axis, direction, containingBlockWidth);
 
-  child.getLayout().setPosition(flexStartEdge(axis), position);
+  child.getLayout().position[flexStartEdge(axis)] = position;
 }
 
 function justifyAbsoluteChild(
@@ -209,14 +205,14 @@ function positionAbsoluteChild(
         ? getPositionOfOppositeEdge(positionRelativeToInlineStart, axis, containingNode, child)
         : positionRelativeToInlineStart;
 
-    child.getLayout().setPosition(flexStartEdge(axis), positionRelativeToFlexStart);
+    child.getLayout().position[flexStartEdge(axis)] = positionRelativeToFlexStart;
   } else if (
     childStyle.isInlineEndPositionDefined(axis, direction) &&
     !childStyle.isInlineEndPositionAuto(axis, direction)
   ) {
     const positionRelativeToInlineStart =
-      containingNode.getLayout().measuredDimension(dimension(axis)) -
-      child.getLayout().measuredDimension(dimension(axis)) -
+      containingNode.getLayout().measuredDimensions[dimension(axis)] -
+      child.getLayout().measuredDimensions[dimension(axis)] -
       containingNode.style().computeInlineEndBorder(axis, direction) -
       childStyle.computeInlineEndMargin(axis, direction, containingBlockSize) -
       childStyle.computeInlineEndPosition(axis, direction, containingBlockSize);
@@ -225,7 +221,7 @@ function positionAbsoluteChild(
         ? getPositionOfOppositeEdge(positionRelativeToInlineStart, axis, containingNode, child)
         : positionRelativeToInlineStart;
 
-    child.getLayout().setPosition(flexStartEdge(axis), positionRelativeToFlexStart);
+    child.getLayout().position[flexStartEdge(axis)] = positionRelativeToFlexStart;
   } else if (isMainAxis) {
     justifyAbsoluteChild(parent, child, direction, axis, containingBlockWidth);
   } else {
@@ -281,7 +277,7 @@ function layoutAbsoluteChild(
     // the left/right offsets if they're defined.
     if (hasBothInsets(child, FlexDirection.Row, direction)) {
       childWidth =
-        containingNode.getLayout().measuredDimension(Dimension.Width) -
+        containingNode.getLayout().measuredDimensions[Dimension.Width] -
         (containingNode.style().computeFlexStartBorder(FlexDirection.Row, direction) +
           containingNode.style().computeFlexEndBorder(FlexDirection.Row, direction)) -
         (childStyle.computeFlexStartPosition(FlexDirection.Row, direction, containingBlockWidth) +
@@ -310,7 +306,7 @@ function layoutAbsoluteChild(
     // on the top/bottom offsets if they're defined.
     if (hasBothInsets(child, FlexDirection.Column, direction)) {
       childHeight =
-        containingNode.getLayout().measuredDimension(Dimension.Height) -
+        containingNode.getLayout().measuredDimensions[Dimension.Height] -
         (containingNode.style().computeFlexStartBorder(FlexDirection.Column, direction) +
           containingNode.style().computeFlexEndBorder(FlexDirection.Column, direction)) -
         (childStyle.computeFlexStartPosition(
@@ -385,10 +381,10 @@ function layoutAbsoluteChild(
       generationCount,
     );
     childWidth =
-      child.getLayout().measuredDimension(Dimension.Width) +
+      child.getLayout().measuredDimensions[Dimension.Width] +
       childStyle.computeMarginForAxis(FlexDirection.Row, containingBlockWidth);
     childHeight =
-      child.getLayout().measuredDimension(Dimension.Height) +
+      child.getLayout().measuredDimensions[Dimension.Height] +
       childStyle.computeMarginForAxis(FlexDirection.Column, containingBlockWidth);
   }
 
@@ -452,10 +448,10 @@ export function layoutAbsoluteDescendants(
       continue;
     } else if (childStyle.positionType === PositionType.Absolute) {
       const containingBlockWidth =
-        containingNode.getLayout().measuredDimension(Dimension.Width) -
+        containingNode.getLayout().measuredDimensions[Dimension.Width] -
         containingNode.style().computeBorderForAxis(FlexDirection.Row);
       const containingBlockHeight =
-        containingNode.getLayout().measuredDimension(Dimension.Height) -
+        containingNode.getLayout().measuredDimensions[Dimension.Height] -
         containingNode.style().computeBorderForAxis(FlexDirection.Column);
 
       layoutAbsoluteChild(
@@ -515,8 +511,8 @@ export function layoutAbsoluteDescendants(
        * are defined
        */
       const childLayout = child.getLayout();
-      const childLeftPosition = childLayout.position(PhysicalEdge.Left);
-      const childTopPosition = childLayout.position(PhysicalEdge.Top);
+      const childLeftPosition = childLayout.position[PhysicalEdge.Left];
+      const childTopPosition = childLayout.position[PhysicalEdge.Top];
 
       const childLeftOffsetFromParent = childStyle.horizontalInsetsDefined()
         ? childLeftPosition - currentNodeLeftOffsetFromContainingBlock
@@ -525,8 +521,8 @@ export function layoutAbsoluteDescendants(
         ? childTopPosition - currentNodeTopOffsetFromContainingBlock
         : childTopPosition;
 
-      childLayout.setPosition(PhysicalEdge.Left, childLeftOffsetFromParent);
-      childLayout.setPosition(PhysicalEdge.Top, childTopOffsetFromParent);
+      childLayout.position[PhysicalEdge.Left] = childLeftOffsetFromParent;
+      childLayout.position[PhysicalEdge.Top] = childTopOffsetFromParent;
     } else if (childStyle.positionType === PositionType.Static) {
       // We may write new layout results for absolute descendants of "child"
       // which are positioned relative to the current containing block instead
@@ -539,9 +535,9 @@ export function layoutAbsoluteDescendants(
       // By now all descendants of the containing block that are not absolute
       // will have their positions set for left and top.
       const childLeftOffsetFromContainingBlock =
-        currentNodeLeftOffsetFromContainingBlock + child.getLayout().position(PhysicalEdge.Left);
+        currentNodeLeftOffsetFromContainingBlock + child.getLayout().position[PhysicalEdge.Left];
       const childTopOffsetFromContainingBlock =
-        currentNodeTopOffsetFromContainingBlock + child.getLayout().position(PhysicalEdge.Top);
+        currentNodeTopOffsetFromContainingBlock + child.getLayout().position[PhysicalEdge.Top];
 
       hasNewLayout =
         layoutAbsoluteDescendants(

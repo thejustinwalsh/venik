@@ -68,11 +68,11 @@ export function roundLayoutResultsToPixelGrid(
   const pointScaleFactor = node.getConfig().getPointScaleFactor();
   const layout = node.getLayout();
 
-  const nodeLeft = layout.position(PhysicalEdge.Left);
-  const nodeTop = layout.position(PhysicalEdge.Top);
+  const nodeLeft = layout.position[PhysicalEdge.Left];
+  const nodeTop = layout.position[PhysicalEdge.Top];
 
-  const nodeWidth = layout.dimension(Dimension.Width);
-  const nodeHeight = layout.dimension(Dimension.Height);
+  const nodeWidth = layout.dimensions[Dimension.Width];
+  const nodeHeight = layout.dimensions[Dimension.Height];
 
   const absoluteNodeLeft = absoluteLeft + nodeLeft;
   const absoluteNodeTop = absoluteTop + nodeTop;
@@ -85,15 +85,9 @@ export function roundLayoutResultsToPixelGrid(
     // size as this could lead to unwanted text truncation.
     const textRounding = node.hasMeasureFunc();
 
-    layout.setPosition(
-      PhysicalEdge.Left,
-      roundValueToPixelGrid(nodeLeft, pointScaleFactor, false, textRounding),
-    );
+    layout.position[PhysicalEdge.Left] = roundValueToPixelGrid(nodeLeft, pointScaleFactor, false, textRounding);
 
-    layout.setPosition(
-      PhysicalEdge.Top,
-      roundValueToPixelGrid(nodeTop, pointScaleFactor, false, textRounding),
-    );
+    layout.position[PhysicalEdge.Top] = roundValueToPixelGrid(nodeTop, pointScaleFactor, false, textRounding);
 
     // We multiply dimension by scale factor and if the result is close to the
     // whole number, we don't have any fraction To verify if the result is close
@@ -105,25 +99,19 @@ export function roundLayoutResultsToPixelGrid(
     const scaledNodeHeight = nodeHeight * pointScaleFactor;
     const hasFractionalHeight = !inexactEquals(Math.round(scaledNodeHeight), scaledNodeHeight);
 
-    layout.setDimension(
-      Dimension.Width,
-      roundValueToPixelGrid(
+    layout.dimensions[Dimension.Width] = roundValueToPixelGrid(
         absoluteNodeRight,
         pointScaleFactor,
         textRounding && hasFractionalWidth,
         textRounding && !hasFractionalWidth,
-      ) - roundValueToPixelGrid(absoluteNodeLeft, pointScaleFactor, false, textRounding),
-    );
+      ) - roundValueToPixelGrid(absoluteNodeLeft, pointScaleFactor, false, textRounding);
 
-    layout.setDimension(
-      Dimension.Height,
-      roundValueToPixelGrid(
+    layout.dimensions[Dimension.Height] = roundValueToPixelGrid(
         absoluteNodeBottom,
         pointScaleFactor,
         textRounding && hasFractionalHeight,
         textRounding && !hasFractionalHeight,
-      ) - roundValueToPixelGrid(absoluteNodeTop, pointScaleFactor, false, textRounding),
-    );
+      ) - roundValueToPixelGrid(absoluteNodeTop, pointScaleFactor, false, textRounding);
   }
 
   const children = node.getChildren();

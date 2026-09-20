@@ -373,28 +373,28 @@ export class Node {
 
   // Computed layout (YGNodeLayoutGet*)
   getComputedLeft(): number {
-    return this.layout_.position(PhysicalEdge.Left);
+    return this.layout_.position[PhysicalEdge.Left];
   }
   getComputedTop(): number {
-    return this.layout_.position(PhysicalEdge.Top);
+    return this.layout_.position[PhysicalEdge.Top];
   }
   getComputedRight(): number {
-    return this.layout_.position(PhysicalEdge.Right);
+    return this.layout_.position[PhysicalEdge.Right];
   }
   getComputedBottom(): number {
-    return this.layout_.position(PhysicalEdge.Bottom);
+    return this.layout_.position[PhysicalEdge.Bottom];
   }
   getComputedWidth(): number {
-    return this.layout_.dimension(Dimension.Width);
+    return this.layout_.dimensions[Dimension.Width];
   }
   getComputedHeight(): number {
-    return this.layout_.dimension(Dimension.Height);
+    return this.layout_.dimensions[Dimension.Height];
   }
   getComputedRawWidth(): number {
-    return this.layout_.rawDimension(Dimension.Width);
+    return this.layout_.rawDimensions[Dimension.Width];
   }
   getComputedRawHeight(): number {
-    return this.layout_.rawDimension(Dimension.Height);
+    return this.layout_.rawDimensions[Dimension.Height];
   }
   getComputedLayout(): Layout {
     return {
@@ -407,19 +407,19 @@ export class Node {
     };
   }
   getComputedDirection(): Direction {
-    return this.layout_.direction();
+    return this.layout_.direction;
   }
   getComputedHadOverflow(): boolean {
-    return this.layout_.hadOverflow();
+    return this.layout_.hadOverflow;
   }
   getComputedMargin(edge: Edge): number {
-    return this.layout_.margin(this.resolveLayoutEdge(edge));
+    return this.layout_.margin[this.resolveLayoutEdge(edge)];
   }
   getComputedBorder(edge: Edge): number {
-    return this.layout_.border(this.resolveLayoutEdge(edge));
+    return this.layout_.border[this.resolveLayoutEdge(edge)];
   }
   getComputedPadding(edge: Edge): number {
-    return this.layout_.padding(this.resolveLayoutEdge(edge));
+    return this.layout_.padding[this.resolveLayoutEdge(edge)];
   }
 
   // Style
@@ -815,14 +815,14 @@ export class Node {
   /** @internal */
   dimensionWithMargin(axis: FlexDirection, widthSize: number): number {
     return (
-      this.layout_.measuredDimension(dimension(axis)) +
+      this.layout_.measuredDimensions[dimension(axis)] +
       this.style_.computeMarginForAxis(axis, widthSize)
     );
   }
 
   /** @internal */
   isLayoutDimensionDefined(axis: FlexDirection): boolean {
-    const value = this.layout_.measuredDimension(dimension(axis));
+    const value = this.layout_.measuredDimensions[dimension(axis)];
     return value >= 0;
   }
 
@@ -893,8 +893,8 @@ export class Node {
 
   /** @internal */
   setLayoutDimension(lengthValue: number, dimension: Dimension): void {
-    this.layout_.setDimension(dimension, lengthValue);
-    this.layout_.setRawDimension(dimension, lengthValue);
+    this.layout_.dimensions[dimension] = lengthValue;
+    this.layout_.rawDimensions[dimension] = lengthValue;
   }
 
   // If both left and right are defined, then use left. Otherwise return +left or
@@ -944,22 +944,10 @@ export class Node {
     const crossAxisLeadingEdge = inlineStartEdge(crossAxis, direction);
     const crossAxisTrailingEdge = inlineEndEdge(crossAxis, direction);
 
-    layout.setPosition(
-      mainAxisLeadingEdge,
-      style.computeInlineStartMargin(mainAxis, direction, ownerWidth) + relativePositionMain,
-    );
-    layout.setPosition(
-      mainAxisTrailingEdge,
-      style.computeInlineEndMargin(mainAxis, direction, ownerWidth) + relativePositionMain,
-    );
-    layout.setPosition(
-      crossAxisLeadingEdge,
-      style.computeInlineStartMargin(crossAxis, direction, ownerWidth) + relativePositionCross,
-    );
-    layout.setPosition(
-      crossAxisTrailingEdge,
-      style.computeInlineEndMargin(crossAxis, direction, ownerWidth) + relativePositionCross,
-    );
+    layout.position[mainAxisLeadingEdge] = style.computeInlineStartMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
+    layout.position[mainAxisTrailingEdge] = style.computeInlineEndMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
+    layout.position[crossAxisLeadingEdge] = style.computeInlineStartMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
+    layout.position[crossAxisTrailingEdge] = style.computeInlineEndMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
   }
 
   /** @internal */
@@ -1158,11 +1146,11 @@ export class Node {
     }
 
     if (edge === Edge.Start) {
-      return this.layout_.direction() === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;
+      return this.layout_.direction === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;
     }
 
     if (edge === Edge.End) {
-      return this.layout_.direction() === Direction.RTL ? PhysicalEdge.Left : PhysicalEdge.Right;
+      return this.layout_.direction === Direction.RTL ? PhysicalEdge.Left : PhysicalEdge.Right;
     }
 
     return edge as PhysicalEdge;

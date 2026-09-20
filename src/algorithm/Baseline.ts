@@ -10,8 +10,8 @@ export function calculateBaseline(node: Node): number {
     if (__EVENTS__) Event.publish(node, Event.NodeBaselineStart);
 
     const baseline = node.baseline(
-      node.getLayout().measuredDimension(Dimension.Width),
-      node.getLayout().measuredDimension(Dimension.Height),
+      node.getLayout().measuredDimensions[Dimension.Width],
+      node.getLayout().measuredDimensions[Dimension.Height],
     );
 
     if (__EVENTS__) Event.publish(node, Event.NodeBaselineEnd);
@@ -43,11 +43,11 @@ export function calculateBaseline(node: Node): number {
   }
 
   if (baselineChild === null) {
-    return node.getLayout().measuredDimension(Dimension.Height);
+    return node.getLayout().measuredDimensions[Dimension.Height];
   }
 
   const baseline = calculateBaseline(baselineChild);
-  return baseline + baselineChild.getLayout().position(PhysicalEdge.Top);
+  return baseline + baselineChild.getLayout().position[PhysicalEdge.Top];
 }
 
 // Whether any of the children of this node participate in baseline alignment
