@@ -13,10 +13,11 @@ root.calculateLayout(undefined, undefined, Direction.LTR);
 root.getComputedLayout();
 ```
 
-Method names follow the `yoga-layout` npm package, and the flat
-`ALIGN_CENTER`-style constants and a default `Yoga` export are kept, but it is
-not a drop-in: nodes and configs are made with `new Node()` / `new Config()`
-(there is no static `create`/`destroy`), and the defaults differ (see below).
+Method names follow the `yoga-layout` npm package, but it is not a drop-in:
+nodes and configs are made with `new Node()` / `new Config()` (there is no
+static `create`/`destroy`), enums are only the `Align.Center`-style objects
+(no flat `ALIGN_CENTER` constants, no default export), and the defaults differ
+(see below).
 
 ## Status
 
