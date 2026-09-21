@@ -720,9 +720,6 @@ export function cleanupContentsNodesRecursively(node: Node, didPerformLayout: bo
   }
 }
 
-/** Largest finite float32, kept so results match C++. */
-const FLT_MAX = 3.4028234663852886e38;
-
 function calculateAvailableInnerDimension(
   node: Node,
   direction: Direction,
@@ -753,7 +750,7 @@ function calculateAvailableInnerDimension(
       ownerWidth,
     );
 
-    const maxInnerDim = maxDimension !== maxDimension ? FLT_MAX : maxDimension - paddingAndBorder;
+    const maxInnerDim = maxDimension !== maxDimension ? Infinity : maxDimension - paddingAndBorder;
     availableInnerDim = maxOrDefined(minOrDefined(availableInnerDim, maxInnerDim), minInnerDim);
   }
 
