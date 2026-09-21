@@ -1,6 +1,5 @@
 import { Unit } from "../enums.ts";
 import { inexactEquals as inexactEqualsNumber } from "../math.ts";
-import type { Value } from "../types.ts";
 
 /**
  * A CSS value for lengths and sizes (e.g. margin, gap, width, min-height,
@@ -18,22 +17,26 @@ import type { Value } from "../types.ts";
  *
  * Instances are immutable. Direct construction using value and unit is
  * intentionally not part of the API, to avoid invalid or redundant
- * combinations; `new StyleLength()` is the undefined length.
+ * combinations.
  */
 export class StyleLength {
-  private value_: number = NaN;
-  private unit_: Unit = Unit.Undefined;
+  // Public and read-only, so that a `StyleLength` is itself the `Value` the
+  // style getters hand out: reading a style allocates nothing.
+  readonly value: number;
+  readonly unit: Unit;
 
   // We intentionally do not allow direct construction using value and unit, to
   // avoid invalid, or redundant combinations.
-  private static make(value: number, unit: Unit): StyleLength {
-    const length = new StyleLength();
-    length.value_ = value;
-    length.unit_ = unit;
-    return length;
+  private constructor(value: number, unit: Unit) {
+    this.value = value;
+    this.unit = unit;
   }
 
-  private static readonly UNDEFINED = new StyleLength();
+  private static make(value: number, unit: Unit): StyleLength {
+    return new StyleLength(value, unit);
+  }
+
+  private static readonly UNDEFINED = StyleLength.make(NaN, Unit.Undefined);
   private static readonly AUTO = StyleLength.make(NaN, Unit.Auto);
   private static readonly ZERO = StyleLength.make(0, Unit.Point);
 
@@ -46,7 +49,7 @@ export class StyleLength {
     if (!Number.isFinite(value)) {
       return StyleLength.UNDEFINED;
     }
-    return reuse !== undefined && reuse.unit_ === Unit.Point && reuse.value_ === value
+    return reuse !== undefined && reuse.unit === Unit.Point && reuse.value === value
       ? reuse
       : StyleLength.make(value, Unit.Point);
   }
@@ -56,7 +59,7 @@ export class StyleLength {
     if (!Number.isFinite(value)) {
       return StyleLength.UNDEFINED;
     }
-    return reuse !== undefined && reuse.unit_ === Unit.Percent && reuse.value_ === value
+    return reuse !== undefined && reuse.unit === Unit.Percent && reuse.value === value
       ? reuse
       : StyleLength.make(value, Unit.Percent);
   }
@@ -74,47 +77,42 @@ export class StyleLength {
   }
 
   isAuto(): boolean {
-    return this.unit_ === Unit.Auto;
+    return this.unit === Unit.Auto;
   }
 
   isUndefined(): boolean {
-    return this.unit_ === Unit.Undefined;
+    return this.unit === Unit.Undefined;
   }
 
   isDefined(): boolean {
-    return this.unit_ !== Unit.Undefined;
+    return this.unit !== Unit.Undefined;
   }
 
   isPercent(): boolean {
-    return this.unit_ === Unit.Percent;
+    return this.unit === Unit.Percent;
   }
 
   /** The length in points, or NaN when it is undefined or auto. */
   resolve(referenceLength: number): number {
-    switch (this.unit_) {
+    switch (this.unit) {
       case Unit.Point:
-        return this.value_;
+        return this.value;
       case Unit.Percent:
-        return this.value_ * referenceLength * 0.01;
+        return this.value * referenceLength * 0.01;
       default:
         return NaN;
     }
   }
 
-  /** C++ `explicit operator YGValue()`. */
-  toValue(): Value {
-    return { unit: this.unit_, value: this.value_ };
-  }
-
   /** C++ `operator==`. */
   equals(rhs: StyleLength): boolean {
     return (
-      this.unit_ === rhs.unit_ &&
-      (this.value_ === rhs.value_ || (this.value_ !== this.value_ && rhs.value_ !== rhs.value_))
+      this.unit === rhs.unit &&
+      (this.value === rhs.value || (this.value !== this.value && rhs.value !== rhs.value))
     );
   }
 
   inexactEquals(other: StyleLength): boolean {
-    return this.unit_ === other.unit_ && inexactEqualsNumber(this.value_, other.value_);
+    return this.unit === other.unit && inexactEqualsNumber(this.value, other.value);
   }
 }

@@ -10,7 +10,7 @@ const root = new Node();
 root.setWidth(100);
 root.setPadding(Edge.All, 10);
 root.calculateLayout(undefined, undefined, Direction.LTR);
-root.getComputedLayout();
+root.getComputedWidth(); // 100
 ```
 
 Method names follow the `yoga-layout` npm package, but it is not a drop-in:
@@ -31,8 +31,11 @@ The layout path is written to produce as little garbage as possible, so
   don't dirty the node. A setter that changes a length allocates one small object.
 - A measure function may return the same `{ width, height }` object every time;
   it is read before the function can be called again.
-- Read results with `getComputedLeft()` / `getComputedWidth()` and friends.
-  `getComputedLayout()` allocates its result object.
+- Reading allocates nothing: results come from `getComputedLeft()` /
+  `getComputedWidth()` and friends (there is no `getComputedLayout()` object),
+  and style getters such as `getWidth()` return the node's own immutable
+  `{ unit, value }` length, not a copy.
+- Inserting and removing children allocates nothing beyond array growth.
 
 What remains is V8 boxing fractional and `NaN` doubles that cross function calls
 it doesn't inline: short-lived 16-byte numbers, proportional to the number of

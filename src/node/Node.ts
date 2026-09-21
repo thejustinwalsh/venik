@@ -25,13 +25,11 @@ import {
   type Wrap,
 } from "../enums.ts";
 import { Event } from "../event/event.ts";
-import { maxOrDefined } from "../math.ts";
 import { Style } from "../style/Style.ts";
 import { StyleLength } from "../style/StyleLength.ts";
 import type {
   BaselineFunction,
   DirtiedFunction,
-  Layout,
   MeasureFunction,
   Percent,
   Size,
@@ -152,7 +150,7 @@ export class Node {
       const oldChild = this.children_[i]!;
       // Children that stay keep their layout.
       if (!children.includes(oldChild)) {
-        oldChild.layout = new LayoutResults();
+        oldChild.layout.reset();
         oldChild.owner = null;
       }
     }
@@ -242,16 +240,6 @@ export class Node {
   }
   getComputedRawHeight(): number {
     return this.layout.rawDimensions[Dimension.Height];
-  }
-  getComputedLayout(): Layout {
-    return {
-      left: this.getComputedLeft(),
-      right: this.getComputedRight(),
-      top: this.getComputedTop(),
-      bottom: this.getComputedBottom(),
-      width: this.getComputedWidth(),
-      height: this.getComputedHeight(),
-    };
   }
   getComputedDirection(): Direction {
     return this.layout.direction;
@@ -432,7 +420,7 @@ export class Node {
     this.updateFlexBasis(StyleLength.ofAuto());
   }
   getFlexBasis(): Value {
-    return this.style.flexBasis.toValue();
+    return this.style.flexBasis;
   }
   setWidth(width: number | "auto" | Percent | undefined): void {
     this.updateDimension(
@@ -450,7 +438,7 @@ export class Node {
     this.updateDimension(Dimension.Width, StyleLength.ofAuto());
   }
   getWidth(): Value {
-    return this.style.dimensions[Dimension.Width].toValue();
+    return this.style.dimensions[Dimension.Width];
   }
   setHeight(height: number | "auto" | Percent | undefined): void {
     this.updateDimension(
@@ -468,7 +456,7 @@ export class Node {
     this.updateDimension(Dimension.Height, StyleLength.ofAuto());
   }
   getHeight(): Value {
-    return this.style.dimensions[Dimension.Height].toValue();
+    return this.style.dimensions[Dimension.Height];
   }
   setMinWidth(minWidth: number | Percent | undefined): void {
     this.updateMinDimension(
@@ -483,7 +471,7 @@ export class Node {
     );
   }
   getMinWidth(): Value {
-    return this.style.minDimensions[Dimension.Width].toValue();
+    return this.style.minDimensions[Dimension.Width];
   }
   setMinHeight(minHeight: number | Percent | undefined): void {
     this.updateMinDimension(
@@ -498,7 +486,7 @@ export class Node {
     );
   }
   getMinHeight(): Value {
-    return this.style.minDimensions[Dimension.Height].toValue();
+    return this.style.minDimensions[Dimension.Height];
   }
   setMaxWidth(maxWidth: number | Percent | undefined): void {
     this.updateMaxDimension(
@@ -513,7 +501,7 @@ export class Node {
     );
   }
   getMaxWidth(): Value {
-    return this.style.maxDimensions[Dimension.Width].toValue();
+    return this.style.maxDimensions[Dimension.Width];
   }
   setMaxHeight(maxHeight: number | Percent | undefined): void {
     this.updateMaxDimension(
@@ -528,7 +516,7 @@ export class Node {
     );
   }
   getMaxHeight(): Value {
-    return this.style.maxDimensions[Dimension.Height].toValue();
+    return this.style.maxDimensions[Dimension.Height];
   }
 
   // Style: edges and gutters
@@ -546,7 +534,7 @@ export class Node {
     this.updateEdge(this.style.position, edge, StyleLength.ofAuto());
   }
   getPosition(edge: Edge): Value {
-    return this.style.position[edge].toValue();
+    return this.style.position[edge];
   }
   setMargin(edge: Edge, margin: number | "auto" | Percent | undefined): void {
     this.updateEdge(this.style.margin, edge, parseLength(margin, this.style.margin[edge]));
@@ -562,7 +550,7 @@ export class Node {
     this.updateEdge(this.style.margin, edge, StyleLength.ofAuto());
   }
   getMargin(edge: Edge): Value {
-    return this.style.margin[edge].toValue();
+    return this.style.margin[edge];
   }
   setPadding(edge: Edge, padding: number | Percent | undefined): void {
     this.updateEdge(this.style.padding, edge, parseLength(padding, this.style.padding[edge]));
@@ -575,7 +563,7 @@ export class Node {
     );
   }
   getPadding(edge: Edge): Value {
-    return this.style.padding[edge].toValue();
+    return this.style.padding[edge];
   }
   setBorder(edge: Edge, border: number | undefined): void {
     this.updateEdge(
@@ -590,7 +578,7 @@ export class Node {
       return NaN;
     }
 
-    return border.toValue().value;
+    return border.value;
   }
   setGap(gutter: Gutter, gapLength: number | Percent | undefined): void {
     this.updateEdge(this.style.gap, gutter, parseLength(gapLength, this.style.gap[gutter]));
@@ -603,7 +591,7 @@ export class Node {
     );
   }
   getGap(gutter: Gutter): Value {
-    return this.style.gap[gutter].toValue();
+    return this.style.gap[gutter];
   }
 
   // Internal API (`yoga::Node` members that have no C API equivalent)
@@ -642,7 +630,13 @@ export class Node {
       this.contentsChildrenCount_++;
     }
 
-    this.children_.splice(index, 0, child);
+    // Not `splice`, which allocates an array for the elements it removed.
+    const children = this.children_;
+    children.push(child);
+    for (let i = children.length - 1; i > index; i--) {
+      children[i] = children[i - 1]!;
+    }
+    children[index] = child;
   }
   /** @internal `yoga::Node::setChildren`: replaces the child list without updating owners or dirtying. */
   setChildrenRaw(children: readonly Node[]): void {
@@ -683,24 +677,20 @@ export class Node {
     availableHeight: number,
     heightMode: SizingMode,
   ): Size {
-    return this.sanitizeMeasuredSize(
-      this.measureFunc_!(availableWidth, widthMode, availableHeight, heightMode, this),
-      "Measure function",
-    );
+    const size = this.measureFunc_!(availableWidth, widthMode, availableHeight, heightMode, this);
+    const width = size.width;
+    const height = size.height;
+    if (height !== height || height < 0 || width !== width || width < 0) {
+      // The caller clamps; the object is the measure function's and is left alone.
+      console.warn(
+        `Measure function returned an invalid dimension: [width=${width}, height=${height}]`,
+      );
+    }
+    return size;
   }
   /** @internal Invokes the baseline func. */
   baseline(width: number, height: number): number {
     return this.baselineFunc_!(width, height, this);
-  }
-
-  private sanitizeMeasuredSize(size: Size, what: string): Size {
-    const { width, height } = size;
-    if (height !== height || height < 0 || width !== width || width < 0) {
-      console.warn(`${what} returned an invalid dimension: [width=${width}, height=${height}]`);
-      return { width: maxOrDefined(0, width), height: maxOrDefined(0, height) };
-    }
-
-    return size;
   }
 
   /** @internal */
@@ -904,7 +894,12 @@ export class Node {
     if (this.children_[index]!.style.display === Display.Contents) {
       this.contentsChildrenCount_--;
     }
-    this.children_.splice(index, 1);
+    // Not `splice`, which allocates an array for the elements it removed.
+    const children = this.children_;
+    for (let i = index + 1, length = children.length; i < length; i++) {
+      children[i - 1] = children[i]!;
+    }
+    children.pop();
   }
 
   /** @internal */
@@ -946,7 +941,7 @@ export class Node {
 
   /** The layout of a node removed from its owner is no longer valid. */
   private detachFromOwner(): void {
-    this.layout = new LayoutResults();
+    this.layout.reset();
     this.owner = null;
     // Mark dirty to invalidate cache, but suppress the dirtied callback
     // since the node is being detached from the tree and should not

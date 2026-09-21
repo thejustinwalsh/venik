@@ -107,7 +107,7 @@ function isInColumnStretchScrollSubtree(node: Node): boolean {
 }
 
 function isNonZeroLength(length: StyleLength): boolean {
-  const value = length.toValue().value;
+  const value = length.value;
   return length.isAuto() || (value === value && value !== 0.0);
 }
 
@@ -567,7 +567,12 @@ function measureNodeWithMeasureFunc(
     if (__EVENTS__) Event.publish(node, Event.MeasureCallbackStart);
 
     // Measure the text under the current constraints.
+    // Both numbers are read here, before anything else runs, so a measure
+    // function may return the same object every time. An invalid (negative or
+    // NaN) dimension counts as 0.
     const measuredSize = node.measure(innerWidth, widthSizingMode, innerHeight, heightSizingMode);
+    const measuredWidth = maxOrDefined(0, measuredSize.width);
+    const measuredHeight = maxOrDefined(0, measuredSize.height);
 
     if (__EVENTS__ && layoutMarkerData !== null) {
       layoutMarkerData.measureCallbacks += 1;
@@ -580,8 +585,8 @@ function measureNodeWithMeasureFunc(
         widthSizingMode,
         height: innerHeight,
         heightSizingMode,
-        measuredWidth: measuredSize.width,
-        measuredHeight: measuredSize.height,
+        measuredWidth,
+        measuredHeight,
         reason,
       });
     }
@@ -591,7 +596,7 @@ function measureNodeWithMeasureFunc(
       FlexDirection.Row,
       direction,
       widthSizingMode === SizingMode.MaxContent || widthSizingMode === SizingMode.FitContent
-        ? measuredSize.width + paddingAndBorderAxisRow
+        ? measuredWidth + paddingAndBorderAxisRow
         : availableWidth,
       ownerWidth,
       ownerWidth,
@@ -602,7 +607,7 @@ function measureNodeWithMeasureFunc(
       FlexDirection.Column,
       direction,
       heightSizingMode === SizingMode.MaxContent || heightSizingMode === SizingMode.FitContent
-        ? measuredSize.height + paddingAndBorderAxisColumn
+        ? measuredHeight + paddingAndBorderAxisColumn
         : availableHeight,
       ownerHeight,
       ownerWidth,

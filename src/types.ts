@@ -4,24 +4,18 @@ import type { Node } from "./node/Node.ts";
 /** Equivalent of `YGUndefined`. Setters also accept `undefined`. */
 export const Undefined: number = NaN;
 
-export type Layout = {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-  width: number;
-  height: number;
-};
-
 export type Size = {
   width: number;
   height: number;
 };
 
-/** Equivalent of `YGValue`. */
+/**
+ * A style length as the style getters return it. It is the node's own
+ * immutable length rather than a copy, so reading a style allocates nothing.
+ */
 export type Value = {
-  unit: Unit;
-  value: number;
+  readonly unit: Unit;
+  readonly value: number;
 };
 
 export type Percent = `${number}%`;
