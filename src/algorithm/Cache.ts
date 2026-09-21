@@ -177,6 +177,9 @@ export function findCachedMeasurement(
         config,
       )
     ) {
+      if (i > 1) {
+        layout.promoteCachedMeasurement(i - 1);
+      }
       return cached;
     }
     if (i === layout.nextCachedMeasurementsIndex) {

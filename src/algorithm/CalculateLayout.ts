@@ -2476,6 +2476,9 @@ export function calculateLayoutInternal(
         cachedMeasurement.heightSizingMode === heightSizingMode
       ) {
         cachedResults = cachedMeasurement;
+        if (i > 0) {
+          layout.promoteCachedMeasurement(i);
+        }
         break;
       }
     }
@@ -2520,18 +2523,19 @@ export function calculateLayoutInternal(
         );
       }
 
-      if (layout.nextCachedMeasurementsIndex === LayoutResults.MaxCachedMeasurements) {
-        layout.nextCachedMeasurementsIndex = 0;
-      }
-
       let newCacheEntry: CachedMeasurement;
       if (performLayout) {
         // Use the single layout cache entry.
         newCacheEntry = layout.cachedLayout;
       } else {
-        // Allocate a new measurement cache entry.
-        newCacheEntry = layout.cachedMeasurements[layout.nextCachedMeasurementsIndex]!;
-        layout.nextCachedMeasurementsIndex++;
+        // Take an unused measurement cache entry, or the one that went unused
+        // the longest, and put it first.
+        if (layout.nextCachedMeasurementsIndex < LayoutResults.MaxCachedMeasurements) {
+          layout.nextCachedMeasurementsIndex++;
+        }
+        const last = layout.nextCachedMeasurementsIndex - 1;
+        newCacheEntry = layout.cachedMeasurements[last]!;
+        layout.promoteCachedMeasurement(last);
       }
 
       newCacheEntry.availableWidth = availableWidth;

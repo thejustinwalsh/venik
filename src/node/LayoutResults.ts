@@ -33,6 +33,20 @@ export class LayoutResults {
   readonly border: PhysicalEdges = [0, 0, 0, 0];
   readonly padding: PhysicalEdges = [0, 0, 0, 0];
 
+  /**
+   * Moves a cached measurement to the front, where probes look first. A node is
+   * asked the same few questions on every pass, so the entries that answer
+   * them gather at the front and the rest age out at the back.
+   */
+  promoteCachedMeasurement(index: number): void {
+    const measurements = this.cachedMeasurements;
+    const promoted = measurements[index]!;
+    for (let i = index; i > 0; i--) {
+      measurements[i] = measurements[i - 1]!;
+    }
+    measurements[0] = promoted;
+  }
+
   /** Back to the state of a new `LayoutResults`, without allocating. */
   reset(): void {
     this.computedFlexBasisGeneration = 0;
