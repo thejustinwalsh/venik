@@ -26,33 +26,25 @@ export function roundValueToPixelGrid(
 /** Rounds `roundingScratch[0]` in place, using the scale factor in `roundingScratch[1]`. */
 function roundScratchToPixelGrid(forceCeil: boolean, forceFloor: boolean): void {
   const pointScaleFactor = roundingScratch[1]!;
-  let scaledValue = roundingScratch[0]! * pointScaleFactor;
+  const scaledValue = roundingScratch[0]! * pointScaleFactor;
   // `fractial` is the number such that `floor(scaledValue) = scaledValue -
   // fractial`, for negative values too: -2.2 gives 0.8, and -2.2 - 0.8 = -3.
   // Not `scaledValue % 1`: V8 compiles a floating-point `%` to a call into the
   // C library, which made this the slowest line of the rounding pass.
-  const fractial = scaledValue - Math.floor(scaledValue);
-  if (inexactEquals(fractial, 0)) {
-    // First we check if the value is already rounded
-    scaledValue = scaledValue - fractial;
-  } else if (inexactEquals(fractial, 1.0)) {
-    scaledValue = scaledValue - fractial + 1.0;
-  } else if (forceCeil) {
-    // Next we check if we need to use forced rounding
-    scaledValue = scaledValue - fractial + 1.0;
+  const floored = Math.floor(scaledValue);
+  const fractial = scaledValue - floored;
+  // A value within 0.0001 of a whole pixel is that pixel, whatever is forced.
+  let roundUp: boolean;
+  if (forceCeil) {
+    roundUp = fractial >= 0.0001;
   } else if (forceFloor) {
-    scaledValue = scaledValue - fractial;
+    roundUp = fractial > 0.9999;
   } else {
-    // Finally we just round the value
-    scaledValue =
-      scaledValue -
-      fractial +
-      (fractial === fractial && (fractial > 0.5 || inexactEquals(fractial, 0.5)) ? 1.0 : 0.0);
+    roundUp = fractial > 0.4999;
   }
+  // NaN and infinite values have a NaN `fractial` and stay undefined.
   roundingScratch[0] =
-    scaledValue !== scaledValue || pointScaleFactor !== pointScaleFactor
-      ? NaN
-      : scaledValue / pointScaleFactor;
+    fractial === fractial ? (roundUp ? floored + 1.0 : floored) / pointScaleFactor : NaN;
 }
 
 // Absolute left/top of the ancestors being rounded, two entries per tree

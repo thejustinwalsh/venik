@@ -74,6 +74,17 @@ export class Style {
   private definedPosition = 0;
   private definedPadding = 0;
   private definedBorder = 0;
+  // What `computeEdge` gives for each physical edge, under LTR (0-3) and RTL
+  // (4-7). Layout asks for these dozens of times per node and pass, so the
+  // setters work them out once. A group without lengths shares `NO_EDGES`.
+  private resolvedMargin: StyleLength[] = NO_EDGES;
+  private resolvedPosition: StyleLength[] = NO_EDGES;
+  private resolvedPadding: StyleLength[] = NO_EDGES;
+  private resolvedBorder: StyleLength[] = NO_EDGES;
+  // `computeMarginForAxis` of both axes, valid while no margin is a percentage.
+  private marginHasPercent = false;
+  private marginForRow = 0;
+  private marginForColumn = 0;
   readonly gap: GutterLengths = [
     StyleLength.undefined(),
     StyleLength.undefined(),
@@ -102,12 +113,21 @@ export class Style {
     this.flexBasis = other.flexBasis;
     copyInto(this.margin as EdgeLengths, other.margin);
     this.definedMargin = other.definedMargin;
+    this.resolvedMargin = resolveEdges(this.margin, this.definedMargin, this.resolvedMargin);
+    this.updateMarginForAxes();
     copyInto(this.position as EdgeLengths, other.position);
     this.definedPosition = other.definedPosition;
+    this.resolvedPosition = resolveEdges(
+      this.position,
+      this.definedPosition,
+      this.resolvedPosition,
+    );
     copyInto(this.padding as EdgeLengths, other.padding);
     this.definedPadding = other.definedPadding;
+    this.resolvedPadding = resolveEdges(this.padding, this.definedPadding, this.resolvedPadding);
     copyInto(this.border as EdgeLengths, other.border);
     this.definedBorder = other.definedBorder;
+    this.resolvedBorder = resolveEdges(this.border, this.definedBorder, this.resolvedBorder);
     copyInto(this.gap, other.gap);
     copyInto(this.dimensions, other.dimensions);
     copyInto(this.minDimensions, other.minDimensions);
@@ -152,6 +172,8 @@ export class Style {
     }
     (this.margin as EdgeLengths)[edge] = value;
     this.definedMargin = withEdge(this.definedMargin, edge, value);
+    this.resolvedMargin = resolveEdges(this.margin, this.definedMargin, this.resolvedMargin);
+    this.updateMarginForAxes();
     return true;
   }
 
@@ -162,6 +184,11 @@ export class Style {
     }
     (this.position as EdgeLengths)[edge] = value;
     this.definedPosition = withEdge(this.definedPosition, edge, value);
+    this.resolvedPosition = resolveEdges(
+      this.position,
+      this.definedPosition,
+      this.resolvedPosition,
+    );
     return true;
   }
 
@@ -172,6 +199,7 @@ export class Style {
     }
     (this.padding as EdgeLengths)[edge] = value;
     this.definedPadding = withEdge(this.definedPadding, edge, value);
+    this.resolvedPadding = resolveEdges(this.padding, this.definedPadding, this.resolvedPadding);
     return true;
   }
 
@@ -182,6 +210,7 @@ export class Style {
     }
     (this.border as EdgeLengths)[edge] = value;
     this.definedBorder = withEdge(this.definedBorder, edge, value);
+    this.resolvedBorder = resolveEdges(this.border, this.definedBorder, this.resolvedBorder);
     return true;
   }
 
@@ -208,86 +237,51 @@ export class Style {
   }
 
   isFlexStartPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(
-      this.position,
-      this.definedPosition,
-      flexStartEdge(axis),
-      direction,
-    ).isDefined();
+    return edgeLength(this.resolvedPosition, flexStartEdge(axis), direction).isDefined();
   }
 
   isFlexStartPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(
-      this.position,
-      this.definedPosition,
-      flexStartEdge(axis),
-      direction,
-    ).isAuto();
+    return edgeLength(this.resolvedPosition, flexStartEdge(axis), direction).isAuto();
   }
 
   isInlineStartPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(
-      this.position,
-      this.definedPosition,
+    return edgeLength(
+      this.resolvedPosition,
       inlineStartEdge(axis, direction),
       direction,
     ).isDefined();
   }
 
   isInlineStartPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(
-      this.position,
-      this.definedPosition,
-      inlineStartEdge(axis, direction),
-      direction,
-    ).isAuto();
+    return edgeLength(this.resolvedPosition, inlineStartEdge(axis, direction), direction).isAuto();
   }
 
   isFlexEndPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(
-      this.position,
-      this.definedPosition,
-      flexEndEdge(axis),
-      direction,
-    ).isDefined();
+    return edgeLength(this.resolvedPosition, flexEndEdge(axis), direction).isDefined();
   }
 
   isFlexEndPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.position, this.definedPosition, flexEndEdge(axis), direction).isAuto();
+    return edgeLength(this.resolvedPosition, flexEndEdge(axis), direction).isAuto();
   }
 
   isInlineEndPositionDefined(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(
-      this.position,
-      this.definedPosition,
-      inlineEndEdge(axis, direction),
-      direction,
-    ).isDefined();
+    return edgeLength(this.resolvedPosition, inlineEndEdge(axis, direction), direction).isDefined();
   }
 
   isInlineEndPositionAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(
-      this.position,
-      this.definedPosition,
-      inlineEndEdge(axis, direction),
-      direction,
-    ).isAuto();
+    return edgeLength(this.resolvedPosition, inlineEndEdge(axis, direction), direction).isAuto();
   }
 
   computeFlexStartPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(
-      this.position,
-      this.definedPosition,
-      flexStartEdge(axis),
-      direction,
-    ).resolve(axisSize);
+    const value = edgeLength(this.resolvedPosition, flexStartEdge(axis), direction).resolve(
+      axisSize,
+    );
     return value !== value ? 0 : value;
   }
 
   computeInlineStartPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(
-      this.position,
-      this.definedPosition,
+    const value = edgeLength(
+      this.resolvedPosition,
       inlineStartEdge(axis, direction),
       direction,
     ).resolve(axisSize);
@@ -295,19 +289,13 @@ export class Style {
   }
 
   computeFlexEndPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(
-      this.position,
-      this.definedPosition,
-      flexEndEdge(axis),
-      direction,
-    ).resolve(axisSize);
+    const value = edgeLength(this.resolvedPosition, flexEndEdge(axis), direction).resolve(axisSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineEndPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(
-      this.position,
-      this.definedPosition,
+    const value = edgeLength(
+      this.resolvedPosition,
       inlineEndEdge(axis, direction),
       direction,
     ).resolve(axisSize);
@@ -315,19 +303,15 @@ export class Style {
   }
 
   computeFlexStartMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(
-      this.margin,
-      this.definedMargin,
-      flexStartEdge(axis),
-      direction,
-    ).resolve(widthSize);
+    const value = edgeLength(this.resolvedMargin, flexStartEdge(axis), direction).resolve(
+      widthSize,
+    );
     return value !== value ? 0 : value;
   }
 
   computeInlineStartMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(
-      this.margin,
-      this.definedMargin,
+    const value = edgeLength(
+      this.resolvedMargin,
       inlineStartEdge(axis, direction),
       direction,
     ).resolve(widthSize);
@@ -335,19 +319,13 @@ export class Style {
   }
 
   computeFlexEndMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(
-      this.margin,
-      this.definedMargin,
-      flexEndEdge(axis),
-      direction,
-    ).resolve(widthSize);
+    const value = edgeLength(this.resolvedMargin, flexEndEdge(axis), direction).resolve(widthSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineEndMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(
-      this.margin,
-      this.definedMargin,
+    const value = edgeLength(
+      this.resolvedMargin,
       inlineEndEdge(axis, direction),
       direction,
     ).resolve(widthSize);
@@ -356,80 +334,60 @@ export class Style {
 
   computeFlexStartBorder(axis: FlexDirection, direction: Direction): number {
     return maxOrDefined(
-      computeEdge(this.border, this.definedBorder, flexStartEdge(axis), direction).resolve(0),
+      edgeLength(this.resolvedBorder, flexStartEdge(axis), direction).resolve(0),
       0,
     );
   }
 
   computeInlineStartBorder(axis: FlexDirection, direction: Direction): number {
     return maxOrDefined(
-      computeEdge(
-        this.border,
-        this.definedBorder,
-        inlineStartEdge(axis, direction),
-        direction,
-      ).resolve(0),
+      edgeLength(this.resolvedBorder, inlineStartEdge(axis, direction), direction).resolve(0),
       0,
     );
   }
 
   computeFlexEndBorder(axis: FlexDirection, direction: Direction): number {
     return maxOrDefined(
-      computeEdge(this.border, this.definedBorder, flexEndEdge(axis), direction).resolve(0),
+      edgeLength(this.resolvedBorder, flexEndEdge(axis), direction).resolve(0),
       0,
     );
   }
 
   computeInlineEndBorder(axis: FlexDirection, direction: Direction): number {
     return maxOrDefined(
-      computeEdge(
-        this.border,
-        this.definedBorder,
-        inlineEndEdge(axis, direction),
-        direction,
-      ).resolve(0),
+      edgeLength(this.resolvedBorder, inlineEndEdge(axis, direction), direction).resolve(0),
       0,
     );
   }
 
   computeFlexStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
     return maxOrDefined(
-      computeEdge(this.padding, this.definedPadding, flexStartEdge(axis), direction).resolve(
-        widthSize,
-      ),
+      edgeLength(this.resolvedPadding, flexStartEdge(axis), direction).resolve(widthSize),
       0,
     );
   }
 
   computeInlineStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
     return maxOrDefined(
-      computeEdge(
-        this.padding,
-        this.definedPadding,
-        inlineStartEdge(axis, direction),
-        direction,
-      ).resolve(widthSize),
-      0,
-    );
-  }
-
-  computeFlexEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    return maxOrDefined(
-      computeEdge(this.padding, this.definedPadding, flexEndEdge(axis), direction).resolve(
+      edgeLength(this.resolvedPadding, inlineStartEdge(axis, direction), direction).resolve(
         widthSize,
       ),
       0,
     );
   }
 
+  computeFlexEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
+    return maxOrDefined(
+      edgeLength(this.resolvedPadding, flexEndEdge(axis), direction).resolve(widthSize),
+      0,
+    );
+  }
+
   computeInlineEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
     return maxOrDefined(
-      computeEdge(
-        this.padding,
-        this.definedPadding,
-        inlineEndEdge(axis, direction),
-        direction,
-      ).resolve(widthSize),
+      edgeLength(this.resolvedPadding, inlineEndEdge(axis, direction), direction).resolve(
+        widthSize,
+      ),
       0,
     );
   }
@@ -518,6 +476,13 @@ export class Style {
     if (this.definedMargin === 0) {
       return 0;
     }
+    if (!this.marginHasPercent) {
+      return isRow(axis) ? this.marginForRow : this.marginForColumn;
+    }
+    return this.resolveMarginForAxis(axis, widthSize);
+  }
+
+  private resolveMarginForAxis(axis: FlexDirection, widthSize: number): number {
     // The total margin for a given axis does not depend on the direction
     // so hardcoding LTR here to avoid piping direction to this function
     return (
@@ -532,11 +497,11 @@ export class Style {
   }
 
   flexStartMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.margin, this.definedMargin, flexStartEdge(axis), direction).isAuto();
+    return edgeLength(this.resolvedMargin, flexStartEdge(axis), direction).isAuto();
   }
 
   flexEndMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return computeEdge(this.margin, this.definedMargin, flexEndEdge(axis), direction).isAuto();
+    return edgeLength(this.resolvedMargin, flexEndEdge(axis), direction).isAuto();
   }
 
   /** Allocation-free `resolvedMinDimension` for the layout algorithm: NaN when undefined. */
@@ -595,6 +560,18 @@ export class Style {
     );
   }
 
+  private updateMarginForAxes(): void {
+    let hasPercent = false;
+    for (let i = 0; i < 4; i++) {
+      hasPercent = hasPercent || this.resolvedMargin[i]!.isPercent();
+    }
+    this.marginHasPercent = hasPercent;
+    if (!hasPercent) {
+      this.marginForRow = this.resolveMarginForAxis(FlexDirection.Row, NaN);
+      this.marginForColumn = this.resolveMarginForAxis(FlexDirection.Column, NaN);
+    }
+  }
+
   private computeColumnGap(): StyleLength {
     const column = this.gap[Gutter.Column]!;
     return column.isDefined() ? column : this.gap[Gutter.All]!;
@@ -648,6 +625,39 @@ function lengthsEqual(lhs: readonly StyleLength[], rhs: readonly StyleLength[]):
     }
   }
   return true;
+}
+
+const NO_EDGES: StyleLength[] = [];
+for (let i = 0; i < 8; i++) {
+  NO_EDGES.push(StyleLength.undefined());
+}
+
+/** The cached `computeEdge` of a physical edge. */
+function edgeLength(
+  resolved: readonly StyleLength[],
+  edge: PhysicalEdge,
+  layoutDirection: Direction,
+): StyleLength {
+  return resolved[layoutDirection === Direction.RTL ? edge + 4 : edge]!;
+}
+
+/** Refills the cache behind `edgeLength`, reusing `resolved` once a style has its own. */
+function resolveEdges(
+  edges: Readonly<EdgeLengths>,
+  defined: number,
+  resolved: StyleLength[],
+): StyleLength[] {
+  if (resolved === NO_EDGES) {
+    if (defined === 0) {
+      return resolved;
+    }
+    resolved = NO_EDGES.slice();
+  }
+  for (let edge = PhysicalEdge.Left; edge <= PhysicalEdge.Bottom; edge++) {
+    resolved[edge] = computeEdge(edges, defined, edge as PhysicalEdge, Direction.LTR);
+    resolved[edge + 4] = computeEdge(edges, defined, edge as PhysicalEdge, Direction.RTL);
+  }
+  return resolved;
 }
 
 function withEdge(defined: number, edge: Edge, value: StyleLength): number {

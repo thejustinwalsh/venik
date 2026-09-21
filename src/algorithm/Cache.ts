@@ -1,4 +1,7 @@
 import type { Config } from "../config/Config.ts";
+import { FlexDirection } from "../enums.ts";
+import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
+import type { Node } from "../node/Node.ts";
 import { inexactEquals } from "../math.ts";
 import { roundValueToPixelGrid } from "./PixelGrid.ts";
 import { SizingMode } from "../enums.ts";
@@ -49,6 +52,11 @@ function newSizeIsStricterAndStillValid(
 function isSameAvailableSize(lastSize: number, size: number, pointScaleFactor: number): boolean {
   if (inexactEquals(lastSize, size)) {
     return true;
+  }
+  // Rounding moves a size by half a pixel at most, so sizes two pixels apart
+  // cannot meet. That settles most misses, which are entries of earlier passes.
+  if (Math.abs(lastSize - size) >= 2 / pointScaleFactor + 0.0001) {
+    return false;
   }
   return (
     pointScaleFactor !== 0 &&
@@ -130,4 +138,50 @@ export function canUseCachedMeasurement(
     );
 
   return widthIsCompatible && heightIsCompatible;
+}
+
+/**
+ * The cached result a node with a measure function can reuse under the given
+ * constraints: its layout cache entry, else the first measurement cache entry
+ * that fits, else null.
+ */
+export function findCachedMeasurement(
+  node: Node,
+  widthMode: SizingMode,
+  availableWidth: number,
+  heightMode: SizingMode,
+  availableHeight: number,
+  ownerWidth: number,
+): CachedMeasurement | null {
+  const layout = node.layout;
+  const config = node.getConfig();
+  const marginRow = node.style.computeMarginForAxis(FlexDirection.Row, ownerWidth);
+  const marginColumn = node.style.computeMarginForAxis(FlexDirection.Column, ownerWidth);
+
+  let cached = layout.cachedLayout;
+  for (let i = 0; ; i++) {
+    if (
+      canUseCachedMeasurement(
+        widthMode,
+        availableWidth,
+        heightMode,
+        availableHeight,
+        cached.widthSizingMode,
+        cached.availableWidth,
+        cached.heightSizingMode,
+        cached.availableHeight,
+        cached.computedWidth,
+        cached.computedHeight,
+        marginRow,
+        marginColumn,
+        config,
+      )
+    ) {
+      return cached;
+    }
+    if (i === layout.nextCachedMeasurementsIndex) {
+      return null;
+    }
+    cached = layout.cachedMeasurements[i]!;
+  }
 }

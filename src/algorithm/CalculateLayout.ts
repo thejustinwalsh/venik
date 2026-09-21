@@ -30,7 +30,7 @@ import {
   boundAxisWithinMinAndMax,
   paddingAndBorderForAxis,
 } from "./BoundAxis.ts";
-import { canUseCachedMeasurement } from "./Cache.ts";
+import { findCachedMeasurement } from "./Cache.ts";
 import {
   dimension,
   flexStartEdge,
@@ -830,7 +830,6 @@ function computeFlexBasisForChildren(
 
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
-    child.processDimensions();
     if (child.style.display === Display.None) {
       // Only mutate display: none children during layout passes. Zeroing them
       // out during measure-only passes contributes nothing to the measurement,
@@ -2450,54 +2449,14 @@ export function calculateLayoutInternal(
   // they are the most expensive to measure, so it's worth avoiding redundant
   // measurements if at all possible.
   if (node.hasMeasureFunc()) {
-    const marginAxisRow = node.style.computeMarginForAxis(FlexDirection.Row, ownerWidth);
-    const marginAxisColumn = node.style.computeMarginForAxis(FlexDirection.Column, ownerWidth);
-
-    // First, try to use the layout cache.
-    if (
-      canUseCachedMeasurement(
-        widthSizingMode,
-        availableWidth,
-        heightSizingMode,
-        availableHeight,
-        layout.cachedLayout.widthSizingMode,
-        layout.cachedLayout.availableWidth,
-        layout.cachedLayout.heightSizingMode,
-        layout.cachedLayout.availableHeight,
-        layout.cachedLayout.computedWidth,
-        layout.cachedLayout.computedHeight,
-        marginAxisRow,
-        marginAxisColumn,
-        node.getConfig(),
-      )
-    ) {
-      cachedResults = layout.cachedLayout;
-    } else {
-      // Try to use the measurement cache.
-      for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
-        const cachedMeasurement = layout.cachedMeasurements[i]!;
-        if (
-          canUseCachedMeasurement(
-            widthSizingMode,
-            availableWidth,
-            heightSizingMode,
-            availableHeight,
-            cachedMeasurement.widthSizingMode,
-            cachedMeasurement.availableWidth,
-            cachedMeasurement.heightSizingMode,
-            cachedMeasurement.availableHeight,
-            cachedMeasurement.computedWidth,
-            cachedMeasurement.computedHeight,
-            marginAxisRow,
-            marginAxisColumn,
-            node.getConfig(),
-          )
-        ) {
-          cachedResults = cachedMeasurement;
-          break;
-        }
-      }
-    }
+    cachedResults = findCachedMeasurement(
+      node,
+      widthSizingMode,
+      availableWidth,
+      heightSizingMode,
+      availableHeight,
+      ownerWidth,
+    );
   } else if (performLayout) {
     if (
       inexactEquals(layout.cachedLayout.availableWidth, availableWidth) &&
@@ -2624,7 +2583,6 @@ export function calculateLayout(
   // visit all dirty nodes at least once. Subsequent visits will be skipped if
   // the input parameters don't change.
   const currentGenerationCount = ++gCurrentGenerationCount;
-  node.processDimensions();
   const direction = node.resolveDirection(ownerDirection);
   let width: number;
   let widthSizingMode: SizingMode;

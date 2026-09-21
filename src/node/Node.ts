@@ -67,7 +67,9 @@ export class Node {
   // Scratch list behind `getLayoutChildren`, only for nodes with `display: contents` children.
   private layoutChildren_: Node[] | null = null;
   private config_: Config;
-  private processedDimensions_: StyleLength[] = [StyleLength.undefined(), StyleLength.undefined()];
+  // The style's width and height, or its max size where min and max pin the
+  // size down. Kept current by the setters of those six lengths.
+  private processedDimensions_: StyleLength[] = [StyleLength.ofAuto(), StyleLength.ofAuto()];
 
   constructor(config: Config = Config.getDefault()) {
     this.config_ = config;
@@ -273,7 +275,11 @@ export class Node {
   // Style
   copyStyle(node: Node): void {
     if (!this.style.equals(node.style)) {
+      const wasContents = this.style.display === Display.Contents;
       this.style.assign(node.style);
+      this.displayContentsChanged(wasContents);
+      this.processDimension(Dimension.Width);
+      this.processDimension(Dimension.Height);
       this.markDirtyAndPropagate();
     }
   }
@@ -360,7 +366,9 @@ export class Node {
   }
   setDisplay(display: Display): void {
     if (this.style.display !== display) {
+      const wasContents = this.style.display === Display.Contents;
       this.style.display = display;
+      this.displayContentsChanged(wasContents);
       this.markDirtyAndPropagate();
     }
   }
@@ -621,10 +629,7 @@ export class Node {
   }
   /** @internal Children that take part in layout: `display: contents` nodes are replaced by their children. */
   getLayoutChildren(): readonly Node[] {
-    // Like the C++ iterator this looks at the children's current display
-    // rather than at `contentsChildrenCount_`, which goes stale when a child's
-    // display changes after it was inserted.
-    if (!hasContentsNode(this.children_)) {
+    if (this.contentsChildrenCount_ === 0) {
       this.layoutChildren_ = null;
       return this.children_;
     }
@@ -868,19 +873,18 @@ export class Node {
     return value + (paddingAndBorder === paddingAndBorder ? paddingAndBorder : 0);
   }
 
-  /** @internal */
-  processDimensions(): void {
+  private processDimension(dim: Dimension): void {
     const style = this.style;
-    for (let i = 0, length = DIMENSIONS.length; i < length; i++) {
-      const dim = DIMENSIONS[i]!;
-      if (
-        style.maxDimensions[dim].isDefined() &&
-        style.maxDimensions[dim].inexactEquals(style.minDimensions[dim])
-      ) {
-        this.processedDimensions_[dim] = style.maxDimensions[dim];
-      } else {
-        this.processedDimensions_[dim] = style.dimensions[dim];
-      }
+    const max = style.maxDimensions[dim];
+    this.processedDimensions_[dim] =
+      max.isDefined() && max.inexactEquals(style.minDimensions[dim]) ? max : style.dimensions[dim];
+  }
+
+  /** Keeps the owner's count of `display: contents` children right when this node's display changes. */
+  private displayContentsChanged(wasContents: boolean): void {
+    const isContents = this.style.display === Display.Contents;
+    if (wasContents !== isContents && this.owner !== null) {
+      this.owner.contentsChildrenCount_ += isContents ? 1 : -1;
     }
   }
 
@@ -997,6 +1001,7 @@ export class Node {
   private updateDimension(axis: Dimension, value: StyleLength): void {
     if (!this.style.dimensions[axis].equals(value)) {
       this.style.dimensions[axis] = value;
+      this.processDimension(axis);
       this.markDirtyAndPropagate();
     }
   }
@@ -1004,6 +1009,7 @@ export class Node {
   private updateMinDimension(axis: Dimension, value: StyleLength): void {
     if (!this.style.minDimensions[axis].equals(value)) {
       this.style.minDimensions[axis] = value;
+      this.processDimension(axis);
       this.markDirtyAndPropagate();
     }
   }
@@ -1011,6 +1017,7 @@ export class Node {
   private updateMaxDimension(axis: Dimension, value: StyleLength): void {
     if (!this.style.maxDimensions[axis].equals(value)) {
       this.style.maxDimensions[axis] = value;
+      this.processDimension(axis);
       this.markDirtyAndPropagate();
     }
   }
@@ -1032,17 +1039,6 @@ const computedLayout: { -readonly [K in keyof Layout]: Layout[K] } = {
   width: 0,
   height: 0,
 };
-
-const DIMENSIONS = [Dimension.Width, Dimension.Height] as const;
-
-function hasContentsNode(children: readonly Node[]): boolean {
-  for (let i = 0, length = children.length; i < length; i++) {
-    if (children[i]!.style.display === Display.Contents) {
-      return true;
-    }
-  }
-  return false;
-}
 
 /** Writes the layout children of `node` into `out` from index `count` on; returns the new count. */
 function collectLayoutChildren(node: Node, out: Node[], count: number): number {
