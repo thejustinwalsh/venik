@@ -26,7 +26,6 @@ import {
 } from "../enums.ts";
 import { maxOrDefined } from "../numeric/Comparison.ts";
 import { StyleLength } from "./StyleLength.ts";
-import { StyleSizeLength } from "./StyleSizeLength.ts";
 
 /**
  * The style of a node: plain fields, plus the methods that resolve them
@@ -59,7 +58,7 @@ export class Style {
   flex: number = NaN;
   flexGrow: number = NaN;
   flexShrink: number = NaN;
-  flexBasis: StyleSizeLength = StyleSizeLength.ofAuto();
+  flexBasis: StyleLength = StyleLength.ofAuto();
   /** Degenerate ratios (0, infinite) are stored as undefined by `Node.setAspectRatio`. */
   aspectRatio: number = NaN;
 
@@ -73,15 +72,9 @@ export class Style {
     StyleLength.undefined(),
     StyleLength.undefined(),
   ];
-  readonly dimensions: DimensionLengths = [StyleSizeLength.ofAuto(), StyleSizeLength.ofAuto()];
-  readonly minDimensions: DimensionLengths = [
-    StyleSizeLength.undefined(),
-    StyleSizeLength.undefined(),
-  ];
-  readonly maxDimensions: DimensionLengths = [
-    StyleSizeLength.undefined(),
-    StyleSizeLength.undefined(),
-  ];
+  readonly dimensions: DimensionLengths = [StyleLength.ofAuto(), StyleLength.ofAuto()];
+  readonly minDimensions: DimensionLengths = [StyleLength.undefined(), StyleLength.undefined()];
+  readonly maxDimensions: DimensionLengths = [StyleLength.undefined(), StyleLength.undefined()];
 
   /** C++ copy construction (`Style copy = style;`). The copy shares no mutable state with `this`. */
   clone(): Style {
@@ -420,7 +413,7 @@ export class Style {
   }
 
   private resolveDimensionBound(
-    bound: StyleSizeLength,
+    bound: StyleLength,
     direction: Direction,
     axis: Dimension,
     referenceLength: number,
@@ -466,7 +459,7 @@ type EdgeLengths = [
   StyleLength,
 ];
 type GutterLengths = [StyleLength, StyleLength, StyleLength];
-type DimensionLengths = [StyleSizeLength, StyleSizeLength];
+type DimensionLengths = [StyleLength, StyleLength];
 
 function undefinedEdges(): EdgeLengths {
   const undefinedLength = StyleLength.undefined();
@@ -489,10 +482,7 @@ function copyInto<T>(to: T[], from: readonly T[]): void {
   }
 }
 
-function lengthsEqual<T extends { equals(rhs: T): boolean }>(
-  lhs: readonly T[],
-  rhs: readonly T[],
-): boolean {
+function lengthsEqual(lhs: readonly StyleLength[], rhs: readonly StyleLength[]): boolean {
   for (let i = 0; i < lhs.length; i++) {
     if (!lhs[i]!.equals(rhs[i]!)) {
       return false;

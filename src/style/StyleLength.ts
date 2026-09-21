@@ -3,10 +3,10 @@ import { inexactEquals as inexactEqualsNumber } from "../numeric/Comparison.ts";
 import type { Value } from "../types.ts";
 
 /**
- * This class represents a CSS Value for sizes (e.g. width, height, min-width,
- * etc.). It may be one of:
+ * A CSS value for lengths and sizes (e.g. margin, gap, width, min-height,
+ * flex-basis). It may be one of:
  * 1. Undefined
- * 2. A keyword (e.g. auto)
+ * 2. The `auto` keyword
  * 3. A CSS <length-percentage> value:
  *    a. <length> value (e.g. 10px)
  *    b. <percentage> value of a reference <length>

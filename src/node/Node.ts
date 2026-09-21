@@ -28,7 +28,6 @@ import { Event } from "../event/event.ts";
 import { maxOrDefined } from "../numeric/Comparison.ts";
 import { Style } from "../style/Style.ts";
 import { StyleLength } from "../style/StyleLength.ts";
-import { StyleSizeLength } from "../style/StyleSizeLength.ts";
 import type {
   BaselineFunction,
   DirtiedFunction,
@@ -70,10 +69,7 @@ export class Node {
   private contentsChildrenCount_: number = 0;
   private children_: Node[] = [];
   private config_: Config;
-  private processedDimensions_: StyleSizeLength[] = [
-    StyleSizeLength.undefined(),
-    StyleSizeLength.undefined(),
-  ];
+  private processedDimensions_: StyleLength[] = [StyleLength.undefined(), StyleLength.undefined()];
 
   constructor(config: Config = Config.getDefault()) {
     if (config == null) {
@@ -160,7 +156,7 @@ export class Node {
     this.layout = new LayoutResults();
     this.lineIndex = 0;
     this.contentsChildrenCount_ = 0;
-    this.processedDimensions_ = [StyleSizeLength.undefined(), StyleSizeLength.undefined()];
+    this.processedDimensions_ = [StyleLength.undefined(), StyleLength.undefined()];
   }
 
   // Layout
@@ -563,73 +559,73 @@ export class Node {
 
   // Style: flex basis and dimensions
   setFlexBasis(flexBasis: number | "auto" | Percent | undefined): void {
-    this.updateFlexBasis(parseSizeLength(flexBasis));
+    this.updateFlexBasis(parseLength(flexBasis));
   }
   setFlexBasisPercent(flexBasis: number | undefined): void {
-    this.updateFlexBasis(StyleSizeLength.percent(flexBasis ?? NaN));
+    this.updateFlexBasis(StyleLength.percent(flexBasis ?? NaN));
   }
   setFlexBasisAuto(): void {
-    this.updateFlexBasis(StyleSizeLength.ofAuto());
+    this.updateFlexBasis(StyleLength.ofAuto());
   }
   getFlexBasis(): Value {
     return this.style.flexBasis.toValue();
   }
   setWidth(width: number | "auto" | Percent | undefined): void {
-    this.updateDimension(Dimension.Width, parseSizeLength(width));
+    this.updateDimension(Dimension.Width, parseLength(width));
   }
   setWidthPercent(width: number | undefined): void {
-    this.updateDimension(Dimension.Width, StyleSizeLength.percent(width ?? NaN));
+    this.updateDimension(Dimension.Width, StyleLength.percent(width ?? NaN));
   }
   setWidthAuto(): void {
-    this.updateDimension(Dimension.Width, StyleSizeLength.ofAuto());
+    this.updateDimension(Dimension.Width, StyleLength.ofAuto());
   }
   getWidth(): Value {
     return this.style.dimensions[Dimension.Width].toValue();
   }
   setHeight(height: number | "auto" | Percent | undefined): void {
-    this.updateDimension(Dimension.Height, parseSizeLength(height));
+    this.updateDimension(Dimension.Height, parseLength(height));
   }
   setHeightPercent(height: number | undefined): void {
-    this.updateDimension(Dimension.Height, StyleSizeLength.percent(height ?? NaN));
+    this.updateDimension(Dimension.Height, StyleLength.percent(height ?? NaN));
   }
   setHeightAuto(): void {
-    this.updateDimension(Dimension.Height, StyleSizeLength.ofAuto());
+    this.updateDimension(Dimension.Height, StyleLength.ofAuto());
   }
   getHeight(): Value {
     return this.style.dimensions[Dimension.Height].toValue();
   }
   setMinWidth(minWidth: number | Percent | undefined): void {
-    this.updateMinDimension(Dimension.Width, parseSizeLength(minWidth));
+    this.updateMinDimension(Dimension.Width, parseLength(minWidth));
   }
   setMinWidthPercent(minWidth: number | undefined): void {
-    this.updateMinDimension(Dimension.Width, StyleSizeLength.percent(minWidth ?? NaN));
+    this.updateMinDimension(Dimension.Width, StyleLength.percent(minWidth ?? NaN));
   }
   getMinWidth(): Value {
     return this.style.minDimensions[Dimension.Width].toValue();
   }
   setMinHeight(minHeight: number | Percent | undefined): void {
-    this.updateMinDimension(Dimension.Height, parseSizeLength(minHeight));
+    this.updateMinDimension(Dimension.Height, parseLength(minHeight));
   }
   setMinHeightPercent(minHeight: number | undefined): void {
-    this.updateMinDimension(Dimension.Height, StyleSizeLength.percent(minHeight ?? NaN));
+    this.updateMinDimension(Dimension.Height, StyleLength.percent(minHeight ?? NaN));
   }
   getMinHeight(): Value {
     return this.style.minDimensions[Dimension.Height].toValue();
   }
   setMaxWidth(maxWidth: number | Percent | undefined): void {
-    this.updateMaxDimension(Dimension.Width, parseSizeLength(maxWidth));
+    this.updateMaxDimension(Dimension.Width, parseLength(maxWidth));
   }
   setMaxWidthPercent(maxWidth: number | undefined): void {
-    this.updateMaxDimension(Dimension.Width, StyleSizeLength.percent(maxWidth ?? NaN));
+    this.updateMaxDimension(Dimension.Width, StyleLength.percent(maxWidth ?? NaN));
   }
   getMaxWidth(): Value {
     return this.style.maxDimensions[Dimension.Width].toValue();
   }
   setMaxHeight(maxHeight: number | Percent | undefined): void {
-    this.updateMaxDimension(Dimension.Height, parseSizeLength(maxHeight));
+    this.updateMaxDimension(Dimension.Height, parseLength(maxHeight));
   }
   setMaxHeightPercent(maxHeight: number | undefined): void {
-    this.updateMaxDimension(Dimension.Height, StyleSizeLength.percent(maxHeight ?? NaN));
+    this.updateMaxDimension(Dimension.Height, StyleLength.percent(maxHeight ?? NaN));
   }
   getMaxHeight(): Value {
     return this.style.maxDimensions[Dimension.Height].toValue();
@@ -822,7 +818,7 @@ export class Node {
   }
 
   /** @internal */
-  getProcessedDimension(dimension: Dimension): StyleSizeLength {
+  getProcessedDimension(dimension: Dimension): StyleLength {
     return this.processedDimensions_[dimension]!;
   }
 
@@ -911,16 +907,16 @@ export class Node {
   }
 
   /** @internal */
-  processFlexBasis(): StyleSizeLength {
+  processFlexBasis(): StyleLength {
     const flexBasis = this.style.flexBasis;
     if (!flexBasis.isAuto() && !flexBasis.isUndefined()) {
       return flexBasis;
     }
     // `flex: <positive number>` is `<number> 1 0` in CSS
     if (this.style.flex > 0) {
-      return StyleSizeLength.points(0);
+      return StyleLength.points(0);
     }
-    return StyleSizeLength.ofAuto();
+    return StyleLength.ofAuto();
   }
 
   /** @internal NaN when undefined. */
@@ -1116,28 +1112,28 @@ export class Node {
     return edge as PhysicalEdge;
   }
 
-  private updateFlexBasis(value: StyleSizeLength): void {
+  private updateFlexBasis(value: StyleLength): void {
     if (!this.style.flexBasis.equals(value)) {
       this.style.flexBasis = value;
       this.markDirtyAndPropagate();
     }
   }
 
-  private updateDimension(axis: Dimension, value: StyleSizeLength): void {
+  private updateDimension(axis: Dimension, value: StyleLength): void {
     if (!this.style.dimensions[axis].equals(value)) {
       this.style.dimensions[axis] = value;
       this.markDirtyAndPropagate();
     }
   }
 
-  private updateMinDimension(axis: Dimension, value: StyleSizeLength): void {
+  private updateMinDimension(axis: Dimension, value: StyleLength): void {
     if (!this.style.minDimensions[axis].equals(value)) {
       this.style.minDimensions[axis] = value;
       this.markDirtyAndPropagate();
     }
   }
 
-  private updateMaxDimension(axis: Dimension, value: StyleSizeLength): void {
+  private updateMaxDimension(axis: Dimension, value: StyleLength): void {
     if (!this.style.maxDimensions[axis].equals(value)) {
       this.style.maxDimensions[axis] = value;
       this.markDirtyAndPropagate();
@@ -1175,13 +1171,4 @@ function parseLength(value: number | "auto" | Percent | undefined): StyleLength 
     return value === "auto" ? StyleLength.ofAuto() : StyleLength.percent(Number.parseFloat(value));
   }
   return StyleLength.points(value ?? NaN);
-}
-
-function parseSizeLength(value: number | "auto" | Percent | undefined): StyleSizeLength {
-  if (typeof value === "string") {
-    return value === "auto"
-      ? StyleSizeLength.ofAuto()
-      : StyleSizeLength.percent(Number.parseFloat(value));
-  }
-  return StyleSizeLength.points(value ?? NaN);
 }
