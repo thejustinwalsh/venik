@@ -148,14 +148,16 @@ export function calculateFlexLine(
     child.lineIndex = lineCount;
     const childMarginMainAxis = childStyle.computeMarginForAxis(mainAxis, availableInnerWidth);
     const childLeadingGapMainAxis = child === firstElementInLine ? 0.0 : gap;
-    const flexBasisWithMinAndMaxConstraints = boundAxisWithinMinAndMax(
-      child,
-      direction,
-      mainAxis,
-      child.layout.computedFlexBasis,
-      mainAxisOwnerSize,
-      ownerWidth,
-    );
+    const flexBasisWithMinAndMaxConstraints = childStyle.hasSizeBounds
+      ? boundAxisWithinMinAndMax(
+          child,
+          direction,
+          mainAxis,
+          child.layout.computedFlexBasis,
+          mainAxisOwnerSize,
+          ownerWidth,
+        )
+      : child.layout.computedFlexBasis;
 
     // If this is a multi-line flow and this item pushes us over the available
     // size, we've hit the end of the current line. Break out of the loop and

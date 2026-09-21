@@ -94,14 +94,11 @@ export class StyleLength {
 
   /** The length in points, or NaN when it is undefined or auto. */
   resolve(referenceLength: number): number {
-    switch (this.unit) {
-      case Unit.Point:
-        return this.value;
-      case Unit.Percent:
-        return this.value * referenceLength * 0.01;
-      default:
-        return NaN;
+    const unit = this.unit;
+    if (unit === Unit.Point) {
+      return this.value;
     }
+    return unit === Unit.Percent ? this.value * referenceLength * 0.01 : NaN;
   }
 
   /** C++ `operator==`. */

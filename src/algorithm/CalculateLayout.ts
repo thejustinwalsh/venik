@@ -277,13 +277,10 @@ function maxSizeForMode(
 
 /** The `size` out parameter of C++ `constrainMaxSizeForMode`. Call before `constrainMaxSizeModeForMode`. */
 function constrainMaxSizeForMode(mode: SizingMode, size: number, maxSize: number): number {
-  switch (mode) {
-    case SizingMode.StretchFit:
-    case SizingMode.FitContent:
-      return maxSize !== maxSize || size < maxSize ? size : maxSize;
-    case SizingMode.MaxContent:
-      return maxSize === maxSize ? maxSize : size;
+  if (mode === SizingMode.MaxContent) {
+    return maxSize === maxSize ? maxSize : size;
   }
+  return maxSize !== maxSize || size < maxSize ? size : maxSize;
 }
 
 /** The `mode` out parameter of C++ `constrainMaxSizeForMode`. */
@@ -435,10 +432,9 @@ function computeFlexBasisForChild(
     // If child has no defined size in the cross axis and is set to stretch, set
     // the cross axis to be measured exactly with the available inner width
 
+    const isStretched = resolveChildAlignment(node, child) === Align.Stretch;
     const hasExactWidth = width === width && widthMode === SizingMode.StretchFit;
-    const childWidthStretch =
-      resolveChildAlignment(node, child) === Align.Stretch &&
-      childWidthSizingMode !== SizingMode.StretchFit;
+    const childWidthStretch = isStretched && childWidthSizingMode !== SizingMode.StretchFit;
     if (!isMainAxisRow && !isRowStyleDimDefined && hasExactWidth && childWidthStretch) {
       childWidth = width;
       childWidthSizingMode = SizingMode.StretchFit;
@@ -449,9 +445,7 @@ function computeFlexBasisForChild(
     }
 
     const hasExactHeight = height === height && heightMode === SizingMode.StretchFit;
-    const childHeightStretch =
-      resolveChildAlignment(node, child) === Align.Stretch &&
-      childHeightSizingMode !== SizingMode.StretchFit;
+    const childHeightStretch = isStretched && childHeightSizingMode !== SizingMode.StretchFit;
     if (isMainAxisRow && !isColumnStyleDimDefined && hasExactHeight && childHeightStretch) {
       childHeight = height;
       childHeightSizingMode = SizingMode.StretchFit;
@@ -462,16 +456,15 @@ function computeFlexBasisForChild(
       }
     }
 
-    const maxWidth = maxSizeForMode(child, direction, FlexDirection.Row, ownerWidth, ownerWidth);
+    const hasSizeBounds = child.style.hasSizeBounds;
+    const maxWidth = hasSizeBounds
+      ? maxSizeForMode(child, direction, FlexDirection.Row, ownerWidth, ownerWidth)
+      : NaN;
     childWidth = constrainMaxSizeForMode(childWidthSizingMode, childWidth, maxWidth);
     childWidthSizingMode = constrainMaxSizeModeForMode(childWidthSizingMode, maxWidth);
-    const maxHeight = maxSizeForMode(
-      child,
-      direction,
-      FlexDirection.Column,
-      ownerHeight,
-      ownerWidth,
-    );
+    const maxHeight = hasSizeBounds
+      ? maxSizeForMode(child, direction, FlexDirection.Column, ownerHeight, ownerWidth)
+      : NaN;
     childHeight = constrainMaxSizeForMode(childHeightSizingMode, childHeight, maxHeight);
     childHeightSizingMode = constrainMaxSizeModeForMode(childHeightSizingMode, maxHeight);
 
@@ -907,18 +900,26 @@ function distributeFreeSpaceSecondPass(
   let flexGrowFactor = 0;
   let deltaFreeSpace = 0;
   const isMainAxisRow = isRow(mainAxis);
+  const crossDim = dimension(crossAxis);
   const isNodeFlexWrap = node.style.flexWrap !== Wrap.NoWrap;
 
   for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
-    childFlexBasis = boundAxisWithinMinAndMax(
-      currentLineChild,
-      direction,
-      mainAxis,
-      currentLineChild.layout.computedFlexBasis,
-      mainAxisOwnerSize,
-      ownerWidth,
-    );
+    const childStyle = currentLineChild.style;
+    // Most nodes have no min or max size. Asking here keeps the calls that
+    // apply them, which V8 does not inline into a function this large, off the
+    // usual path.
+    const hasSizeBounds = childStyle.hasSizeBounds;
+    childFlexBasis = hasSizeBounds
+      ? boundAxisWithinMinAndMax(
+          currentLineChild,
+          direction,
+          mainAxis,
+          currentLineChild.layout.computedFlexBasis,
+          mainAxisOwnerSize,
+          ownerWidth,
+        )
+      : currentLineChild.layout.computedFlexBasis;
     let updatedMainSize = childFlexBasis;
 
     if (flexLine.layout.remainingFreeSpace < 0) {
@@ -974,7 +975,6 @@ function distributeFreeSpaceSecondPass(
 
     deltaFreeSpace += updatedMainSize - childFlexBasis;
 
-    const childStyle = currentLineChild.style;
     const marginMain = childStyle.computeMarginForAxis(mainAxis, availableInnerWidth);
     const marginCross = childStyle.computeMarginForAxis(crossAxis, availableInnerWidth);
 
@@ -982,6 +982,16 @@ function distributeFreeSpaceSecondPass(
     let childMainSize = updatedMainSize + marginMain;
     let childCrossSizingMode: SizingMode;
     let childMainSizingMode: SizingMode = SizingMode.StretchFit;
+
+    const hasDefiniteCrossSize = currentLineChild.hasDefiniteLength(
+      crossDim,
+      availableInnerCrossDim,
+    );
+    const requiresStretchLayout =
+      !hasDefiniteCrossSize &&
+      resolveChildAlignment(node, currentLineChild) === Align.Stretch &&
+      !childStyle.flexStartMarginIsAuto(crossAxis, direction) &&
+      !childStyle.flexEndMarginIsAuto(crossAxis, direction);
 
     const aspectRatio = childStyle.aspectRatio;
     if (aspectRatio === aspectRatio) {
@@ -992,17 +1002,14 @@ function distributeFreeSpaceSecondPass(
 
       childCrossSize += marginCross;
     } else if (
+      requiresStretchLayout &&
       availableInnerCrossDim === availableInnerCrossDim &&
-      !currentLineChild.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim) &&
       sizingModeCrossDim === SizingMode.StretchFit &&
-      !(isNodeFlexWrap && mainAxisOverflows) &&
-      resolveChildAlignment(node, currentLineChild) === Align.Stretch &&
-      !childStyle.flexStartMarginIsAuto(crossAxis, direction) &&
-      !childStyle.flexEndMarginIsAuto(crossAxis, direction)
+      !(isNodeFlexWrap && mainAxisOverflows)
     ) {
       childCrossSize = availableInnerCrossDim;
       childCrossSizingMode = SizingMode.StretchFit;
-    } else if (!currentLineChild.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim)) {
+    } else if (!hasDefiniteCrossSize) {
       childCrossSize = availableInnerCrossDim;
       childCrossSizingMode =
         childCrossSize !== childCrossSize ? SizingMode.MaxContent : SizingMode.FitContent;
@@ -1010,12 +1017,12 @@ function distributeFreeSpaceSecondPass(
       childCrossSize =
         currentLineChild.getResolvedDimension(
           direction,
-          dimension(crossAxis),
+          crossDim,
           availableInnerCrossDim,
           availableInnerWidth,
         ) + marginCross;
       const isLoosePercentageMeasurement =
-        currentLineChild.getProcessedDimension(dimension(crossAxis)).isPercent() &&
+        currentLineChild.getProcessedDimension(crossDim).isPercent() &&
         sizingModeCrossDim !== SizingMode.StretchFit;
       childCrossSizingMode =
         childCrossSize !== childCrossSize || isLoosePercentageMeasurement
@@ -1023,30 +1030,28 @@ function distributeFreeSpaceSecondPass(
           : SizingMode.StretchFit;
     }
 
-    const maxMainSize = maxSizeForMode(
-      currentLineChild,
-      direction,
-      mainAxis,
-      availableInnerMainDim,
-      availableInnerWidth,
-    );
+    const maxMainSize = hasSizeBounds
+      ? maxSizeForMode(
+          currentLineChild,
+          direction,
+          mainAxis,
+          availableInnerMainDim,
+          availableInnerWidth,
+        )
+      : NaN;
     childMainSize = constrainMaxSizeForMode(childMainSizingMode, childMainSize, maxMainSize);
     childMainSizingMode = constrainMaxSizeModeForMode(childMainSizingMode, maxMainSize);
-    const maxCrossSize = maxSizeForMode(
-      currentLineChild,
-      direction,
-      crossAxis,
-      availableInnerCrossDim,
-      availableInnerWidth,
-    );
+    const maxCrossSize = hasSizeBounds
+      ? maxSizeForMode(
+          currentLineChild,
+          direction,
+          crossAxis,
+          availableInnerCrossDim,
+          availableInnerWidth,
+        )
+      : NaN;
     childCrossSize = constrainMaxSizeForMode(childCrossSizingMode, childCrossSize, maxCrossSize);
     childCrossSizingMode = constrainMaxSizeModeForMode(childCrossSizingMode, maxCrossSize);
-
-    const requiresStretchLayout =
-      !currentLineChild.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim) &&
-      resolveChildAlignment(node, currentLineChild) === Align.Stretch &&
-      !childStyle.flexStartMarginIsAuto(crossAxis, direction) &&
-      !childStyle.flexEndMarginIsAuto(crossAxis, direction);
 
     const childWidth = isMainAxisRow ? childMainSize : childCrossSize;
     const childHeight = !isMainAxisRow ? childMainSize : childCrossSize;
@@ -1108,14 +1113,16 @@ function distributeFreeSpaceFirstPass(
 
   for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
-    const childFlexBasis = boundAxisWithinMinAndMax(
-      currentLineChild,
-      direction,
-      mainAxis,
-      currentLineChild.layout.computedFlexBasis,
-      mainAxisOwnerSize,
-      ownerWidth,
-    );
+    const childFlexBasis = currentLineChild.style.hasSizeBounds
+      ? boundAxisWithinMinAndMax(
+          currentLineChild,
+          direction,
+          mainAxis,
+          currentLineChild.layout.computedFlexBasis,
+          mainAxisOwnerSize,
+          ownerWidth,
+        )
+      : currentLineChild.layout.computedFlexBasis;
 
     if (flexLine.layout.remainingFreeSpace < 0) {
       flexShrinkScaledFactor = -currentLineChild.resolveFlexShrink() * childFlexBasis;

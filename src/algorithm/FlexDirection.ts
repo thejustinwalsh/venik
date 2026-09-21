@@ -9,80 +9,74 @@ export const PhysicalEdge = {
 } as const;
 export type PhysicalEdge = (typeof PhysicalEdge)[keyof typeof PhysicalEdge];
 
+// The helpers below run dozens of times per node and pass, from functions too
+// large for V8 to inline much into: a callee's bytecode size decides whether it
+// is inlined. Hence comparisons and tables that lean on the enum order (columns
+// 0-1, rows 2-3, reverse = forward + 1) rather than switches.
+
 export function isRow(flexDirection: FlexDirection): boolean {
-  return flexDirection === FlexDirection.Row || flexDirection === FlexDirection.RowReverse;
+  return flexDirection >= FlexDirection.Row;
 }
 
 export function isColumn(flexDirection: FlexDirection): boolean {
-  return flexDirection === FlexDirection.Column || flexDirection === FlexDirection.ColumnReverse;
+  return flexDirection < FlexDirection.Row;
 }
 
 export function resolveDirection(
   flexDirection: FlexDirection,
   direction: Direction,
 ): FlexDirection {
-  if (direction === Direction.RTL) {
-    if (flexDirection === FlexDirection.Row) {
-      return FlexDirection.RowReverse;
-    } else if (flexDirection === FlexDirection.RowReverse) {
-      return FlexDirection.Row;
-    }
-  }
-
-  return flexDirection;
+  // RTL swaps Row and RowReverse.
+  return direction === Direction.RTL && flexDirection >= FlexDirection.Row
+    ? ((flexDirection ^ 1) as FlexDirection)
+    : flexDirection;
 }
 
 export function resolveCrossDirection(
   flexDirection: FlexDirection,
   direction: Direction,
 ): FlexDirection {
-  return isColumn(flexDirection)
+  return flexDirection < FlexDirection.Row
     ? resolveDirection(FlexDirection.Row, direction)
     : FlexDirection.Column;
 }
 
+// Indexed by `FlexDirection`.
+const FLEX_START_EDGES = [
+  PhysicalEdge.Top,
+  PhysicalEdge.Bottom,
+  PhysicalEdge.Left,
+  PhysicalEdge.Right,
+] as const;
+const FLEX_END_EDGES = [
+  PhysicalEdge.Bottom,
+  PhysicalEdge.Top,
+  PhysicalEdge.Right,
+  PhysicalEdge.Left,
+] as const;
+
 export function flexStartEdge(flexDirection: FlexDirection): PhysicalEdge {
-  switch (flexDirection) {
-    case FlexDirection.Column:
-      return PhysicalEdge.Top;
-    case FlexDirection.ColumnReverse:
-      return PhysicalEdge.Bottom;
-    case FlexDirection.Row:
-      return PhysicalEdge.Left;
-    case FlexDirection.RowReverse:
-      return PhysicalEdge.Right;
-  }
+  return FLEX_START_EDGES[flexDirection];
 }
 
 export function flexEndEdge(flexDirection: FlexDirection): PhysicalEdge {
-  switch (flexDirection) {
-    case FlexDirection.Column:
-      return PhysicalEdge.Bottom;
-    case FlexDirection.ColumnReverse:
-      return PhysicalEdge.Top;
-    case FlexDirection.Row:
-      return PhysicalEdge.Right;
-    case FlexDirection.RowReverse:
-      return PhysicalEdge.Left;
-  }
+  return FLEX_END_EDGES[flexDirection];
 }
 
 export function inlineStartEdge(flexDirection: FlexDirection, direction: Direction): PhysicalEdge {
-  if (isRow(flexDirection)) {
+  if (flexDirection >= FlexDirection.Row) {
     return direction === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;
   }
-
   return PhysicalEdge.Top;
 }
 
 export function inlineEndEdge(flexDirection: FlexDirection, direction: Direction): PhysicalEdge {
-  if (isRow(flexDirection)) {
+  if (flexDirection >= FlexDirection.Row) {
     return direction === Direction.RTL ? PhysicalEdge.Left : PhysicalEdge.Right;
   }
-
   return PhysicalEdge.Bottom;
 }
 
 export function dimension(flexDirection: FlexDirection): Dimension {
-  return isRow(flexDirection) ? Dimension.Width : Dimension.Height;
+  return flexDirection >= FlexDirection.Row ? Dimension.Width : Dimension.Height;
 }

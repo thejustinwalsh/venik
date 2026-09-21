@@ -3,16 +3,13 @@ import type { Node } from "../node/Node.ts";
 import { isColumn } from "./FlexDirection.ts";
 
 export function resolveChildAlignment(node: Node, child: Node): Align {
-  const align =
-    child.style.alignSelf === Align.Auto ? node.style.alignItems : child.style.alignSelf;
-  if (
-    node.style.display === Display.Flex &&
-    align === Align.Baseline &&
-    isColumn(node.style.flexDirection)
-  ) {
-    return Align.FlexStart;
-  }
-  return align;
+  const alignSelf = child.style.alignSelf;
+  const style = node.style;
+  const align = alignSelf === Align.Auto ? style.alignItems : alignSelf;
+  // A column has no baseline to share.
+  return align === Align.Baseline && isColumn(style.flexDirection) && style.display === Display.Flex
+    ? Align.FlexStart
+    : align;
 }
 
 /**
