@@ -42,6 +42,23 @@ function newSizeIsStricterAndStillValid(
   );
 }
 
+/**
+ * Whether two available sizes land on the same physical pixel. Sizes that are
+ * already equal skip the rounding, which is most cache probes.
+ */
+function isSameAvailableSize(lastSize: number, size: number, pointScaleFactor: number): boolean {
+  if (inexactEquals(lastSize, size)) {
+    return true;
+  }
+  return (
+    pointScaleFactor !== 0 &&
+    inexactEquals(
+      roundValueToPixelGrid(lastSize, pointScaleFactor, false, false),
+      roundValueToPixelGrid(size, pointScaleFactor, false, false),
+    )
+  );
+}
+
 export function canUseCachedMeasurement(
   widthMode: SizingMode,
   availableWidth: number,
@@ -63,24 +80,12 @@ export function canUseCachedMeasurement(
 
   const pointScaleFactor = config === null ? 0 : config.getPointScaleFactor();
 
-  const useRoundedComparison = config !== null && pointScaleFactor !== 0;
-  const effectiveWidth = useRoundedComparison
-    ? roundValueToPixelGrid(availableWidth, pointScaleFactor, false, false)
-    : availableWidth;
-  const effectiveHeight = useRoundedComparison
-    ? roundValueToPixelGrid(availableHeight, pointScaleFactor, false, false)
-    : availableHeight;
-  const effectiveLastWidth = useRoundedComparison
-    ? roundValueToPixelGrid(lastAvailableWidth, pointScaleFactor, false, false)
-    : lastAvailableWidth;
-  const effectiveLastHeight = useRoundedComparison
-    ? roundValueToPixelGrid(lastAvailableHeight, pointScaleFactor, false, false)
-    : lastAvailableHeight;
-
   const hasSameWidthSpec =
-    lastWidthMode === widthMode && inexactEquals(effectiveLastWidth, effectiveWidth);
+    lastWidthMode === widthMode &&
+    isSameAvailableSize(lastAvailableWidth, availableWidth, pointScaleFactor);
   const hasSameHeightSpec =
-    lastHeightMode === heightMode && inexactEquals(effectiveLastHeight, effectiveHeight);
+    lastHeightMode === heightMode &&
+    isSameAvailableSize(lastAvailableHeight, availableHeight, pointScaleFactor);
 
   const widthIsCompatible =
     hasSameWidthSpec ||

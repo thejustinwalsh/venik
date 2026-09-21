@@ -534,56 +534,62 @@ export class Node {
 
   // Style: edges and gutters
   setPosition(edge: Edge, position: number | "auto" | Percent | undefined): void {
-    this.updateEdge(this.style.position, edge, parseLength(position, this.style.position[edge]));
+    if (this.style.setPosition(edge, parseLength(position, this.style.position[edge]))) {
+      this.markDirtyAndPropagate();
+    }
   }
   setPositionPercent(edge: Edge, position: number | undefined): void {
-    this.updateEdge(
-      this.style.position,
-      edge,
-      StyleLength.percent(position ?? NaN, this.style.position[edge]),
-    );
+    if (
+      this.style.setPosition(edge, StyleLength.percent(position ?? NaN, this.style.position[edge]))
+    ) {
+      this.markDirtyAndPropagate();
+    }
   }
   setPositionAuto(edge: Edge): void {
-    this.updateEdge(this.style.position, edge, StyleLength.ofAuto());
+    if (this.style.setPosition(edge, StyleLength.ofAuto())) {
+      this.markDirtyAndPropagate();
+    }
   }
   getPosition(edge: Edge): Value {
     return this.style.position[edge];
   }
   setMargin(edge: Edge, margin: number | "auto" | Percent | undefined): void {
-    this.updateEdge(this.style.margin, edge, parseLength(margin, this.style.margin[edge]));
+    if (this.style.setMargin(edge, parseLength(margin, this.style.margin[edge]))) {
+      this.markDirtyAndPropagate();
+    }
   }
   setMarginPercent(edge: Edge, margin: number | undefined): void {
-    this.updateEdge(
-      this.style.margin,
-      edge,
-      StyleLength.percent(margin ?? NaN, this.style.margin[edge]),
-    );
+    if (this.style.setMargin(edge, StyleLength.percent(margin ?? NaN, this.style.margin[edge]))) {
+      this.markDirtyAndPropagate();
+    }
   }
   setMarginAuto(edge: Edge): void {
-    this.updateEdge(this.style.margin, edge, StyleLength.ofAuto());
+    if (this.style.setMargin(edge, StyleLength.ofAuto())) {
+      this.markDirtyAndPropagate();
+    }
   }
   getMargin(edge: Edge): Value {
     return this.style.margin[edge];
   }
   setPadding(edge: Edge, padding: number | Percent | undefined): void {
-    this.updateEdge(this.style.padding, edge, parseLength(padding, this.style.padding[edge]));
+    if (this.style.setPadding(edge, parseLength(padding, this.style.padding[edge]))) {
+      this.markDirtyAndPropagate();
+    }
   }
   setPaddingPercent(edge: Edge, padding: number | undefined): void {
-    this.updateEdge(
-      this.style.padding,
-      edge,
-      StyleLength.percent(padding ?? NaN, this.style.padding[edge]),
-    );
+    if (
+      this.style.setPadding(edge, StyleLength.percent(padding ?? NaN, this.style.padding[edge]))
+    ) {
+      this.markDirtyAndPropagate();
+    }
   }
   getPadding(edge: Edge): Value {
     return this.style.padding[edge];
   }
   setBorder(edge: Edge, border: number | undefined): void {
-    this.updateEdge(
-      this.style.border,
-      edge,
-      StyleLength.points(border ?? NaN, this.style.border[edge]),
-    );
+    if (this.style.setBorder(edge, StyleLength.points(border ?? NaN, this.style.border[edge]))) {
+      this.markDirtyAndPropagate();
+    }
   }
   getBorder(edge: Edge): number {
     const border = this.style.border[edge];

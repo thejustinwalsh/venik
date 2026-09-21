@@ -27,27 +27,11 @@ export function roundValueToPixelGrid(
 function roundScratchToPixelGrid(forceCeil: boolean, forceFloor: boolean): void {
   const pointScaleFactor = roundingScratch[1]!;
   let scaledValue = roundingScratch[0]! * pointScaleFactor;
-  // We want to calculate `fractial` such that `floor(scaledValue) = scaledValue
-  // - fractial`.
-  let fractial = scaledValue % 1.0;
-  if (fractial < 0) {
-    // This branch is for handling negative numbers for `value`.
-    //
-    // Regarding `floor` and `ceil`. Note that for a number x, `floor(x) <= x <=
-    // ceil(x)` even for negative numbers. Here are a couple of examples:
-    //   - x =  2.2: floor( 2.2) =  2, ceil( 2.2) =  3
-    //   - x = -2.2: floor(-2.2) = -3, ceil(-2.2) = -2
-    //
-    // Regarding `%`. For fractional negative numbers, `%` returns a
-    // negative number. For example, `-2.2 % 1 = -0.2`. However, we want
-    // `fractial` to be the number such that subtracting it from `value` will
-    // give us `floor(value)`. In the case of negative numbers, adding 1 to
-    // `value % 1` gives us this. Let's continue the example from above:
-    //   - fractial = -2.2 % 1 = -0.2
-    //   - Add 1 to the fraction: fractial2 = fractial + 1 = -0.2 + 1 = 0.8
-    //   - Finding the `floor`: -2.2 - fractial2 = -2.2 - 0.8 = -3
-    ++fractial;
-  }
+  // `fractial` is the number such that `floor(scaledValue) = scaledValue -
+  // fractial`, for negative values too: -2.2 gives 0.8, and -2.2 - 0.8 = -3.
+  // Not `scaledValue % 1`: V8 compiles a floating-point `%` to a call into the
+  // C library, which made this the slowest line of the rounding pass.
+  const fractial = scaledValue - Math.floor(scaledValue);
   if (inexactEquals(fractial, 0)) {
     // First we check if the value is already rounded
     scaledValue = scaledValue - fractial;
