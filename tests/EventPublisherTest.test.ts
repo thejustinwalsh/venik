@@ -5,7 +5,7 @@ import {
   LayoutPassReason,
   LayoutPassReasonToString,
 } from "../src/event/event.ts";
-import { MeasureMode, Node } from "../src/index.ts";
+import { SizingMode, Node } from "../src/index.ts";
 
 // Every enum value declared in LayoutPassReason (excluding the COUNT sentinel).
 // Kept in sync with yoga/event/event.h; a missing entry causes the "all known
@@ -109,7 +109,7 @@ describe("EventPublisherTest", () => {
 
   test("publishForwardsTypedEventDataPayloadUnmodified", () => {
     let measureCallbackEndCount = 0;
-    let capturedWidthMode: MeasureMode = MeasureMode.Undefined;
+    let capturedWidthMode: SizingMode = SizingMode.MaxContent;
     let capturedMeasuredWidth = 0;
     let capturedMeasuredHeight = 0;
     let capturedReason: LayoutPassReason = LayoutPassReason.Initial;
@@ -119,7 +119,7 @@ describe("EventPublisherTest", () => {
         return;
       }
       const payload = data;
-      capturedWidthMode = payload.widthMeasureMode;
+      capturedWidthMode = payload.widthSizingMode;
       capturedMeasuredWidth = payload.measuredWidth;
       capturedMeasuredHeight = payload.measuredHeight;
       capturedReason = payload.reason;
@@ -128,16 +128,16 @@ describe("EventPublisherTest", () => {
 
     Event.publish(null, Event.MeasureCallbackEnd, {
       width: 100,
-      widthMeasureMode: MeasureMode.AtMost,
+      widthSizingMode: SizingMode.FitContent,
       height: 200,
-      heightMeasureMode: MeasureMode.Exactly,
+      heightSizingMode: SizingMode.StretchFit,
       measuredWidth: 42.5,
       measuredHeight: 84.25,
       reason: LayoutPassReason.FlexMeasure,
     });
 
     expect(measureCallbackEndCount).toBe(1);
-    expect(capturedWidthMode).toBe(MeasureMode.AtMost);
+    expect(capturedWidthMode).toBe(SizingMode.FitContent);
     expect(capturedMeasuredWidth).toBeCloseTo(42.5, 4);
     expect(capturedMeasuredHeight).toBeCloseTo(84.25, 4);
     expect(capturedReason).toBe(LayoutPassReason.FlexMeasure);

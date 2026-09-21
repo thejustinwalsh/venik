@@ -81,13 +81,6 @@ export const Justify = {
 } as const;
 export type Justify = (typeof Justify)[keyof typeof Justify];
 
-export const MeasureMode = {
-  Undefined: 0,
-  Exactly: 1,
-  AtMost: 2,
-} as const;
-export type MeasureMode = (typeof MeasureMode)[keyof typeof MeasureMode];
-
 export const Overflow = {
   Visible: 0,
   Hidden: 1,
@@ -101,6 +94,36 @@ export const PositionType = {
   Absolute: 2,
 } as const;
 export type PositionType = (typeof PositionType)[keyof typeof PositionType];
+
+/**
+ * A CSS auto box size: how an available size constrains the box being laid out or measured.
+ * https://www.w3.org/TR/css-sizing-3/#auto-box-sizes
+ * https://www.w3.org/TR/css-flexbox-1/#min-size-auto
+ */
+export const SizingMode = {
+  /**
+   * The size a box would take if its outer size filled the available space in
+   * the given axis; in other words, the stretch fit into the available space,
+   * if that is definite. Undefined if the available space is indefinite.
+   */
+  StretchFit: 0,
+  /**
+   * A box's "ideal" size in a given axis when given infinite available space.
+   * Usually this is the smallest size the box could take in that axis while
+   * still fitting around its contents, i.e. minimizing unfilled space while
+   * avoiding overflow.
+   */
+  MaxContent: 1,
+  /**
+   * If the available space in a given axis is definite, equal to
+   * clamp(min-content size, stretch-fit size, max-content size) (i.e.
+   * max(min-content size, min(max-content size, stretch-fit size))). When
+   * sizing under a min-content constraint, equal to the min-content size.
+   * Otherwise, equal to the max-content size in that axis.
+   */
+  FitContent: 2,
+} as const;
+export type SizingMode = (typeof SizingMode)[keyof typeof SizingMode];
 
 export const Unit = {
   Undefined: 0,

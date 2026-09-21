@@ -5,15 +5,15 @@ import {
   Direction,
   FlexDirection,
   type MeasureFunction,
-  MeasureMode,
+  SizingMode,
   Overflow,
 } from "../src/index.ts";
 
 type MeasureConstraint = {
   width: number;
-  widthMode: MeasureMode;
+  widthMode: SizingMode;
   height: number;
-  heightMode: MeasureMode;
+  heightMode: SizingMode;
 };
 
 // The C++ keeps a malloc'd array + length in the node context; here the
@@ -23,8 +23,8 @@ const _measure: MeasureFunction = (width, widthMode, height, heightMode, node) =
   constraintList.push({ width, widthMode, height, heightMode });
 
   return {
-    width: widthMode === MeasureMode.Undefined ? 10 : width,
-    height: heightMode === MeasureMode.Undefined ? 10 : width,
+    width: widthMode === SizingMode.MaxContent ? 10 : width,
+    height: heightMode === SizingMode.MaxContent ? 10 : width,
   };
 };
 
@@ -45,7 +45,7 @@ test("exactly_measure_stretched_child_column", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.width).toBe(100);
-  expect(constraintList[0]?.widthMode).toBe(MeasureMode.Exactly);
+  expect(constraintList[0]?.widthMode).toBe(SizingMode.StretchFit);
 });
 
 test("exactly_measure_stretched_child_row", () => {
@@ -66,7 +66,7 @@ test("exactly_measure_stretched_child_row", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.height).toBe(100);
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.Exactly);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.StretchFit);
 });
 
 test("at_most_main_axis_column", () => {
@@ -86,7 +86,7 @@ test("at_most_main_axis_column", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.height).toBe(100);
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.FitContent);
 });
 
 test("at_most_cross_axis_column", () => {
@@ -107,7 +107,7 @@ test("at_most_cross_axis_column", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.width).toBe(100);
-  expect(constraintList[0]?.widthMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.widthMode).toBe(SizingMode.FitContent);
 });
 
 test("at_most_main_axis_row", () => {
@@ -128,7 +128,7 @@ test("at_most_main_axis_row", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.width).toBe(100);
-  expect(constraintList[0]?.widthMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.widthMode).toBe(SizingMode.FitContent);
 });
 
 test("at_most_cross_axis_row", () => {
@@ -150,7 +150,7 @@ test("at_most_cross_axis_row", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.height).toBe(100);
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.FitContent);
 });
 
 test("flex_child", () => {
@@ -170,14 +170,14 @@ test("flex_child", () => {
   expect(constraintList.length).toBe(3);
 
   expect(constraintList[0]?.height).toBe(100);
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.FitContent);
 
   // Min-content probe for the CSS Flexbox §4.5 automatic minimum size
   expect(constraintList[1]?.height).toBe(0);
-  expect(constraintList[1]?.heightMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[1]?.heightMode).toBe(SizingMode.FitContent);
 
   expect(constraintList[2]?.height).toBe(100);
-  expect(constraintList[2]?.heightMode).toBe(MeasureMode.Exactly);
+  expect(constraintList[2]?.heightMode).toBe(SizingMode.StretchFit);
 });
 
 test("flex_child_with_flex_basis", () => {
@@ -199,10 +199,10 @@ test("flex_child_with_flex_basis", () => {
 
   // Min-content probe for the CSS Flexbox §4.5 automatic minimum size
   expect(constraintList[0]?.height).toBe(0);
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.FitContent);
 
   expect(constraintList[1]?.height).toBe(100);
-  expect(constraintList[1]?.heightMode).toBe(MeasureMode.Exactly);
+  expect(constraintList[1]?.heightMode).toBe(SizingMode.StretchFit);
 });
 
 test("overflow_scroll_column", () => {
@@ -224,10 +224,10 @@ test("overflow_scroll_column", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.width).toBe(100);
-  expect(constraintList[0]?.widthMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.widthMode).toBe(SizingMode.FitContent);
 
   expect(constraintList[0]?.height).toBeNaN();
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.Undefined);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.MaxContent);
 });
 
 test("overflow_scroll_row", () => {
@@ -250,8 +250,8 @@ test("overflow_scroll_row", () => {
   expect(constraintList.length).toBe(1);
 
   expect(constraintList[0]?.width).toBeNaN();
-  expect(constraintList[0]?.widthMode).toBe(MeasureMode.Undefined);
+  expect(constraintList[0]?.widthMode).toBe(SizingMode.MaxContent);
 
   expect(constraintList[0]?.height).toBe(100);
-  expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.FitContent);
 });

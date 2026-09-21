@@ -6,7 +6,7 @@ import {
   Edge,
   FlexDirection,
   type MeasureFunction,
-  MeasureMode,
+  SizingMode,
 } from "../src/index.ts";
 
 type Counter = { count: number };
@@ -16,8 +16,8 @@ const _measureMax: MeasureFunction = (width, widthMode, height, heightMode, node
   measureCount.count++;
 
   return {
-    width: widthMode === MeasureMode.Undefined ? 10 : width,
-    height: heightMode === MeasureMode.Undefined ? 10 : height,
+    width: widthMode === SizingMode.MaxContent ? 10 : width,
+    height: heightMode === SizingMode.MaxContent ? 10 : height,
   };
 };
 
@@ -26,11 +26,11 @@ const _measureMin: MeasureFunction = (width, widthMode, height, heightMode, node
   measureCount.count = measureCount.count + 1;
   return {
     width:
-      widthMode === MeasureMode.Undefined || (widthMode === MeasureMode.AtMost && width > 10)
+      widthMode === SizingMode.MaxContent || (widthMode === SizingMode.FitContent && width > 10)
         ? 10
         : width,
     height:
-      heightMode === MeasureMode.Undefined || (heightMode === MeasureMode.AtMost && height > 10)
+      heightMode === SizingMode.MaxContent || (heightMode === SizingMode.FitContent && height > 10)
         ? 10
         : height,
   };

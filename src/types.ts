@@ -1,4 +1,4 @@
-import type { MeasureMode, Unit } from "./enums.ts";
+import type { SizingMode, Unit } from "./enums.ts";
 import type { Node } from "./node/Node.ts";
 
 /** Equivalent of `YGUndefined`. Setters also accept `undefined`. */
@@ -32,9 +32,9 @@ export type Percent = `${number}%`;
  */
 export type MeasureFunction = (
   width: number,
-  widthMode: MeasureMode,
+  widthMode: SizingMode,
   height: number,
-  heightMode: MeasureMode,
+  heightMode: SizingMode,
   node: Node,
 ) => Size;
 

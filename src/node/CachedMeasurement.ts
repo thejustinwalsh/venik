@@ -1,4 +1,4 @@
-import { SizingMode } from "../algorithm/SizingMode.ts";
+import { SizingMode } from "../enums.ts";
 
 export class CachedMeasurement {
   availableWidth: number = -1;

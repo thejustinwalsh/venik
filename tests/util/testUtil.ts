@@ -3,7 +3,7 @@ import {
   Align,
   type Config,
   FlexDirection,
-  MeasureMode,
+  SizingMode,
   Node,
   type Size,
 } from "../../src/index.ts";
@@ -43,9 +43,9 @@ export class ScopedEventSubscription {
 /** Measures the string stored in the node's context as monospace 10x10 text that wraps on spaces. */
 export function intrinsicSizeMeasure(
   width: number,
-  widthMode: MeasureMode,
+  widthMode: SizingMode,
   height: number,
-  heightMode: MeasureMode,
+  heightMode: SizingMode,
   node: Node,
 ): Size {
   const innerText = node.context as string;
@@ -54,9 +54,9 @@ export function intrinsicSizeMeasure(
   let measuredWidth: number;
   let measuredHeight: number;
 
-  if (widthMode === MeasureMode.Exactly) {
+  if (widthMode === SizingMode.StretchFit) {
     measuredWidth = width;
-  } else if (widthMode === MeasureMode.AtMost) {
+  } else if (widthMode === SizingMode.FitContent) {
     measuredWidth = Math.min(innerText.length * widthPerChar, width);
   } else {
     measuredWidth = innerText.length * widthPerChar;
@@ -72,9 +72,9 @@ export function intrinsicSizeMeasure(
       heightPerChar,
     );
 
-  if (heightMode === MeasureMode.Exactly) {
+  if (heightMode === SizingMode.StretchFit) {
     measuredHeight = height;
-  } else if (heightMode === MeasureMode.AtMost) {
+  } else if (heightMode === SizingMode.FitContent) {
     measuredHeight = Math.min(computeHeight(), height);
   } else {
     measuredHeight = computeHeight();

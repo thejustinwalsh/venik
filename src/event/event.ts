@@ -21,7 +21,7 @@
 //    head of a linked list).
 
 import type { Config } from "../config/Config.ts";
-import type { MeasureMode } from "../enums.ts";
+import type { SizingMode } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 
 export const LayoutType = {
@@ -108,9 +108,9 @@ export type EventDataMap = {
   [EventType.MeasureCallbackStart]: EmptyEventData;
   [EventType.MeasureCallbackEnd]: {
     readonly width: number;
-    readonly widthMeasureMode: MeasureMode;
+    readonly widthSizingMode: SizingMode;
     readonly height: number;
-    readonly heightMeasureMode: MeasureMode;
+    readonly heightSizingMode: SizingMode;
     readonly measuredWidth: number;
     readonly measuredHeight: number;
     readonly reason: LayoutPassReason;

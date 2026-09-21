@@ -7,6 +7,7 @@ import {
   Justify,
   PositionType,
   Wrap,
+  SizingMode,
 } from "../enums.ts";
 import { type LayoutData, LayoutPassReason } from "../event/event.ts";
 import type { Node } from "../node/Node.ts";
@@ -23,7 +24,6 @@ import {
   resolveCrossDirection,
   resolveDirection,
 } from "./FlexDirection.ts";
-import { SizingMode } from "./SizingMode.ts";
 import {
   getPositionOfOppositeEdge,
   needsTrailingPosition,

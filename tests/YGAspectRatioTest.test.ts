@@ -7,7 +7,7 @@ import {
   Edge,
   FlexDirection,
   Justify,
-  MeasureMode,
+  SizingMode,
   Node,
   PositionType,
   type Size,
@@ -15,13 +15,13 @@ import {
 
 function _measure(
   width: number,
-  widthMode: MeasureMode,
+  widthMode: SizingMode,
   height: number,
-  heightMode: MeasureMode,
+  heightMode: SizingMode,
 ): Size {
   return {
-    width: widthMode === MeasureMode.Exactly ? width : 50,
-    height: heightMode === MeasureMode.Exactly ? height : 50,
+    width: widthMode === SizingMode.StretchFit ? width : 50,
+    height: heightMode === SizingMode.StretchFit ? height : 50,
   };
 }
 

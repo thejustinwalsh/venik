@@ -19,7 +19,7 @@ import {
   FlexDirection,
   type Gutter,
   type Justify,
-  type MeasureMode,
+  type SizingMode,
   type Overflow,
   PositionType,
   type Wrap,
@@ -642,9 +642,9 @@ export class Node {
   /** @internal Invokes the measure func. */
   measure(
     availableWidth: number,
-    widthMode: MeasureMode,
+    widthMode: SizingMode,
     availableHeight: number,
-    heightMode: MeasureMode,
+    heightMode: SizingMode,
   ): Size {
     return this.sanitizeMeasuredSize(
       this.measureFunc_!(availableWidth, widthMode, availableHeight, heightMode, this),
@@ -659,9 +659,9 @@ export class Node {
   /** @internal Invokes the min-content measure func. */
   measureMinContent(
     availableWidth: number,
-    widthMode: MeasureMode,
+    widthMode: SizingMode,
     availableHeight: number,
-    heightMode: MeasureMode,
+    heightMode: SizingMode,
   ): Size {
     return this.sanitizeMeasuredSize(
       this.minContentMeasureFunc_!(availableWidth, widthMode, availableHeight, heightMode, this),

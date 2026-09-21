@@ -8,7 +8,7 @@ import {
   FlexDirection,
   Gutter,
   Justify,
-  MeasureMode,
+  SizingMode,
   Overflow,
   PositionType,
   Wrap,
@@ -36,7 +36,6 @@ import {
 } from "./FlexDirection.ts";
 import { calculateFlexLine, type FlexLine } from "./FlexLine.ts";
 import { roundLayoutResultsToPixelGrid } from "./PixelGrid.ts";
-import { measureMode, SizingMode } from "./SizingMode.ts";
 import { needsTrailingPosition, setChildTrailingPosition } from "./TrailingPosition.ts";
 
 let gCurrentGenerationCount = 0;
@@ -544,12 +543,7 @@ function measureNodeWithMeasureFunc(
     if (__EVENTS__) Event.publish(node, Event.MeasureCallbackStart);
 
     // Measure the text under the current constraints.
-    const measuredSize = node.measure(
-      innerWidth,
-      measureMode(widthSizingMode),
-      innerHeight,
-      measureMode(heightSizingMode),
-    );
+    const measuredSize = node.measure(innerWidth, widthSizingMode, innerHeight, heightSizingMode);
 
     if (__EVENTS__ && layoutMarkerData !== null) {
       layoutMarkerData.measureCallbacks += 1;
@@ -559,9 +553,9 @@ function measureNodeWithMeasureFunc(
     if (__EVENTS__ && Event.hasSubscribers()) {
       Event.publish(node, Event.MeasureCallbackEnd, {
         width: innerWidth,
-        widthMeasureMode: measureMode(widthSizingMode),
+        widthSizingMode,
         height: innerHeight,
-        heightMeasureMode: measureMode(heightSizingMode),
+        heightSizingMode,
         measuredWidth: measuredSize.width,
         measuredHeight: measuredSize.height,
         reason,
@@ -915,15 +909,15 @@ function computeMinContentMainSize(
     const size = node.hasMinContentMeasureFunc()
       ? node.measureMinContent(
           wantRow ? 0.0 : NaN,
-          wantRow ? MeasureMode.AtMost : MeasureMode.Undefined,
+          wantRow ? SizingMode.FitContent : SizingMode.MaxContent,
           wantRow ? NaN : 0.0,
-          wantRow ? MeasureMode.Undefined : MeasureMode.AtMost,
+          wantRow ? SizingMode.MaxContent : SizingMode.FitContent,
         )
       : node.measure(
           wantRow ? 0.0 : NaN,
-          wantRow ? MeasureMode.AtMost : MeasureMode.Undefined,
+          wantRow ? SizingMode.FitContent : SizingMode.MaxContent,
           wantRow ? NaN : 0.0,
-          wantRow ? MeasureMode.Undefined : MeasureMode.AtMost,
+          wantRow ? SizingMode.MaxContent : SizingMode.FitContent,
         );
     // Add the leaf's own padding and border, like the container branch below.
     const leafDirection = node.resolveDirection(ownerDirection);
@@ -1750,7 +1744,7 @@ function justifyMainAxis(
 //
 //    When calling calculateLayoutImpl and calculateLayoutInternal, if the
 //    caller passes an available size of undefined then it must also pass a
-//    measure mode of SizingMode.MaxContent in that dimension.
+//    sizing mode of SizingMode.MaxContent in that dimension.
 //
 function calculateLayoutImpl(
   node: Node,

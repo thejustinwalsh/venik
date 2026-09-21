@@ -4,7 +4,7 @@ import {
   Direction,
   Edge,
   FlexDirection,
-  MeasureMode,
+  SizingMode,
   Node,
   Overflow,
   type Size,
@@ -20,12 +20,12 @@ const kLineHeight = 16.0;
 
 function measureWordWrappingText(
   width: number,
-  widthMode: MeasureMode,
+  widthMode: SizingMode,
   _height: number,
-  _heightMode: MeasureMode,
+  _heightMode: SizingMode,
   _node: Node,
 ): Size {
-  if (widthMode === MeasureMode.AtMost) {
+  if (widthMode === SizingMode.FitContent) {
     if (width < kWordWidth) {
       return { width: kWordWidth, height: kLineHeight * 3 };
     }
@@ -34,7 +34,7 @@ function measureWordWrappingText(
     }
     return { width: kNaturalWidth, height: kLineHeight };
   }
-  if (widthMode === MeasureMode.Exactly) {
+  if (widthMode === SizingMode.StretchFit) {
     return { width, height: kLineHeight };
   }
   return { width: kNaturalWidth, height: kLineHeight };
@@ -42,9 +42,9 @@ function measureWordWrappingText(
 
 function measureFixedSize(
   _width: number,
-  _widthMode: MeasureMode,
+  _widthMode: SizingMode,
   _height: number,
-  _heightMode: MeasureMode,
+  _heightMode: SizingMode,
   node: Node,
 ): Size {
   const dims = node.context as Size | null | undefined;
@@ -354,9 +354,9 @@ let gMinContentCalls = 0;
 
 function measureMinContentZero(
   _width: number,
-  _widthMode: MeasureMode,
+  _widthMode: SizingMode,
   _height: number,
-  _heightMode: MeasureMode,
+  _heightMode: SizingMode,
   _node: Node,
 ): Size {
   ++gMinContentCalls;

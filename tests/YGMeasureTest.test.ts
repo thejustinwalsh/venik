@@ -9,7 +9,7 @@ import {
   FlexDirection,
   Justify,
   type MeasureFunction,
-  MeasureMode,
+  SizingMode,
   PositionType,
 } from "../src/index.ts";
 
@@ -25,7 +25,7 @@ const _measure: MeasureFunction = (_width, _widthMode, _height, _heightMode, nod
 };
 
 const _simulate_wrapping_text: MeasureFunction = (width, widthMode) => {
-  if (widthMode === MeasureMode.Undefined || width >= 68) {
+  if (widthMode === SizingMode.MaxContent || width >= 68) {
     return { width: 68, height: 16 };
   }
 

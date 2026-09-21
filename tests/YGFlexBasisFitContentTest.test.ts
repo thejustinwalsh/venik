@@ -4,7 +4,7 @@ import {
   Config,
   Direction,
   FlexDirection,
-  MeasureMode,
+  SizingMode,
   Node,
   Overflow,
   type MeasureFunction,
@@ -13,13 +13,13 @@ import {
 
 function measureTextLike(
   width: number,
-  widthMode: MeasureMode,
+  widthMode: SizingMode,
   _height: number,
-  _heightMode: MeasureMode,
+  _heightMode: SizingMode,
   _node: Node,
 ): Size {
   let measuredWidth = 200.0;
-  if (widthMode === MeasureMode.AtMost) {
+  if (widthMode === SizingMode.FitContent) {
     measuredWidth = Math.min(measuredWidth, width);
   }
   return { width: measuredWidth, height: 20.0 };

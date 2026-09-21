@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { MeasureMode, Node } from "../src/index.ts";
+import { SizingMode, Node } from "../src/index.ts";
 
 test("hasMeasureFunc_initial", () => {
   const n = new Node();
@@ -18,10 +18,13 @@ test("measure_with_measure_fn", () => {
   const n = new Node();
 
   n.setMeasureFunc((w, wm, h, hm) => {
-    return { width: w * wm, height: h / hm };
+    return {
+      width: wm === SizingMode.StretchFit ? w : 0,
+      height: hm === SizingMode.FitContent ? h / 2 : 0,
+    };
   });
 
-  expect(n.measure(23, MeasureMode.Exactly, 24, MeasureMode.AtMost)).toEqual({
+  expect(n.measure(23, SizingMode.StretchFit, 24, SizingMode.FitContent)).toEqual({
     width: 23,
     height: 12,
   });
