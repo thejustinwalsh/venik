@@ -1,5 +1,5 @@
 import { Unit } from "../enums.ts";
-import { inexactEquals as inexactEqualsNumber } from "../numeric/Comparison.ts";
+import { inexactEquals as inexactEqualsNumber } from "../math.ts";
 import type { Value } from "../types.ts";
 
 /**

@@ -17,7 +17,7 @@ import { Event, LayoutData, LayoutPassReason, LayoutType } from "../event/event.
 import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
 import { LayoutResults } from "../node/LayoutResults.ts";
 import type { Node } from "../node/Node.ts";
-import { inexactEquals, maxOrDefined, minOrDefined } from "../numeric/Comparison.ts";
+import { inexactEquals, maxOrDefined, minOrDefined } from "../math.ts";
 import type { Style } from "../style/Style.ts";
 import type { StyleLength } from "../style/StyleLength.ts";
 import { layoutAbsoluteDescendants } from "./AbsoluteLayout.ts";

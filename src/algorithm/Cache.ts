@@ -1,5 +1,5 @@
 import type { Config } from "../config/Config.ts";
-import { inexactEquals } from "../numeric/Comparison.ts";
+import { inexactEquals } from "../math.ts";
 import { roundValueToPixelGrid } from "./PixelGrid.ts";
 import { SizingMode } from "../enums.ts";
 

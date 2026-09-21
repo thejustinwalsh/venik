@@ -24,7 +24,7 @@ import {
   PositionType,
   Wrap,
 } from "../enums.ts";
-import { maxOrDefined } from "../numeric/Comparison.ts";
+import { maxOrDefined } from "../math.ts";
 import { StyleLength } from "./StyleLength.ts";
 
 /**

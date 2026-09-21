@@ -25,7 +25,7 @@ import {
   type Wrap,
 } from "../enums.ts";
 import { Event } from "../event/event.ts";
-import { maxOrDefined } from "../numeric/Comparison.ts";
+import { maxOrDefined } from "../math.ts";
 import { Style } from "../style/Style.ts";
 import { StyleLength } from "../style/StyleLength.ts";
 import type {

@@ -1,6 +1,6 @@
 import { Dimension } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
-import { inexactEquals } from "../numeric/Comparison.ts";
+import { inexactEquals } from "../math.ts";
 import { PhysicalEdge } from "./FlexDirection.ts";
 
 /**

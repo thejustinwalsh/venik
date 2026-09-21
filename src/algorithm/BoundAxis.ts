@@ -1,6 +1,6 @@
 import { Dimension, type Direction, type FlexDirection } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
-import { maxOrDefined } from "../numeric/Comparison.ts";
+import { maxOrDefined } from "../math.ts";
 import { isColumn } from "./FlexDirection.ts";
 
 export function paddingAndBorderForAxis(
