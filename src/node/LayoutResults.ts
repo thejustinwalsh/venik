@@ -39,8 +39,23 @@ export class LayoutResults {
   readonly dimensions: [number, number] = [NaN, NaN];
   readonly measuredDimensions: [number, number] = [NaN, NaN];
   readonly rawDimensions: [number, number] = [NaN, NaN];
-  // Indexed by `PhysicalEdge`.
+  // Whether a measurement went through the node after it was last laid out and
+  // left its own results in the subtree: margins or paddings that are
+  // percentages of another owner size, or another overflow flag. The subtree
+  // then no longer holds what `cachedLayout` stands for.
+  measuredSinceLayout: boolean = false;
+  // Offset of the baseline from the top edge, as of `measuredDimensions`.
+  baseline: number = NaN;
+  // Indexed by `PhysicalEdge`. Layout works on `position`, which pixel rounding
+  // leaves alone: a node a pass does not visit is rounded from the same values
+  // as a node laid out from scratch. The rounded left and top are reported from
+  // `roundedPosition`, like the rounded size from `dimensions`.
   readonly position: PhysicalEdges = [0, 0, 0, 0];
+  readonly roundedPosition: [number, number] = [0, 0];
+  // Absolute position of the owner when the node was last rounded. The rounded
+  // values of an unvisited subtree stand for as long as it stays where it was.
+  roundingOriginLeft: number = NaN;
+  roundingOriginTop: number = NaN;
   readonly margin: PhysicalEdges = [0, 0, 0, 0];
   readonly border: PhysicalEdges = [0, 0, 0, 0];
   readonly padding: PhysicalEdges = [0, 0, 0, 0];
@@ -78,7 +93,12 @@ export class LayoutResults {
     this.dimensions.fill(NaN);
     this.measuredDimensions.fill(NaN);
     this.rawDimensions.fill(NaN);
+    this.baseline = NaN;
+    this.measuredSinceLayout = false;
     this.position.fill(0);
+    this.roundedPosition.fill(0);
+    this.roundingOriginLeft = NaN;
+    this.roundingOriginTop = NaN;
     this.margin.fill(0);
     this.border.fill(0);
     this.padding.fill(0);

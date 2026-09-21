@@ -77,8 +77,11 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
   const nodeLeft = layout.position[PhysicalEdge.Left];
   const nodeTop = layout.position[PhysicalEdge.Top];
 
-  const nodeWidth = layout.dimensions[Dimension.Width];
-  const nodeHeight = layout.dimensions[Dimension.Height];
+  const nodeWidth = layout.rawDimensions[Dimension.Width];
+  const nodeHeight = layout.rawDimensions[Dimension.Height];
+
+  layout.roundingOriginLeft = absoluteLeft;
+  layout.roundingOriginTop = absoluteTop;
 
   const absoluteNodeLeft = absoluteLeft + nodeLeft;
   const absoluteNodeTop = absoluteTop + nodeTop;
@@ -96,11 +99,11 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
 
     scratch[0] = nodeLeft;
     roundScratchToPixelGrid(false, textRounding);
-    layout.position[PhysicalEdge.Left] = scratch[0];
+    layout.roundedPosition[PhysicalEdge.Left] = scratch[0];
 
     scratch[0] = nodeTop;
     roundScratchToPixelGrid(false, textRounding);
-    layout.position[PhysicalEdge.Top] = scratch[0];
+    layout.roundedPosition[PhysicalEdge.Top] = scratch[0];
 
     // We multiply dimension by scale factor and if the result is close to the
     // whole number, we don't have any fraction To verify if the result is close
@@ -131,18 +134,26 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
       textRounding && !hasFractionalHeight,
     );
     layout.dimensions[Dimension.Height] = scratch[0] - roundedAbsoluteTop;
+  } else {
+    layout.roundedPosition[PhysicalEdge.Left] = nodeLeft;
+    layout.roundedPosition[PhysicalEdge.Top] = nodeTop;
+    layout.dimensions[Dimension.Width] = nodeWidth;
+    layout.dimensions[Dimension.Height] = nodeHeight;
   }
 
   const children = node.getChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     // A subtree this pass neither visited nor walked for absolute descendants
-    // is as the last pass rounded it: positions and sizes already on the grid.
-    // Rounding those again changes nothing, wherever the subtree has moved.
+    // holds the positions and sizes of an earlier pass. Where it has not moved
+    // either, rounding gives what it gave then: a node is rounded by where its
+    // edges are on the grid, so a subtree that moves is rounded again.
     // A `display: contents` node is never visited itself, but its children are.
     const childLayout = children[i]!.layout;
     if (
       childLayout.generationCount !== generationCount &&
       childLayout.absoluteWalkGeneration !== generationCount &&
+      childLayout.roundingOriginLeft === absoluteNodeLeft &&
+      childLayout.roundingOriginTop === absoluteNodeTop &&
       children[i]!.style.display !== Display.Contents
     ) {
       continue;

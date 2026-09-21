@@ -221,10 +221,10 @@ export class Node {
 
   // Computed layout (YGNodeLayoutGet*)
   getComputedLeft(): number {
-    return this.layout.position[PhysicalEdge.Left];
+    return this.layout.roundedPosition[PhysicalEdge.Left];
   }
   getComputedTop(): number {
-    return this.layout.position[PhysicalEdge.Top];
+    return this.layout.roundedPosition[PhysicalEdge.Top];
   }
   getComputedRight(): number {
     return this.layout.position[PhysicalEdge.Right];
@@ -248,9 +248,9 @@ export class Node {
   getComputedLayout(): Layout {
     const layout = this.layout;
     const result = computedLayout;
-    result.left = layout.position[PhysicalEdge.Left];
+    result.left = layout.roundedPosition[PhysicalEdge.Left];
     result.right = layout.position[PhysicalEdge.Right];
-    result.top = layout.position[PhysicalEdge.Top];
+    result.top = layout.roundedPosition[PhysicalEdge.Top];
     result.bottom = layout.position[PhysicalEdge.Bottom];
     result.width = layout.dimensions[Dimension.Width];
     result.height = layout.dimensions[Dimension.Height];

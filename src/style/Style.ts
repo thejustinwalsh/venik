@@ -249,6 +249,7 @@ export class Style {
       return false;
     }
     (this.dimensions as DimensionLengths)[dimension] = value;
+    this.updateDependsOnOwnerSize();
     return true;
   }
 
@@ -649,6 +650,22 @@ export class Style {
     );
   }
 
+  /**
+   * Whether a margin, padding or size of the node is a percentage. The node's
+   * layout then depends on its owner's size, beyond the space it is given. The
+   * owner resolves the node's width and height into that space, but aligning
+   * several lines asks for the node's own cross size again.
+   */
+  dependsOnOwnerSize = false;
+
+  private updateDependsOnOwnerSize(): void {
+    this.dependsOnOwnerSize =
+      this.edgesNeedOwnerWidth ||
+      !this.sizeBoundsArePoints ||
+      this.dimensions[Dimension.Width].isPercent() ||
+      this.dimensions[Dimension.Height].isPercent();
+  }
+
   private updateMarginForAxes(): void {
     let hasPercent = false;
     let hasAuto = false;
@@ -659,6 +676,7 @@ export class Style {
     this.marginHasPercent = hasPercent;
     this.marginHasAuto = hasAuto;
     this.edgesNeedOwnerWidth = hasPercent || this.paddingHasPercent;
+    this.updateDependsOnOwnerSize();
     if (!hasPercent) {
       this.marginPoints = resolvePoints(this.resolvedMargin, this.marginPoints, false);
       this.marginForRow = this.resolveMarginForAxis(FlexDirection.Row, NaN);
@@ -673,6 +691,7 @@ export class Style {
     }
     this.paddingHasPercent = hasPercent;
     this.edgesNeedOwnerWidth = hasPercent || this.marginHasPercent;
+    this.updateDependsOnOwnerSize();
     this.borderPoints = resolvePoints(this.resolvedBorder, this.borderPoints, true);
     if (!hasPercent) {
       this.paddingPoints = resolvePoints(this.resolvedPadding, this.paddingPoints, true);
@@ -690,6 +709,7 @@ export class Style {
     }
     this.hasSizeBounds = hasSizeBounds;
     this.sizeBoundsArePoints = arePoints;
+    this.updateDependsOnOwnerSize();
     if (this.minPoints === NO_SIZE_BOUNDS) {
       if (!hasSizeBounds) {
         return;

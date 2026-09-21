@@ -31,12 +31,13 @@ export function boundAxisWithinMinAndMax(
   const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
   const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
 
-  if (max >= 0 && value > max) {
-    return max;
+  // The min size wins over a smaller max size, whatever the value is.
+  if (min >= 0 && (value < min || (max >= 0 && max < min))) {
+    return min;
   }
 
-  if (min >= 0 && value < min) {
-    return min;
+  if (max >= 0 && value > max) {
+    return max;
   }
 
   return value;
@@ -64,14 +65,15 @@ export function boundAxis(
     return value >= paddingAndBorder ? value : paddingAndBorder;
   }
 
+  // The min size wins over a smaller max size, whatever the value is.
   const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
-  if (max >= 0 && value > max) {
-    return max > paddingAndBorder ? max : paddingAndBorder;
+  const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
+  if (min >= 0 && (value < min || (max >= 0 && max < min))) {
+    return min > paddingAndBorder ? min : paddingAndBorder;
   }
 
-  const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
-  if (min >= 0 && value < min) {
-    return min > paddingAndBorder ? min : paddingAndBorder;
+  if (max >= 0 && value > max) {
+    return max > paddingAndBorder ? max : paddingAndBorder;
   }
 
   if (value >= paddingAndBorder) {
@@ -100,14 +102,13 @@ export function boundAxisInPlace(
   let bounded = value;
 
   if (style.hasSizeBounds) {
+    // The min size wins over a smaller max size, whatever the value is.
     const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
-    if (max >= 0 && value > max) {
+    const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
+    if (min >= 0 && (value < min || (max >= 0 && max < min))) {
+      bounded = min;
+    } else if (max >= 0 && value > max) {
       bounded = max;
-    } else {
-      const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
-      if (min >= 0 && value < min) {
-        bounded = min;
-      }
     }
   }
 

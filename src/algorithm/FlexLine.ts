@@ -44,6 +44,12 @@ export class FlexLine {
   // the flexible children.
   sizeConsumed: number = 0;
 
+  // For resolving the flexible lengths: the size each item starts from, and the
+  // size of each item that is frozen at its min or max size, NaN for the
+  // others. As long as the longest line so far.
+  readonly startingSizes: number[] = [];
+  readonly frozenSizes: number[] = [];
+
   // Number of edges along the line flow with an auto margin.
   numberOfAutoMargins: number = 0;
 
@@ -100,8 +106,6 @@ export function restoreFlexLinePool(depth: number): void {
 export function calculateFlexLine(
   node: Node,
   ownerDirection: Direction,
-  ownerWidth: number,
-  mainAxisOwnerSize: number,
   availableInnerWidth: number,
   availableInnerMainDim: number,
   layoutChildren: readonly Node[],
@@ -138,10 +142,10 @@ export function calculateFlexLine(
       firstElementInLine = child;
     }
 
-    if (childStyle.flexStartMarginIsAuto(mainAxis, ownerDirection)) {
+    if (childStyle.flexStartMarginIsAuto(mainAxis, direction)) {
       numberOfAutoMargins++;
     }
-    if (childStyle.flexEndMarginIsAuto(mainAxis, ownerDirection)) {
+    if (childStyle.flexEndMarginIsAuto(mainAxis, direction)) {
       numberOfAutoMargins++;
     }
 
@@ -154,20 +158,24 @@ export function calculateFlexLine(
           direction,
           mainAxis,
           child.layout.computedFlexBasis,
-          mainAxisOwnerSize,
-          ownerWidth,
+          availableInnerMainDim,
+          availableInnerWidth,
         )
       : child.layout.computedFlexBasis;
 
     // If this is a multi-line flow and this item pushes us over the available
     // size, we've hit the end of the current line. Break out of the loop and
     // lay out the current line.
+    //
+    // Items that fill the line exactly stay on it, whatever rounding errors the
+    // sizes carry. The tolerance is the one the layout cache compares available
+    // sizes with: a smaller difference must not change the result.
     if (
       sizeConsumedIncludingMinConstraint +
         flexBasisWithMinAndMaxConstraints +
         childMarginMainAxis +
         childLeadingGapMainAxis >
-        availableInnerMainDim &&
+        availableInnerMainDim + 0.0001 &&
       isNodeFlexWrap &&
       itemCount !== 0
     ) {

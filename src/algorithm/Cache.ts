@@ -67,6 +67,21 @@ function isSameAvailableSize(lastSize: number, size: number, pointScaleFactor: n
   );
 }
 
+/**
+ * Whether a cached result was computed against the same owner size. That is
+ * part of the key for a node whose style `dependsOnOwnerSize`. The results of
+ * other nodes depend on the owner only through the available size.
+ */
+export function hasSameOwnerSize(
+  cached: CachedMeasurement,
+  ownerWidth: number,
+  ownerHeight: number,
+): boolean {
+  return (
+    inexactEquals(cached.ownerWidth, ownerWidth) && inexactEquals(cached.ownerHeight, ownerHeight)
+  );
+}
+
 export function canUseCachedMeasurement(
   widthMode: SizingMode,
   availableWidth: number,
@@ -152,15 +167,19 @@ export function findCachedMeasurement(
   heightMode: SizingMode,
   availableHeight: number,
   ownerWidth: number,
+  ownerHeight: number,
 ): CachedMeasurement | null {
   const layout = node.layout;
   const config = node.getConfig();
   const marginRow = node.style.computeMarginForAxis(FlexDirection.Row, ownerWidth);
   const marginColumn = node.style.computeMarginForAxis(FlexDirection.Column, ownerWidth);
 
+  const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
+
   let cached = layout.cachedLayout;
   for (let i = 0; ; i++) {
     if (
+      (!keyedOnOwnerSize || hasSameOwnerSize(cached, ownerWidth, ownerHeight)) &&
       canUseCachedMeasurement(
         widthMode,
         availableWidth,

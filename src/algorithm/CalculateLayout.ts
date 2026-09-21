@@ -22,7 +22,7 @@ import type { Style } from "../style/Style.ts";
 import type { StyleLength } from "../style/StyleLength.ts";
 import { layoutAbsoluteDescendants } from "./AbsoluteLayout.ts";
 import { fallbackAlignment, fallbackJustification, resolveChildAlignment } from "./Align.ts";
-import { calculateBaseline, isBaselineLayout } from "./Baseline.ts";
+import { baselineOf, calculateBaseline, isBaselineLayout } from "./Baseline.ts";
 import {
   boundAxis,
   boundAxisInPlace,
@@ -30,7 +30,7 @@ import {
   boundAxisWithinMinAndMax,
   paddingAndBorderForAxis,
 } from "./BoundAxis.ts";
-import { findCachedMeasurement } from "./Cache.ts";
+import { findCachedMeasurement, hasSameOwnerSize } from "./Cache.ts";
 import {
   dimension,
   flexStartEdge,
@@ -52,6 +52,11 @@ import { roundLayoutResultsToPixelGrid } from "./PixelGrid.ts";
 import { needsTrailingPosition, setChildTrailingPosition } from "./TrailingPosition.ts";
 
 let gCurrentGenerationCount = 0;
+
+// Whether the measurement under way has left results of its own somewhere in
+// the subtree it went through, in place of those of the node's last layout:
+// margins or paddings that are percentages, or the overflow flag.
+let gMeasurementLeftResults = false;
 
 const DIRECTIONS = [Direction.LTR, Direction.RTL] as const;
 
@@ -878,6 +883,58 @@ function computeFlexBasisForChildren(
   return totalOuterFlexBasis;
 }
 
+// The size a flex item starts from when the free space of its line is
+// distributed: its flex base size while it can still flex, else its
+// hypothetical main size, which is the base size within the min and max size.
+//
+// An item cannot flex when its factor is zero, or when its base size already
+// lies beyond the limit on the side the line flexes to: a growing line leaves
+// an item at its max size alone. An item below its min size still grows from
+// its base size, so that the space it needs to reach the min size comes out of
+// the free space (https://www.w3.org/TR/css-flexbox-1/#resolve-flexible-lengths).
+//
+// `freeSpaceSign` is positive for a line that grows and negative for one that
+// shrinks. `flexStartingSizeIsFrozen` tells, after the call, whether the limit
+// keeps an item with a flex factor from flexing, and `flexHypotheticalSize`
+// holds the item's hypothetical main size.
+let flexStartingSizeIsFrozen = false;
+let flexHypotheticalSize = 0;
+
+function flexStartingSize(
+  child: Node,
+  direction: Direction,
+  mainAxis: FlexDirection,
+  availableInnerMainDim: number,
+  availableInnerWidth: number,
+  freeSpaceSign: number,
+): number {
+  const flexBasis = child.layout.computedFlexBasis;
+  const hypotheticalSize = boundAxisWithinMinAndMax(
+    child,
+    direction,
+    mainAxis,
+    flexBasis,
+    availableInnerMainDim,
+    availableInnerWidth,
+  );
+  flexStartingSizeIsFrozen = false;
+  flexHypotheticalSize = hypotheticalSize;
+  if (freeSpaceSign > 0) {
+    const flexGrow = child.resolveFlexGrow();
+    if (flexGrow === flexGrow && flexGrow !== 0) {
+      flexStartingSizeIsFrozen = flexBasis > hypotheticalSize;
+      return flexBasis < hypotheticalSize ? flexBasis : hypotheticalSize;
+    }
+  } else if (freeSpaceSign < 0) {
+    const flexShrink = child.resolveFlexShrink();
+    if (flexShrink === flexShrink && flexShrink !== 0) {
+      flexStartingSizeIsFrozen = flexBasis < hypotheticalSize;
+      return flexBasis > hypotheticalSize ? flexBasis : hypotheticalSize;
+    }
+  }
+  return hypotheticalSize;
+}
+
 // It distributes the free space to the flexible items and ensures that the size
 // of the flex items abide the min and max constraints. At the end of this
 // function the child nodes would have proper size. Prior using this function
@@ -888,12 +945,11 @@ function distributeFreeSpaceSecondPass(
   mainAxis: FlexDirection,
   crossAxis: FlexDirection,
   direction: Direction,
-  ownerWidth: number,
-  mainAxisOwnerSize: number,
   availableInnerMainDim: number,
   availableInnerCrossDim: number,
   availableInnerWidth: number,
   availableInnerHeight: number,
+  freeSpaceSign: number,
   mainAxisOverflows: boolean,
   sizingModeCrossDim: SizingMode,
   performLayout: boolean,
@@ -916,19 +972,14 @@ function distributeFreeSpaceSecondPass(
     // apply them, which V8 does not inline into a function this large, off the
     // usual path.
     const hasSizeBounds = childStyle.hasSizeBounds;
-    childFlexBasis = hasSizeBounds
-      ? boundAxisWithinMinAndMax(
-          currentLineChild,
-          direction,
-          mainAxis,
-          currentLineChild.layout.computedFlexBasis,
-          mainAxisOwnerSize,
-          ownerWidth,
-        )
-      : currentLineChild.layout.computedFlexBasis;
+    // Read before laying out the child, whose own lines take other flex lines.
+    childFlexBasis = flexLine.startingSizes[i]!;
+    const frozenSize = flexLine.frozenSizes[i]!;
     let updatedMainSize = childFlexBasis;
 
-    if (flexLine.layout.remainingFreeSpace < 0) {
+    if (frozenSize === frozenSize) {
+      updatedMainSize = frozenSize;
+    } else if (freeSpaceSign < 0) {
       flexShrinkScaledFactor = -currentLineChild.resolveFlexShrink() * childFlexBasis;
       // Is this child able to shrink?
       if (flexShrinkScaledFactor !== 0) {
@@ -959,7 +1010,7 @@ function distributeFreeSpaceSecondPass(
         );
         updatedMainSize = boundAxisValue[0];
       }
-    } else if (flexLine.layout.remainingFreeSpace > 0) {
+    } else if (freeSpaceSign > 0) {
       flexGrowFactor = currentLineChild.resolveFlexGrow();
 
       // Is this child able to grow?
@@ -1088,57 +1139,65 @@ function distributeFreeSpaceSecondPass(
   return deltaFreeSpace;
 }
 
-// It distributes the free space to the flexible items.For those flexible items
-// whose min and max constraints are triggered, those flex item's clamped size
-// is removed from the remaingfreespace.
+// Finds the flexible items that distributing the free space would take past
+// their min or max size, and freezes them at that size in
+// `flexLine.frozenSizes`. Their sizes come out of the free space, and their
+// flex factors out of the totals, so that the second pass distributes what is
+// left over the other items.
+//
+// This is the loop of https://www.w3.org/TR/css-flexbox-1/#resolve-flexible-lengths.
+// Each round distributes the free space over the unfrozen items and sums up by
+// how much their limits change the result. A positive sum means the limits
+// took more space than there was: the round freezes the items it brought up to
+// their min size, and the next one distributes the smaller rest. A negative sum
+// freezes the items held at their max size. Freezing both kinds at once leaves
+// space that no item may take, or takes space that is not there.
 function distributeFreeSpaceFirstPass(
   flexLine: FlexLine,
   direction: Direction,
   mainAxis: FlexDirection,
-  ownerWidth: number,
-  mainAxisOwnerSize: number,
   availableInnerMainDim: number,
   availableInnerWidth: number,
+  freeSpaceSign: number,
 ): void {
-  let flexShrinkScaledFactor = 0;
-  let flexGrowFactor = 0;
-  let baseMainSize = 0;
-  let boundMainSize = 0;
-  let deltaFreeSpace = 0;
+  const itemCount = flexLine.itemCount;
+  const startingSizes = flexLine.startingSizes;
+  const frozenSizes = flexLine.frozenSizes;
+  if (freeSpaceSign === 0) {
+    return;
+  }
 
-  // The first pass performs a single distribution of the free space over all
-  // of the line's flexible items, so every item's tentative size must be
-  // computed against the *original* totals. The totals are still reduced as
-  // items get frozen below (so the second pass can redistribute), but those
-  // reduced values must not feed back into the fair-share calculation for the
-  // remaining items: doing so inflates their tentative size and can freeze
-  // items that should still be able to grow/shrink (see
-  // https://github.com/react/yoga/issues/2006).
-  const originalTotalFlexGrowFactors = flexLine.layout.totalFlexGrowFactors;
-  const originalTotalFlexShrinkScaledFactors = flexLine.layout.totalFlexShrinkScaledFactors;
+  // Every round but the last freezes an item.
+  for (let round = 0; round < itemCount; round++) {
+    // Every item's tentative size is computed against the totals the round
+    // started with (see https://github.com/react/yoga/issues/2006).
+    const freeSpace = flexLine.layout.remainingFreeSpace;
+    const totalFlexFactors =
+      freeSpaceSign > 0
+        ? flexLine.layout.totalFlexGrowFactors
+        : flexLine.layout.totalFlexShrinkScaledFactors;
+    let totalViolation = 0;
+    let hasViolation = false;
 
-  for (let i = 0, length = flexLine.itemCount; i < length; i++) {
-    const currentLineChild = flexLine.itemsInFlow[i]!;
-    const childFlexBasis = currentLineChild.style.hasSizeBounds
-      ? boundAxisWithinMinAndMax(
-          currentLineChild,
-          direction,
-          mainAxis,
-          currentLineChild.layout.computedFlexBasis,
-          mainAxisOwnerSize,
-          ownerWidth,
-        )
-      : currentLineChild.layout.computedFlexBasis;
+    // The first sweep sums the violations up, the second one freezes.
+    for (let sweep = 0; sweep < 2; sweep++) {
+      for (let i = 0; i < itemCount; i++) {
+        if (frozenSizes[i] === frozenSizes[i]) {
+          continue;
+        }
+        const currentLineChild = flexLine.itemsInFlow[i]!;
+        const childFlexBasis = startingSizes[i]!;
 
-    if (flexLine.layout.remainingFreeSpace < 0) {
-      flexShrinkScaledFactor = -currentLineChild.resolveFlexShrink() * childFlexBasis;
+        const flexFactor =
+          freeSpaceSign > 0
+            ? currentLineChild.resolveFlexGrow()
+            : -currentLineChild.resolveFlexShrink() * childFlexBasis;
+        // Is this child able to flex?
+        if (flexFactor !== flexFactor || flexFactor === 0) {
+          continue;
+        }
 
-      // Is this child able to shrink?
-      if (flexShrinkScaledFactor === flexShrinkScaledFactor && flexShrinkScaledFactor !== 0) {
-        baseMainSize =
-          childFlexBasis +
-          (flexLine.layout.remainingFreeSpace / originalTotalFlexShrinkScaledFactors) *
-            flexShrinkScaledFactor;
+        const baseMainSize = childFlexBasis + (freeSpace / totalFlexFactors) * flexFactor;
         boundAxisValue[0] = baseMainSize;
         boundAxisInPlace(
           currentLineChild,
@@ -1147,75 +1206,49 @@ function distributeFreeSpaceFirstPass(
           availableInnerMainDim,
           availableInnerWidth,
         );
-        boundMainSize = boundAxisValue[0];
+        const boundMainSize = boundAxisValue[0]!;
         if (
-          baseMainSize === baseMainSize &&
-          boundMainSize === boundMainSize &&
-          baseMainSize !== boundMainSize
+          baseMainSize !== baseMainSize ||
+          boundMainSize !== boundMainSize ||
+          baseMainSize === boundMainSize
         ) {
-          // By excluding this item's size and flex factor from remaining, this
-          // item's min/max constraints should also trigger in the second pass
-          // resulting in the item's size calculation being identical in the
-          // first and second passes.
-          deltaFreeSpace += boundMainSize - childFlexBasis;
-          flexLine.layout.totalFlexShrinkScaledFactors -=
-            -currentLineChild.resolveFlexShrink() * currentLineChild.layout.computedFlexBasis;
+          continue;
+        }
+
+        const violation = boundMainSize - baseMainSize;
+        if (sweep === 0) {
+          totalViolation += violation;
+          hasViolation = true;
+        } else if (totalViolation === 0 || (totalViolation > 0 ? violation > 0 : violation < 0)) {
+          frozenSizes[i] = boundMainSize;
+          flexLine.layout.remainingFreeSpace -= boundMainSize - childFlexBasis;
+          if (freeSpaceSign > 0) {
+            flexLine.layout.totalFlexGrowFactors -= flexFactor;
+          } else {
+            flexLine.layout.totalFlexShrinkScaledFactors -=
+              -currentLineChild.resolveFlexShrink() * currentLineChild.layout.computedFlexBasis;
+          }
         }
       }
-    } else if (flexLine.layout.remainingFreeSpace > 0) {
-      flexGrowFactor = currentLineChild.resolveFlexGrow();
-
-      // Is this child able to grow?
-      if (flexGrowFactor === flexGrowFactor && flexGrowFactor !== 0) {
-        baseMainSize =
-          childFlexBasis +
-          (flexLine.layout.remainingFreeSpace / originalTotalFlexGrowFactors) * flexGrowFactor;
-        boundAxisValue[0] = baseMainSize;
-        boundAxisInPlace(
-          currentLineChild,
-          mainAxis,
-          direction,
-          availableInnerMainDim,
-          availableInnerWidth,
-        );
-        boundMainSize = boundAxisValue[0];
-
-        if (
-          baseMainSize === baseMainSize &&
-          boundMainSize === boundMainSize &&
-          baseMainSize !== boundMainSize
-        ) {
-          // By excluding this item's size and flex factor from remaining, this
-          // item's min/max constraints should also trigger in the second pass
-          // resulting in the item's size calculation being identical in the
-          // first and second passes.
-          deltaFreeSpace += boundMainSize - childFlexBasis;
-          flexLine.layout.totalFlexGrowFactors -= flexGrowFactor;
-        }
+      if (!hasViolation) {
+        return;
       }
     }
   }
-  flexLine.layout.remainingFreeSpace -= deltaFreeSpace;
 }
 
 // Do two passes over the flex items to figure out how to distribute the
 // remaining space.
 //
 // The first pass finds the items whose min/max constraints trigger, freezes
-// them at those sizes, and excludes those sizes from the remaining space.
+// them at those sizes, and excludes those sizes from the remaining space. It
+// repeats until the constraints of no further item trigger, as the spec
+// describes (https://www.w3.org/TR/CSS-flexbox-1/#resolve-flexible-lengths).
+// That costs no layout: a round only bounds tentative sizes.
 //
-// The second pass sets the size of each flexible item. It distributes the
-// remaining space amongst the items whose min/max constraints didn't trigger in
-// the first pass. For the other items, it sets their sizes by forcing their
-// min/max constraints to trigger again.
-//
-// This two pass approach for resolving min/max constraints deviates from the
-// spec. The spec
-// (https://www.w3.org/TR/CSS-flexbox-1/#resolve-flexible-lengths) describes a
-// process that needs to be repeated a variable number of times. The algorithm
-// implemented here won't handle all cases but it was simpler to implement and
-// it mitigates performance concerns because we know exactly how many passes
-// it'll do.
+// The second pass sets the size of each flexible item, which lays the item out.
+// It gives the frozen items the size they were frozen at, and distributes the
+// remaining space amongst the others.
 //
 // At the end of this function the child nodes would have the proper size
 // assigned to them.
@@ -1226,8 +1259,6 @@ function resolveFlexibleLength(
   mainAxis: FlexDirection,
   crossAxis: FlexDirection,
   direction: Direction,
-  ownerWidth: number,
-  mainAxisOwnerSize: number,
   availableInnerMainDim: number,
   availableInnerCrossDim: number,
   availableInnerWidth: number,
@@ -1239,6 +1270,48 @@ function resolveFlexibleLength(
   depth: number,
   generationCount: number,
 ): void {
+  // The line was filled by hypothetical main sizes, and its free space tells
+  // whether it grows or shrinks. What gets distributed is the space left by the
+  // sizes the items start from.
+  const freeSpaceSign =
+    flexLine.layout.remainingFreeSpace > 0 ? 1 : flexLine.layout.remainingFreeSpace < 0 ? -1 : 0;
+  // Both passes work from `startingSizes` and `frozenSizes`, so that the min and
+  // max size of an item are resolved once per line.
+  const startingSizes = flexLine.startingSizes;
+  const frozenSizes = flexLine.frozenSizes;
+  for (let i = 0, length = flexLine.itemCount; i < length; i++) {
+    const child = flexLine.itemsInFlow[i]!;
+    let startingSize = child.layout.computedFlexBasis;
+    let frozenSize = NaN;
+    if (child.style.hasSizeBounds) {
+      startingSize = flexStartingSize(
+        child,
+        direction,
+        mainAxis,
+        availableInnerMainDim,
+        availableInnerWidth,
+        freeSpaceSign,
+      );
+      flexLine.layout.remainingFreeSpace += flexHypotheticalSize - startingSize;
+      // An item that cannot flex takes no share of the free space either.
+      if (flexStartingSizeIsFrozen) {
+        frozenSize = startingSize;
+        if (freeSpaceSign > 0) {
+          flexLine.layout.totalFlexGrowFactors -= child.resolveFlexGrow();
+        } else {
+          flexLine.layout.totalFlexShrinkScaledFactors -=
+            -child.resolveFlexShrink() * child.layout.computedFlexBasis;
+        }
+      }
+    }
+    if (i < startingSizes.length) {
+      startingSizes[i] = startingSize;
+      frozenSizes[i] = frozenSize;
+    } else {
+      startingSizes.push(startingSize);
+      frozenSizes.push(frozenSize);
+    }
+  }
   const originalFreeSpace = flexLine.layout.remainingFreeSpace;
 
   // First pass: detect the flex items whose min/max constraints trigger
@@ -1246,10 +1319,9 @@ function resolveFlexibleLength(
     flexLine,
     direction,
     mainAxis,
-    ownerWidth,
-    mainAxisOwnerSize,
     availableInnerMainDim,
     availableInnerWidth,
+    freeSpaceSign,
   );
 
   // Second pass: resolve the sizes of the flexible items
@@ -1259,12 +1331,11 @@ function resolveFlexibleLength(
     mainAxis,
     crossAxis,
     direction,
-    ownerWidth,
-    mainAxisOwnerSize,
     availableInnerMainDim,
     availableInnerCrossDim,
     availableInnerWidth,
     availableInnerHeight,
+    freeSpaceSign,
     mainAxisOverflows,
     sizingModeCrossDim,
     performLayout,
@@ -1372,9 +1443,12 @@ function justifyMainAxis(
         betweenMainDim += leadingMainDim;
         break;
       case Justify.SpaceAround:
-        // Space on the edges is half of the space between elements
-        leadingMainDim = (0.5 * flexLine.layout.remainingFreeSpace) / itemCount;
-        betweenMainDim += leadingMainDim * 2;
+        // Space on the edges is half of the space between elements. A line
+        // can be empty: all children absolute or hidden.
+        if (itemCount > 0) {
+          leadingMainDim = (0.5 * flexLine.layout.remainingFreeSpace) / itemCount;
+          betweenMainDim += leadingMainDim * 2;
+        }
         break;
       case Justify.FlexStart:
         break;
@@ -1426,8 +1500,8 @@ function justifyMainAxis(
           direction,
           mainAxis,
           childLayout.computedFlexBasis,
-          mainAxisOwnerSize,
-          ownerWidth,
+          availableInnerMainDim,
+          availableInnerWidth,
         );
       flexLine.layout.crossDim = availableInnerCrossDim;
     } else {
@@ -1439,7 +1513,7 @@ function justifyMainAxis(
         // If the child is baseline aligned then the cross dimension is
         // calculated by adding maxAscent and maxDescent from the baseline.
         const ascent =
-          calculateBaseline(child) +
+          baselineOf(child) +
           childStyle.computeFlexStartMargin(FlexDirection.Column, direction, availableInnerWidth);
         const descent =
           childLayout.measuredDimensions[Dimension.Height] +
@@ -1534,7 +1608,7 @@ function calculateLayoutImpl(
   layoutMarkerData: LayoutData | null,
   depth: number,
   generationCount: number,
-): void {
+): boolean {
   if (availableWidth !== availableWidth && widthSizingMode !== SizingMode.MaxContent) {
     throw new Error(
       "availableWidth is indefinite so widthSizingMode must be SizingMode::MaxContent",
@@ -1561,9 +1635,9 @@ function calculateLayoutImpl(
   const direction = node.resolveDirection(ownerDirection);
   layout.direction = direction;
 
-  if (performLayout) {
-    layout.hadOverflow = false;
-  }
+  // Also when only measuring, and whichever way the size is found: the flag of
+  // an earlier pass says nothing about this one.
+  layout.hadOverflow = false;
 
   let marginAxisRow: number;
   let marginAxisColumn: number;
@@ -1661,7 +1735,7 @@ function calculateLayoutImpl(
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
     cleanupContentsNodesRecursively(node, performLayout);
-    return;
+    return false;
   }
 
   const childCount = node.getLayoutChildCount();
@@ -1680,7 +1754,7 @@ function calculateLayoutImpl(
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
     cleanupContentsNodesRecursively(node, performLayout);
-    return;
+    return false;
   }
 
   // If we're not being asked to perform a full layout we can skip the algorithm
@@ -1701,11 +1775,7 @@ function calculateLayoutImpl(
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
     cleanupContentsNodesRecursively(node, /* didPerformLayout */ false);
-    return;
-  }
-
-  if (!performLayout) {
-    layout.hadOverflow = false;
+    return false;
   }
 
   // Clean and update all display: contents nodes with a direct path to the
@@ -1814,8 +1884,6 @@ function calculateLayoutImpl(
     calculateFlexLine(
       node,
       ownerDirection,
-      ownerWidth,
-      mainAxisOwnerSize,
       availableInnerWidth,
       availableInnerMainDim,
       layoutChildren,
@@ -1882,8 +1950,6 @@ function calculateLayoutImpl(
         mainAxis,
         crossAxis,
         direction,
-        ownerWidth,
-        mainAxisOwnerSize,
         availableInnerMainDim,
         availableInnerCrossDim,
         availableInnerWidth,
@@ -1897,7 +1963,9 @@ function calculateLayoutImpl(
       );
     }
 
-    layout.hadOverflow = layout.hadOverflow || flexLine.layout.remainingFreeSpace < 0;
+    // Less than the layout cache tells available sizes apart by is a rounding
+    // error, not an overflow.
+    layout.hadOverflow = layout.hadOverflow || flexLine.layout.remainingFreeSpace < -0.0001;
 
     // STEP 6: MAIN-AXIS JUSTIFICATION & CROSS-AXIS SIZE DETERMINATION
 
@@ -2170,7 +2238,7 @@ function calculateLayoutImpl(
           }
           if (resolveChildAlignment(node, child) === Align.Baseline) {
             const ascent =
-              calculateBaseline(child) +
+              baselineOf(child) +
               childStyle.computeFlexStartMargin(
                 FlexDirection.Column,
                 direction,
@@ -2272,7 +2340,7 @@ function calculateLayoutImpl(
               childLayout.position[PhysicalEdge.Top] =
                 currentLead +
                 maxAscentForCurrentLine -
-                calculateBaseline(child) +
+                baselineOf(child) +
                 childStyle.computeFlexStartPosition(
                   FlexDirection.Column,
                   direction,
@@ -2437,6 +2505,52 @@ function calculateLayoutImpl(
       );
     }
   }
+
+  return true;
+}
+
+// Both helpers below are kept out of calculateLayoutInternal, which has to stay
+// small enough for V8 to inline the cache probes into it.
+
+// Brings a node's results back from a cache entry, next to its measured size.
+function restoreCachedResults(
+  layout: LayoutResults,
+  cachedResults: CachedMeasurement,
+  performLayout: boolean,
+): void {
+  layout.baseline = cachedResults.baseline;
+  // A measurement that brings back another overflow flag than the one of the
+  // node's last layout leaves a result of its own, like one that is computed.
+  if (!performLayout && layout.hadOverflow !== cachedResults.hadOverflow) {
+    layout.measuredSinceLayout = true;
+    gMeasurementLeftResults = true;
+  }
+  layout.hadOverflow = cachedResults.hadOverflow;
+}
+
+// After a node is computed: tells the layout cache of the node and of its
+// owners apart from what a measurement left in the subtree.
+function noteResultsLeftByMeasurement(
+  node: Node,
+  performLayout: boolean,
+  hadOverflow: boolean,
+  outerMeasurementLeftResults: boolean,
+): void {
+  const layout = node.layout;
+  if (performLayout) {
+    // Every node below has been laid out after it was last measured.
+    layout.measuredSinceLayout = false;
+    gMeasurementLeftResults = outerMeasurementLeftResults;
+  } else if (
+    gMeasurementLeftResults ||
+    node.style.edgesNeedOwnerWidth ||
+    layout.hadOverflow !== hadOverflow
+  ) {
+    layout.measuredSinceLayout = true;
+    gMeasurementLeftResults = true;
+  } else {
+    gMeasurementLeftResults = outerMeasurementLeftResults;
+  }
 }
 
 //
@@ -2500,24 +2614,29 @@ export function calculateLayoutInternal(
       heightSizingMode,
       availableHeight,
       ownerWidth,
+      ownerHeight,
     );
   } else if (performLayout) {
     if (
       inexactEquals(layout.cachedLayout.availableWidth, availableWidth) &&
       inexactEquals(layout.cachedLayout.availableHeight, availableHeight) &&
       layout.cachedLayout.widthSizingMode === widthSizingMode &&
-      layout.cachedLayout.heightSizingMode === heightSizingMode
+      layout.cachedLayout.heightSizingMode === heightSizingMode &&
+      (!node.style.dependsOnOwnerSize ||
+        hasSameOwnerSize(layout.cachedLayout, ownerWidth, ownerHeight))
     ) {
       cachedResults = layout.cachedLayout;
     }
   } else {
+    const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
     for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
       const cachedMeasurement = layout.cachedMeasurements[i]!;
       if (
         inexactEquals(cachedMeasurement.availableWidth, availableWidth) &&
         inexactEquals(cachedMeasurement.availableHeight, availableHeight) &&
         cachedMeasurement.widthSizingMode === widthSizingMode &&
-        cachedMeasurement.heightSizingMode === heightSizingMode
+        cachedMeasurement.heightSizingMode === heightSizingMode &&
+        (!keyedOnOwnerSize || hasSameOwnerSize(cachedMeasurement, ownerWidth, ownerHeight))
       ) {
         cachedResults = cachedMeasurement;
         if (i > 0) {
@@ -2528,9 +2647,15 @@ export function calculateLayoutInternal(
     }
   }
 
+  // A layout cannot be restored over what a later measurement left behind.
+  if (performLayout && layout.measuredSinceLayout) {
+    cachedResults = null;
+  }
+
   if (!needToVisitNode && cachedResults !== null) {
     layout.measuredDimensions[Dimension.Width] = cachedResults.computedWidth;
     layout.measuredDimensions[Dimension.Height] = cachedResults.computedHeight;
+    restoreCachedResults(layout, cachedResults, performLayout);
 
     if (__EVENTS__ && layoutMarkerData !== null) {
       if (performLayout) {
@@ -2540,7 +2665,10 @@ export function calculateLayoutInternal(
       }
     }
   } else {
-    calculateLayoutImpl(
+    const outerMeasurementLeftResults = gMeasurementLeftResults;
+    gMeasurementLeftResults = false;
+    const hadOverflow = layout.hadOverflow;
+    const visitedChildren = calculateLayoutImpl(
       node,
       availableWidth,
       availableHeight,
@@ -2556,6 +2684,17 @@ export function calculateLayoutInternal(
       generationCount,
     );
 
+    // A node without children of its own to go by has its bottom edge for a
+    // baseline. So has one measured with a definite cross size: that skips the
+    // flex step, and leaves the children as they were.
+    layout.baseline =
+      visitedChildren &&
+      (performLayout ||
+        (isRow(node.style.flexDirection) ? heightSizingMode : widthSizingMode) !==
+          SizingMode.StretchFit)
+        ? calculateBaseline(node, performLayout)
+        : layout.measuredDimensions[Dimension.Height];
+    noteResultsLeftByMeasurement(node, performLayout, hadOverflow, outerMeasurementLeftResults);
     layout.lastOwnerDirection = ownerDirection;
     layout.configVersion = node.getConfig().version;
 
@@ -2586,14 +2725,20 @@ export function calculateLayoutInternal(
       newCacheEntry.availableHeight = availableHeight;
       newCacheEntry.widthSizingMode = widthSizingMode;
       newCacheEntry.heightSizingMode = heightSizingMode;
+      newCacheEntry.ownerWidth = ownerWidth;
+      newCacheEntry.ownerHeight = ownerHeight;
       newCacheEntry.computedWidth = layout.measuredDimensions[Dimension.Width];
       newCacheEntry.computedHeight = layout.measuredDimensions[Dimension.Height];
+      newCacheEntry.baseline = layout.baseline;
+      newCacheEntry.hadOverflow = layout.hadOverflow;
     }
   }
 
   if (performLayout) {
-    node.setLayoutDimension(layout.measuredDimensions[Dimension.Width], Dimension.Width);
-    node.setLayoutDimension(layout.measuredDimensions[Dimension.Height], Dimension.Height);
+    // The size as reported is set when the pass rounds its results. A pass that
+    // finds nothing to do does not round, and must leave the last one standing.
+    layout.rawDimensions[Dimension.Width] = layout.measuredDimensions[Dimension.Width];
+    layout.rawDimensions[Dimension.Height] = layout.measuredDimensions[Dimension.Height];
 
     node.hasNewLayout = true;
     node.setDirty(false);
@@ -2631,6 +2776,7 @@ export function calculateLayout(
   // visit all dirty nodes at least once. Subsequent visits will be skipped if
   // the input parameters don't change.
   const currentGenerationCount = ++gCurrentGenerationCount;
+  gMeasurementLeftResults = false;
   const direction = node.resolveDirection(ownerDirection);
   let width: number;
   let widthSizingMode: SizingMode;
