@@ -5,12 +5,14 @@ import {
   FlexDirection,
   SizingMode,
   Node,
+  PositionType,
   type Size,
 } from "../../src/index.ts";
 
 /**
  * A node carrying the base style the layout fixtures were recorded with:
- * `flex-direction: column; align-content: flex-start; flex-shrink: 0`.
+ * `flex-direction: column; align-content: flex-start; flex-shrink: 0;
+ * position: relative`.
  *
  * The expected values in those tests come from a browser rendering that
  * stylesheet, so it is spelled out here rather than being an engine default
@@ -22,6 +24,7 @@ export function newFixtureNode(config?: Config): Node {
   node.setFlexDirection(FlexDirection.Column);
   node.setAlignContent(Align.FlexStart);
   node.setFlexShrink(0);
+  node.setPositionType(PositionType.Relative);
   return node;
 }
 

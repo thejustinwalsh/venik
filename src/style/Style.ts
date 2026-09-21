@@ -48,7 +48,7 @@ export class Style {
   alignContent: Align = Align.Stretch;
   alignItems: Align = Align.Stretch;
   alignSelf: Align = Align.Auto;
-  positionType: PositionType = PositionType.Relative;
+  positionType: PositionType = PositionType.Static;
   flexWrap: Wrap = Wrap.NoWrap;
   overflow: Overflow = Overflow.Visible;
   display: Display = Display.Flex;

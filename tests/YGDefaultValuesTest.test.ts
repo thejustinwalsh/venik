@@ -26,7 +26,7 @@ test("assert_default_values", () => {
   expect(root.getAlignContent()).toBe(Align.Stretch);
   expect(root.getAlignItems()).toBe(Align.Stretch);
   expect(root.getAlignSelf()).toBe(Align.Auto);
-  expect(root.getPositionType()).toBe(PositionType.Relative);
+  expect(root.getPositionType()).toBe(PositionType.Static);
   expect(root.getFlexWrap()).toBe(Wrap.NoWrap);
   expect(root.getOverflow()).toBe(Overflow.Visible);
   expect(root.getFlexGrow()).toBe(0);
@@ -98,6 +98,36 @@ test("assert_box_sizing_border_box", () => {
   const root = new Node(config);
 
   expect(root.getBoxSizing()).toBe(BoxSizing.BorderBox);
+});
 
+test("default_position_is_static", () => {
+  const root = new Node();
+  root.setPositionType(PositionType.Relative);
+  root.setWidth(100);
+  root.setHeight(100);
 
+  // Insets do not apply to a statically positioned node.
+  const child = new Node();
+  child.setWidth(50);
+  child.setHeight(50);
+  child.setPosition(Edge.Left, 10);
+  child.setPosition(Edge.Top, 10);
+  root.insertChild(child, 0);
+
+  // A static node is not a containing block: the absolute grandchild resolves
+  // its insets against `root`.
+  const grandchild = new Node();
+  grandchild.setPositionType(PositionType.Absolute);
+  grandchild.setPosition(Edge.Right, 0);
+  grandchild.setPosition(Edge.Bottom, 0);
+  grandchild.setWidth(10);
+  grandchild.setHeight(10);
+  child.insertChild(grandchild, 0);
+
+  root.calculateLayout(undefined, undefined, Direction.LTR);
+
+  expect(child.getComputedLeft()).toBe(0);
+  expect(child.getComputedTop()).toBe(0);
+  expect(grandchild.getComputedLeft()).toBe(90);
+  expect(grandchild.getComputedTop()).toBe(90);
 });
