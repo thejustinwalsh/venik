@@ -646,7 +646,9 @@ export class Node {
   }
   /** @internal */
   getLayoutChildCount(): number {
-    return this.getLayoutChildren().length;
+    return this.contentsChildrenCount_ === 0
+      ? this.children_.length
+      : this.getLayoutChildren().length;
   }
   /** @internal `yoga::Node::insertChild`: inserts into the child list without setting the owner, asserting or dirtying. */
   insertChildRaw(child: Node, index: number): void {
@@ -803,6 +805,18 @@ export class Node {
     const directionRespectingRoot = this.owner !== null ? direction : Direction.LTR;
     const style = this.style;
     const layout = this.layout;
+    if (
+      !style.edgesNeedOwnerWidth &&
+      (style.positionType === PositionType.Static || !style.hasInsets())
+    ) {
+      // Nothing offsets the node, so each position is the margin of that edge.
+      const offset = direction === Direction.RTL ? 4 : 0;
+      const marginPoints = style.marginPoints;
+      for (let edge = PhysicalEdge.Left; edge <= PhysicalEdge.Bottom; edge++) {
+        layout.position[edge] = marginPoints[offset + edge]!;
+      }
+      return;
+    }
     const mainAxis = resolveDirection(style.flexDirection, directionRespectingRoot);
     const crossAxis = resolveCrossDirection(mainAxis, directionRespectingRoot);
 

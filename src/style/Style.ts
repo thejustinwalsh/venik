@@ -114,6 +114,10 @@ export class Style {
   ];
   /** Whether any min or max size is set. Most nodes have none, and bounding a size is then a no-op. */
   hasSizeBounds = false;
+  // The min and max sizes in points (NaN when unset), valid while neither is a percentage.
+  private sizeBoundsArePoints = true;
+  private minPoints: number[] = NO_SIZE_BOUNDS;
+  private maxPoints: number[] = NO_SIZE_BOUNDS;
 
   /** Copies every property of `other`. `this` shares no mutable state with `other` afterwards. */
   assign(other: Style): void {
@@ -154,7 +158,7 @@ export class Style {
     copyInto(this.dimensions as DimensionLengths, other.dimensions);
     copyInto(this.minDimensions as DimensionLengths, other.minDimensions);
     copyInto(this.maxDimensions as DimensionLengths, other.maxDimensions);
-    this.hasSizeBounds = other.hasSizeBounds;
+    this.updateHasSizeBounds();
     this.aspectRatio = other.aspectRatio;
   }
 
@@ -266,6 +270,11 @@ export class Style {
     (this.maxDimensions as DimensionLengths)[dimension] = value;
     this.updateHasSizeBounds();
     return true;
+  }
+
+  /** Whether any `position` edge is set. */
+  hasInsets(): boolean {
+    return this.definedPosition !== 0;
   }
 
   horizontalInsetsDefined(): boolean {
@@ -585,6 +594,9 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): number {
+    if (this.sizeBoundsArePoints && this.boxSizing === BoxSizing.BorderBox) {
+      return this.minPoints[axis]!;
+    }
     return this.resolveDimensionBound(
       this.minDimensions[axis]!,
       direction,
@@ -601,6 +613,9 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): number {
+    if (this.sizeBoundsArePoints && this.boxSizing === BoxSizing.BorderBox) {
+      return this.maxPoints[axis]!;
+    }
     return this.resolveDimensionBound(
       this.maxDimensions[axis]!,
       direction,
@@ -665,11 +680,27 @@ export class Style {
   }
 
   private updateHasSizeBounds(): void {
-    this.hasSizeBounds =
-      this.minDimensions[Dimension.Width].isDefined() ||
-      this.minDimensions[Dimension.Height].isDefined() ||
-      this.maxDimensions[Dimension.Width].isDefined() ||
-      this.maxDimensions[Dimension.Height].isDefined();
+    let hasSizeBounds = false;
+    let arePoints = true;
+    for (let dim = Dimension.Width; dim <= Dimension.Height; dim++) {
+      const min = this.minDimensions[dim]!;
+      const max = this.maxDimensions[dim]!;
+      hasSizeBounds = hasSizeBounds || min.isDefined() || max.isDefined();
+      arePoints = arePoints && !min.isPercent() && !max.isPercent();
+    }
+    this.hasSizeBounds = hasSizeBounds;
+    this.sizeBoundsArePoints = arePoints;
+    if (this.minPoints === NO_SIZE_BOUNDS) {
+      if (!hasSizeBounds) {
+        return;
+      }
+      this.minPoints = [NaN, NaN];
+      this.maxPoints = [NaN, NaN];
+    }
+    for (let dim = Dimension.Width; dim <= Dimension.Height; dim++) {
+      this.minPoints[dim] = this.minDimensions[dim]!.resolve(NaN);
+      this.maxPoints[dim] = this.maxDimensions[dim]!.resolve(NaN);
+    }
   }
 
   private computeColumnGap(): StyleLength {
@@ -732,6 +763,7 @@ for (let i = 0; i < 8; i++) {
   NO_EDGES.push(StyleLength.undefined());
 }
 
+const NO_SIZE_BOUNDS: number[] = [NaN, NaN];
 const NO_INSETS: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
 
 /** Refills one of the `*Points` caches, reusing `points` once a style has its own. */
