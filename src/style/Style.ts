@@ -22,6 +22,7 @@ import {
   Justify,
   Overflow,
   PositionType,
+  Unit,
   Wrap,
 } from "../enums.ts";
 import { maxOrDefined } from "../math.ts";
@@ -86,10 +87,17 @@ export class Style {
   private marginHasAuto = false;
   private marginForRow = 0;
   private marginForColumn = 0;
-  // Padding plus border of each physical edge, laid out like `resolvedPadding`
-  // and valid while no padding is a percentage.
   private paddingHasPercent = false;
-  private paddingAndBorder: number[] = NO_INSETS;
+  /**
+   * Margin, border and padding of each physical edge in points, laid out like
+   * `resolvedMargin`: what layout copies into a node's results. Auto and
+   * undefined count as 0. Only valid while `edgesNeedOwnerWidth` is false.
+   */
+  marginPoints: readonly number[] = NO_INSETS;
+  borderPoints: readonly number[] = NO_INSETS;
+  paddingPoints: readonly number[] = NO_INSETS;
+  /** Whether a margin or padding is a percentage, so that the edges depend on the owner's width. */
+  edgesNeedOwnerWidth = false;
   readonly gap: GutterLengths = [
     StyleLength.undefined(),
     StyleLength.undefined(),
@@ -447,7 +455,8 @@ export class Style {
       return 0;
     }
     if (!this.paddingHasPercent) {
-      return this.paddingAndBorder[edgeIndex(inlineStartEdge(axis, direction), direction)]!;
+      const index = edgeIndex(inlineStartEdge(axis, direction), direction);
+      return this.paddingPoints[index]! + this.borderPoints[index]!;
     }
     return (
       this.computeInlineStartPadding(axis, direction, widthSize) +
@@ -464,7 +473,8 @@ export class Style {
       return 0;
     }
     if (!this.paddingHasPercent) {
-      return this.paddingAndBorder[edgeIndex(flexStartEdge(axis), direction)]!;
+      const index = edgeIndex(flexStartEdge(axis), direction);
+      return this.paddingPoints[index]! + this.borderPoints[index]!;
     }
     return (
       this.computeFlexStartPadding(axis, direction, widthSize) +
@@ -481,7 +491,8 @@ export class Style {
       return 0;
     }
     if (!this.paddingHasPercent) {
-      return this.paddingAndBorder[edgeIndex(inlineEndEdge(axis, direction), direction)]!;
+      const index = edgeIndex(inlineEndEdge(axis, direction), direction);
+      return this.paddingPoints[index]! + this.borderPoints[index]!;
     }
     return (
       this.computeInlineEndPadding(axis, direction, widthSize) +
@@ -498,7 +509,8 @@ export class Style {
       return 0;
     }
     if (!this.paddingHasPercent) {
-      return this.paddingAndBorder[edgeIndex(flexEndEdge(axis), direction)]!;
+      const index = edgeIndex(flexEndEdge(axis), direction);
+      return this.paddingPoints[index]! + this.borderPoints[index]!;
     }
     return (
       this.computeFlexEndPadding(axis, direction, widthSize) +
@@ -631,7 +643,9 @@ export class Style {
     }
     this.marginHasPercent = hasPercent;
     this.marginHasAuto = hasAuto;
+    this.edgesNeedOwnerWidth = hasPercent || this.paddingHasPercent;
     if (!hasPercent) {
+      this.marginPoints = resolvePoints(this.resolvedMargin, this.marginPoints, false);
       this.marginForRow = this.resolveMarginForAxis(FlexDirection.Row, NaN);
       this.marginForColumn = this.resolveMarginForAxis(FlexDirection.Column, NaN);
     }
@@ -643,16 +657,10 @@ export class Style {
       hasPercent = hasPercent || this.resolvedPadding[i]!.isPercent();
     }
     this.paddingHasPercent = hasPercent;
-    if (hasPercent || (this.definedPadding | this.definedBorder) === 0) {
-      return;
-    }
-    if (this.paddingAndBorder === NO_INSETS) {
-      this.paddingAndBorder = NO_INSETS.slice();
-    }
-    for (let i = 0; i < 8; i++) {
-      this.paddingAndBorder[i] =
-        maxOrDefined(this.resolvedPadding[i]!.resolve(NaN), 0) +
-        maxOrDefined(this.resolvedBorder[i]!.resolve(0), 0);
+    this.edgesNeedOwnerWidth = hasPercent || this.marginHasPercent;
+    this.borderPoints = resolvePoints(this.resolvedBorder, this.borderPoints, true);
+    if (!hasPercent) {
+      this.paddingPoints = resolvePoints(this.resolvedPadding, this.paddingPoints, true);
     }
   }
 
@@ -725,6 +733,26 @@ for (let i = 0; i < 8; i++) {
 }
 
 const NO_INSETS: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+
+/** Refills one of the `*Points` caches, reusing `points` once a style has its own. */
+function resolvePoints(
+  resolved: readonly StyleLength[],
+  points: readonly number[],
+  clampToZero: boolean,
+): readonly number[] {
+  if (points === NO_INSETS) {
+    if (resolved === NO_EDGES) {
+      return points;
+    }
+    points = NO_INSETS.slice();
+  }
+  for (let i = 0; i < 8; i++) {
+    // A percentage only gets here for a border, which has none: it counts as 0.
+    const value = resolved[i]!.unit === Unit.Point ? resolved[i]!.value : 0;
+    (points as number[])[i] = value !== value || (clampToZero && value < 0) ? 0 : value;
+  }
+  return points;
+}
 
 /** Where the caches keep a physical edge for a layout direction. */
 function edgeIndex(edge: PhysicalEdge, layoutDirection: Direction): number {

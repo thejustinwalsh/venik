@@ -621,40 +621,46 @@ function measureNodeWithoutChildren(
   ownerHeight: number,
 ): void {
   const layout = node.layout;
+  const paddingAndBorderRow =
+    layout.padding[PhysicalEdge.Left] +
+    layout.padding[PhysicalEdge.Right] +
+    layout.border[PhysicalEdge.Left] +
+    layout.border[PhysicalEdge.Right];
+  const paddingAndBorderColumn =
+    layout.padding[PhysicalEdge.Top] +
+    layout.padding[PhysicalEdge.Bottom] +
+    layout.border[PhysicalEdge.Top] +
+    layout.border[PhysicalEdge.Bottom];
 
-  let width = availableWidth;
-  if (widthSizingMode === SizingMode.MaxContent || widthSizingMode === SizingMode.FitContent) {
-    width =
-      layout.padding[PhysicalEdge.Left] +
-      layout.padding[PhysicalEdge.Right] +
-      layout.border[PhysicalEdge.Left] +
-      layout.border[PhysicalEdge.Right];
-  }
-  layout.measuredDimensions[Dimension.Width] = boundAxis(
-    node,
-    FlexDirection.Row,
-    direction,
-    width,
-    ownerWidth,
-    ownerWidth,
-  );
+  const width = widthSizingMode === SizingMode.StretchFit ? availableWidth : paddingAndBorderRow;
+  const height =
+    heightSizingMode === SizingMode.StretchFit ? availableHeight : paddingAndBorderColumn;
 
-  let height = availableHeight;
-  if (heightSizingMode === SizingMode.MaxContent || heightSizingMode === SizingMode.FitContent) {
-    height =
-      layout.padding[PhysicalEdge.Top] +
-      layout.padding[PhysicalEdge.Bottom] +
-      layout.border[PhysicalEdge.Top] +
-      layout.border[PhysicalEdge.Bottom];
+  if (node.style.hasSizeBounds) {
+    layout.measuredDimensions[Dimension.Width] = boundAxis(
+      node,
+      FlexDirection.Row,
+      direction,
+      width,
+      ownerWidth,
+      ownerWidth,
+    );
+    layout.measuredDimensions[Dimension.Height] = boundAxis(
+      node,
+      FlexDirection.Column,
+      direction,
+      height,
+      ownerHeight,
+      ownerWidth,
+    );
+  } else {
+    // All `boundAxis` does without min or max sizes. The sums above are the
+    // padding and border it would work out again.
+    layout.measuredDimensions[Dimension.Width] =
+      width >= paddingAndBorderRow ? width : paddingAndBorderRow;
+    layout.measuredDimensions[Dimension.Height] =
+      height >= paddingAndBorderColumn ? height : paddingAndBorderColumn;
   }
-  layout.measuredDimensions[Dimension.Height] = boundAxis(
-    node,
-    FlexDirection.Column,
-    direction,
-    height,
-    ownerHeight,
-    ownerWidth,
-  );
 }
 
 function isFixedSize(dim: number, sizingMode: SizingMode): boolean {
@@ -1559,53 +1565,84 @@ function calculateLayoutImpl(
     layout.hadOverflow = false;
   }
 
-  const flexRowDirection = resolveDirection(FlexDirection.Row, direction);
-  const flexColumnDirection = resolveDirection(FlexDirection.Column, direction);
+  let marginAxisRow: number;
+  let marginAxisColumn: number;
+  if (!style.edgesNeedOwnerWidth) {
+    // Without percentages the style already knows every edge in points.
+    const offset = direction === Direction.RTL ? 4 : 0;
+    const marginPoints = style.marginPoints;
+    const borderPoints = style.borderPoints;
+    const paddingPoints = style.paddingPoints;
+    for (let edge = PhysicalEdge.Left; edge <= PhysicalEdge.Bottom; edge++) {
+      layout.margin[edge] = marginPoints[offset + edge]!;
+      layout.border[edge] = borderPoints[offset + edge]!;
+      layout.padding[edge] = paddingPoints[offset + edge]!;
+    }
+    marginAxisRow = layout.margin[PhysicalEdge.Left] + layout.margin[PhysicalEdge.Right];
+    marginAxisColumn = layout.margin[PhysicalEdge.Top] + layout.margin[PhysicalEdge.Bottom];
+  } else {
+    const flexRowDirection = resolveDirection(FlexDirection.Row, direction);
+    const flexColumnDirection = resolveDirection(FlexDirection.Column, direction);
 
-  const startEdge = direction === Direction.LTR ? PhysicalEdge.Left : PhysicalEdge.Right;
-  const endEdge = direction === Direction.LTR ? PhysicalEdge.Right : PhysicalEdge.Left;
+    const startEdge = direction === Direction.LTR ? PhysicalEdge.Left : PhysicalEdge.Right;
+    const endEdge = direction === Direction.LTR ? PhysicalEdge.Right : PhysicalEdge.Left;
 
-  const marginRowLeading = style.computeInlineStartMargin(flexRowDirection, direction, ownerWidth);
-  layout.margin[startEdge] = marginRowLeading;
-  const marginRowTrailing = style.computeInlineEndMargin(flexRowDirection, direction, ownerWidth);
-  layout.margin[endEdge] = marginRowTrailing;
-  const marginColumnLeading = style.computeInlineStartMargin(
-    flexColumnDirection,
-    direction,
-    ownerWidth,
-  );
-  layout.margin[PhysicalEdge.Top] = marginColumnLeading;
-  const marginColumnTrailing = style.computeInlineEndMargin(
-    flexColumnDirection,
-    direction,
-    ownerWidth,
-  );
-  layout.margin[PhysicalEdge.Bottom] = marginColumnTrailing;
+    const marginRowLeading = style.computeInlineStartMargin(
+      flexRowDirection,
+      direction,
+      ownerWidth,
+    );
+    layout.margin[startEdge] = marginRowLeading;
+    const marginRowTrailing = style.computeInlineEndMargin(flexRowDirection, direction, ownerWidth);
+    layout.margin[endEdge] = marginRowTrailing;
+    const marginColumnLeading = style.computeInlineStartMargin(
+      flexColumnDirection,
+      direction,
+      ownerWidth,
+    );
+    layout.margin[PhysicalEdge.Top] = marginColumnLeading;
+    const marginColumnTrailing = style.computeInlineEndMargin(
+      flexColumnDirection,
+      direction,
+      ownerWidth,
+    );
+    layout.margin[PhysicalEdge.Bottom] = marginColumnTrailing;
 
-  const marginAxisRow = marginRowLeading + marginRowTrailing;
-  const marginAxisColumn = marginColumnLeading + marginColumnTrailing;
+    marginAxisRow = marginRowLeading + marginRowTrailing;
+    marginAxisColumn = marginColumnLeading + marginColumnTrailing;
 
-  layout.border[startEdge] = style.computeInlineStartBorder(flexRowDirection, direction);
-  layout.border[endEdge] = style.computeInlineEndBorder(flexRowDirection, direction);
-  layout.border[PhysicalEdge.Top] = style.computeInlineStartBorder(flexColumnDirection, direction);
-  layout.border[PhysicalEdge.Bottom] = style.computeInlineEndBorder(flexColumnDirection, direction);
+    layout.border[startEdge] = style.computeInlineStartBorder(flexRowDirection, direction);
+    layout.border[endEdge] = style.computeInlineEndBorder(flexRowDirection, direction);
+    layout.border[PhysicalEdge.Top] = style.computeInlineStartBorder(
+      flexColumnDirection,
+      direction,
+    );
+    layout.border[PhysicalEdge.Bottom] = style.computeInlineEndBorder(
+      flexColumnDirection,
+      direction,
+    );
 
-  layout.padding[startEdge] = style.computeInlineStartPadding(
-    flexRowDirection,
-    direction,
-    ownerWidth,
-  );
-  layout.padding[endEdge] = style.computeInlineEndPadding(flexRowDirection, direction, ownerWidth);
-  layout.padding[PhysicalEdge.Top] = style.computeInlineStartPadding(
-    flexColumnDirection,
-    direction,
-    ownerWidth,
-  );
-  layout.padding[PhysicalEdge.Bottom] = style.computeInlineEndPadding(
-    flexColumnDirection,
-    direction,
-    ownerWidth,
-  );
+    layout.padding[startEdge] = style.computeInlineStartPadding(
+      flexRowDirection,
+      direction,
+      ownerWidth,
+    );
+    layout.padding[endEdge] = style.computeInlineEndPadding(
+      flexRowDirection,
+      direction,
+      ownerWidth,
+    );
+    layout.padding[PhysicalEdge.Top] = style.computeInlineStartPadding(
+      flexColumnDirection,
+      direction,
+      ownerWidth,
+    );
+    layout.padding[PhysicalEdge.Bottom] = style.computeInlineEndPadding(
+      flexColumnDirection,
+      direction,
+      ownerWidth,
+    );
+  }
 
   if (node.hasMeasureFunc()) {
     measureNodeWithMeasureFunc(
