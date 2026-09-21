@@ -125,20 +125,6 @@ describe("EventTest", () => {
     c.free();
   });
 
-  test("clone_node_event", () => {
-    const c = new Config();
-    const n = new Node(c);
-    const clone = n.clone();
-
-    expect(lastEvent().node).toBe(clone);
-    expect(lastEvent().type).toBe(Event.NodeAllocation);
-    expect(data(lastEvent(), Event.NodeAllocation).config).toBe(c);
-
-    n.free();
-    clone.free();
-    c.free();
-  });
-
   test("free_node_event", () => {
     const c = new Config();
     const n = new Node(c);

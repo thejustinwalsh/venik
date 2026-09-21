@@ -1,50 +1,6 @@
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { configUpdateInvalidatesLayout } from "../src/config/Config.ts";
-import { Config, Node } from "../src/index.ts";
-
-describe("ConfigCloningTest", () => {
-  let config: Config;
-
-  // A static member of the fixture in C++; created in beforeEach here so that
-  // the module can be loaded without constructing a node.
-  let clonedNode: Node;
-  const cloneNode = (): Node | null => {
-    return clonedNode;
-  };
-  const doNotClone = (): Node | null => {
-    return null;
-  };
-
-  beforeEach(() => {
-    config = new Config();
-    clonedNode = new Node();
-  });
-
-  afterEach(() => {
-    config.free();
-  });
-
-  test("uses_values_provided_by_cloning_callback", () => {
-    config.setCloneNodeFunc(cloneNode);
-
-    const node = new Node();
-    const owner = new Node();
-    const clone = config.cloneNode(node, owner, 0);
-
-    expect(clone).toBe(clonedNode);
-  });
-
-  test("falls_back_to_regular_cloning_if_callback_returns_null", () => {
-    config.setCloneNodeFunc(doNotClone);
-
-    const node = new Node();
-    const owner = new Node();
-    const clone = config.cloneNode(node, owner, 0);
-
-    expect(clone).not.toBe(null);
-    clone.free();
-  });
-});
+import { Config } from "../src/index.ts";
 
 describe("YogaTest", () => {
   test("config_point_scale_factor_negative_throws", () => {

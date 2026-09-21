@@ -1,12 +1,7 @@
-import type { Node } from "../node/Node.ts";
-import type { CloneNodeFunction } from "../types.ts";
-
 /**
  * Layout configuration shared between nodes.
  */
 export class Config {
-  private cloneNodeCallback_: CloneNodeFunction | null = null;
-
   private version_: number = 0;
   private pointScaleFactor_: number = 1.0;
   context: unknown = null;
@@ -34,22 +29,6 @@ export class Config {
   }
   getPointScaleFactor(): number {
     return this.pointScaleFactor_;
-  }
-
-  setCloneNodeFunc(cloneNodeFunc: CloneNodeFunction | null): void {
-    this.cloneNodeCallback_ = cloneNodeFunc;
-  }
-
-  /** @internal Clones `node` through the clone node func if one is set, otherwise with `node.clone()`. */
-  cloneNode(node: Node, owner: Node, childIndex: number): Node {
-    let clone: Node | null = null;
-    if (this.cloneNodeCallback_ !== null) {
-      clone = this.cloneNodeCallback_(node, owner, childIndex);
-    }
-    if (clone === null) {
-      clone = node.clone();
-    }
-    return clone;
   }
 
   /** @internal Bumped whenever a change to the config invalidates existing layouts. */

@@ -48,7 +48,7 @@ export class Node {
   /** Set by layout when this node was laid out again; cleared by the caller once it has read the results. */
   hasNewLayout: boolean = true;
   context: unknown = null;
-  /** The node whose child list this node was last inserted into. Maintained by the child list methods. */
+  /** The parent node, or null for a root. Maintained by the child list methods. */
   owner: Node | null = null;
 
   /** @internal */
@@ -80,30 +80,6 @@ export class Node {
   }
 
   // Lifecycle
-  clone(): Node {
-    // Does not expose true value semantics, as children are not cloned eagerly.
-    const node: Node = Object.create(Node.prototype);
-    node.hasNewLayout = this.hasNewLayout;
-    node.isReferenceBaseline_ = this.isReferenceBaseline_;
-    node.isDirty_ = this.isDirty_;
-    node.context = this.context;
-    node.measureFunc_ = this.measureFunc_;
-    node.minContentMeasureFunc_ = this.minContentMeasureFunc_;
-    node.minContentWidth_ = this.minContentWidth_;
-    node.minContentHeight_ = this.minContentHeight_;
-    node.baselineFunc_ = this.baselineFunc_;
-    node.dirtiedFunc_ = this.dirtiedFunc_;
-    node.style = this.style.clone();
-    node.layout = this.layout.clone();
-    node.lineIndex = this.lineIndex;
-    node.contentsChildrenCount_ = this.contentsChildrenCount_;
-    node.owner = null;
-    node.children_ = this.children_.slice();
-    node.config_ = this.config_;
-    node.processedDimensions_ = this.processedDimensions_.slice();
-    if (__EVENTS__) Event.publish(node, Event.NodeAllocation, { config: node.config_ });
-    return node;
-  }
   free(): void {
     const owner = this.owner;
     if (owner !== null) {
@@ -201,80 +177,46 @@ export class Node {
     child.owner = this;
     this.markDirtyAndPropagate();
   }
-  swapChild(child: Node, index: number): void {
-    this.replaceChildAt(child, index);
-    child.owner = this;
-  }
   removeChild(child: Node): void {
-    if (this.children_.length === 0) {
-      // This is an empty set. Nothing to remove.
-      return;
-    }
-
-    // Children may be shared between parents, which is indicated by not having an
-    // owner. We only want to reset the child completely if it is owned
-    // exclusively by one node.
-    const childOwner = child.owner;
     if (this.removeChildRaw(child)) {
-      if (this === childOwner) {
-        child.detachFromOwner();
-      }
+      child.detachFromOwner();
       this.markDirtyAndPropagate();
     }
   }
   removeAllChildren(): void {
-    const childCount = this.children_.length;
-    if (childCount === 0) {
-      // This is an empty set already. Nothing to do.
+    if (this.children_.length === 0) {
       return;
     }
-    const firstChild = this.children_[0]!;
-    if (firstChild.owner === this) {
-      // If the first child has this node as its owner, we assume that this child
-      // set is unique.
-      for (let i = 0, length = this.children_.length; i < length; i++) {
-        const oldChild = this.children_[i]!;
-        oldChild.detachFromOwner();
-      }
-      this.clearChildren();
-      this.markDirtyAndPropagate();
-      return;
+    for (let i = 0, length = this.children_.length; i < length; i++) {
+      this.children_[i]!.detachFromOwner();
     }
-    // Otherwise, we are not the owner of the child set. We don't have to do
-    // anything to clear it.
     this.setChildrenRaw([]);
     this.markDirtyAndPropagate();
   }
   setChildren(children: readonly Node[]): void {
-    if (children.length === 0) {
-      if (this.children_.length > 0) {
-        for (let i = 0, length = this.children_.length; i < length; i++) {
-          const child = this.children_[i]!;
-          child.layout = new LayoutResults();
-          child.owner = null;
-        }
-        this.setChildrenRaw([]);
-        this.markDirtyAndPropagate();
-      }
-    } else {
-      if (this.children_.length > 0) {
-        for (let i = 0, length = this.children_.length; i < length; i++) {
-          const oldChild = this.children_[i]!;
-          // Our new children may have nodes in common with the old children. We
-          // don't reset these common nodes.
-          if (!children.includes(oldChild)) {
-            oldChild.layout = new LayoutResults();
-            oldChild.owner = null;
-          }
-        }
-      }
-      this.setChildrenRaw(children);
-      for (let i = 0, length = children.length; i < length; i++) {
-        const child = children[i]!;
-        child.owner = this;
-      }
-      this.markDirtyAndPropagate();
+    if (children.length === 0 && this.children_.length === 0) {
+      return;
     }
+    for (let i = 0, length = children.length; i < length; i++) {
+      const owner = children[i]!.owner;
+      if (owner !== null && owner !== this) {
+        throw new Error("Child already has a owner, it must be removed first.");
+      }
+    }
+
+    for (let i = 0, length = this.children_.length; i < length; i++) {
+      const oldChild = this.children_[i]!;
+      // Children that stay keep their layout.
+      if (!children.includes(oldChild)) {
+        oldChild.layout = new LayoutResults();
+        oldChild.owner = null;
+      }
+    }
+    this.setChildrenRaw(children);
+    for (let i = 0, length = children.length; i < length; i++) {
+      children[i]!.owner = this;
+    }
+    this.markDirtyAndPropagate();
   }
   getChild(index: number): Node | null {
     return this.children_[index] ?? null;
@@ -970,28 +912,6 @@ export class Node {
     this.children_ = [];
   }
 
-  /** @internal Replaces the occurrences of oldChild with newChild */
-  replaceChild(oldChild: Node, newChild: Node): void {
-    this.trackContentsReplacement(oldChild, newChild);
-    this.children_ = this.children_.map((child) => (child === oldChild ? newChild : child));
-  }
-
-  /** @internal */
-  replaceChildAt(child: Node, index: number): void {
-    this.trackContentsReplacement(this.children_[index]!, child);
-    this.children_[index] = child;
-  }
-
-  private trackContentsReplacement(oldChild: Node, newChild: Node): void {
-    const oldIsContents = oldChild.style.display === Display.Contents;
-    const newIsContents = newChild.style.display === Display.Contents;
-    if (oldIsContents && !newIsContents) {
-      this.contentsChildrenCount_--;
-    } else if (!oldIsContents && newIsContents) {
-      this.contentsChildrenCount_++;
-    }
-  }
-
   /** @internal `yoga::Node::removeChild(Node*)`: removes the first occurrence of child. */
   removeChildRaw(child: Node): boolean {
     const index = this.children_.indexOf(child);
@@ -1008,42 +928,6 @@ export class Node {
       this.contentsChildrenCount_--;
     }
     this.children_.splice(index, 1);
-  }
-
-  /** @internal */
-  cloneChildrenIfNeeded(): void {
-    const children = this.children_;
-    for (let i = 0; i < children.length; i++) {
-      let child = children[i]!;
-      if (child.owner !== this) {
-        child = this.config_.cloneNode(child, this, i);
-        children[i] = child;
-        child.owner = this;
-
-        if (child.style.display === Display.Contents) {
-          // The contents node's children are treated as children of the
-          // contents node's parent for layout purposes, so they need
-          // to be cloned as well.
-          child.cloneChildrenIfNeeded();
-        } else if (child.hasContentsChildren()) {
-          child.cloneContentsChildrenIfNeeded();
-        }
-      }
-    }
-  }
-
-  /** @internal */
-  cloneContentsChildrenIfNeeded(): void {
-    const children = this.children_;
-    for (let i = 0; i < children.length; i++) {
-      let child = children[i]!;
-      if (child.style.display === Display.Contents && child.owner !== this) {
-        child = this.config_.cloneNode(child, this, i);
-        children[i] = child;
-        child.owner = this;
-        child.cloneChildrenIfNeeded();
-      }
-    }
   }
 
   /** @internal */
@@ -1083,7 +967,7 @@ export class Node {
     );
   }
 
-  /** The layout of a node removed from its exclusive owner is no longer valid. */
+  /** The layout of a node removed from its owner is no longer valid. */
   private detachFromOwner(): void {
     this.layout = new LayoutResults();
     this.owner = null;

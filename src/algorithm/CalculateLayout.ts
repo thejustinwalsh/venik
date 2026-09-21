@@ -701,7 +701,6 @@ function zeroOutLayoutRecursively(node: Node): void {
   resetLayout(node);
   node.hasNewLayout = true;
 
-  node.cloneChildrenIfNeeded();
   const children = node.getChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
@@ -711,7 +710,6 @@ function zeroOutLayoutRecursively(node: Node): void {
 
 export function cleanupContentsNodesRecursively(node: Node, didPerformLayout: boolean): void {
   if (node.hasContentsChildren()) {
-    node.cloneContentsChildrenIfNeeded();
     const children = node.getChildren();
     for (let i = 0, length = children.length; i < length; i++) {
       const child = children[i]!;
@@ -721,7 +719,6 @@ export function cleanupContentsNodesRecursively(node: Node, didPerformLayout: bo
           child.hasNewLayout = true;
         }
         child.setDirty(false);
-        child.cloneChildrenIfNeeded();
 
         cleanupContentsNodesRecursively(child, didPerformLayout);
       }
@@ -818,10 +815,7 @@ function computeFlexBasisForChildren(
       // Only mutate display: none children during layout passes. Zeroing them
       // out during measure-only passes contributes nothing to the measurement,
       // but sets `hasNewLayout` on nodes the parent's layout pass may never
-      // visit (e.g. when its layout is restored from cache, skipping
-      // `cloneChildrenIfNeeded()`). Such a leaked flag survives the commit and
-      // is copied into lazily-shared clones, later tripping the ownership
-      // assertion in `YogaLayoutableShadowNode::layout`.
+      // visit (e.g. when its layout is restored from cache).
       if (performLayout) {
         zeroOutLayoutRecursively(child);
         child.hasNewLayout = true;
@@ -1911,9 +1905,6 @@ function calculateLayoutImpl(
     return;
   }
 
-  // At this point we know we're going to perform work. Ensure that each child
-  // has a mutable copy.
-  node.cloneChildrenIfNeeded();
   if (!performLayout) {
     layout.hadOverflow = false;
   }
@@ -2917,7 +2908,7 @@ export function calculateLayout(
     height = ownerHeight;
     heightSizingMode = height !== height ? SizingMode.MaxContent : SizingMode.StretchFit;
   }
-  // A measure function or clone callback may run a nested layout pass, in
+  // A measure function may run a nested layout pass, in
   // which case the global count has moved on from `currentGenerationCount`.
   const generationCount = currentGenerationCount;
   if (

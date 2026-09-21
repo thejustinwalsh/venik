@@ -24,13 +24,3 @@ export function inexactEquals(a: number, b: number): boolean {
   }
   return a !== a && b !== b;
 }
-
-/** Element-wise `inexactEquals` of two equally sized arrays. */
-export function inexactEqualsArray(val1: readonly number[], val2: readonly number[]): boolean {
-  for (let i = 0; i < val1.length; i++) {
-    if (!inexactEquals(val1[i]!, val2[i]!)) {
-      return false;
-    }
-  }
-  return true;
-}

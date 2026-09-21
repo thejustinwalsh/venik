@@ -528,13 +528,8 @@ export function layoutAbsoluteDescendants(
       childLayout.position[PhysicalEdge.Left] = childLeftOffsetFromParent;
       childLayout.position[PhysicalEdge.Top] = childTopOffsetFromParent;
     } else if (childStyle.positionType === PositionType.Static) {
-      // We may write new layout results for absolute descendants of "child"
-      // which are positioned relative to the current containing block instead
-      // of their parent. "child" may not be dirty, or have new constraints, so
-      // absolute positioning may be the first time during this layout pass that
-      // we need to mutate these descendents. Make sure the path of
-      // nodes to them is mutable before positioning.
-      child.cloneChildrenIfNeeded();
+      // Absolute descendants of "child" are positioned relative to the current
+      // containing block instead of their parent.
       const childDirection = child.resolveDirection(currentNodeDirection);
       // By now all descendants of the containing block that are not absolute
       // will have their positions set for left and top.

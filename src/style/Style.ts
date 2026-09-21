@@ -76,14 +76,7 @@ export class Style {
   readonly minDimensions: DimensionLengths = [StyleLength.undefined(), StyleLength.undefined()];
   readonly maxDimensions: DimensionLengths = [StyleLength.undefined(), StyleLength.undefined()];
 
-  /** C++ copy construction (`Style copy = style;`). The copy shares no mutable state with `this`. */
-  clone(): Style {
-    const copy = new Style();
-    copy.assign(this);
-    return copy;
-  }
-
-  /** C++ copy assignment (`style = other;`). `this` shares no mutable state with `other` afterwards. */
+  /** Copies every property of `other`. `this` shares no mutable state with `other` afterwards. */
   assign(other: Style): void {
     this.direction = other.direction;
     this.flexDirection = other.flexDirection;
