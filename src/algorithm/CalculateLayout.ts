@@ -1,6 +1,3 @@
-// `FloatOptional` values are plain numbers here (NaN is undefined). C++
-// in/out pointer parameters are replaced by return values.
-
 import {
   Align,
   BoxSizing,
@@ -72,7 +69,7 @@ function isColumnStretchEdge(owner: Node | null, child: Node | null): boolean {
     isColumn(ownerStyle.flexDirection) &&
     ownerStyle.flexWrap === Wrap.NoWrap &&
     childStyle.positionType !== PositionType.Absolute &&
-    !childStyle.aspectRatio.isDefined() &&
+    Number.isNaN(childStyle.aspectRatio) &&
     (childWidth.isAuto() || childWidth.isUndefined()) &&
     !hasAutoHorizontalMargin(childStyle) &&
     resolveChildAlignment(owner, child) === Align.Stretch
@@ -166,9 +163,9 @@ function hasPercentageLength(style: Style): boolean {
 
 function hasNonZeroFlex(node: Node): boolean {
   const style = node.style;
-  const flex = style.flex.unwrap();
-  const flexGrow = style.flexGrow.unwrap();
-  const flexShrink = style.flexShrink.unwrap();
+  const flex = style.flex;
+  const flexGrow = style.flexGrow;
+  const flexShrink = style.flexShrink;
 
   const canGrow = flexGrow === flexGrow ? flexGrow !== 0.0 : flex > 0.0;
   // An unset flex-shrink is the CSS default of 1.
@@ -197,7 +194,7 @@ function isHeightFitContentIndependent(node: Node): boolean {
     (flexBasis.isAuto() || flexBasis.isUndefined()) &&
     !hasNonZeroFlex(node) &&
     style.boxSizing === BoxSizing.BorderBox &&
-    !style.aspectRatio.isDefined() &&
+    Number.isNaN(style.aspectRatio) &&
     style.positionType !== PositionType.Absolute &&
     style.overflow !== Overflow.Scroll &&
     style.display === Display.Flex &&
@@ -250,7 +247,7 @@ function maxSizeForMode(
   ownerWidth: number,
 ): number {
   return (
-    node.style.resolvedMaxDimensionValue(direction, dimension(axis), ownerAxisSize, ownerWidth) +
+    node.style.resolvedMaxDimension(direction, dimension(axis), ownerAxisSize, ownerWidth) +
     node.style.computeMarginForAxis(axis, ownerWidth)
   );
 }
@@ -400,7 +397,7 @@ function computeFlexBasisForChild(
       childHeightSizingMode = SizingMode.FitContent;
     }
 
-    const aspectRatio = child.style.aspectRatio.unwrap();
+    const aspectRatio = child.style.aspectRatio;
     const hasAspectRatio = aspectRatio === aspectRatio;
     if (hasAspectRatio) {
       if (!isMainAxisRow && childWidthSizingMode === SizingMode.StretchFit) {
@@ -750,7 +747,7 @@ function calculateAvailableInnerDimension(
   if (availableInnerDim === availableInnerDim) {
     // We want to make sure our available height does not violate min and max
     // constraints
-    const minDimension = node.style.resolvedMinDimensionValue(
+    const minDimension = node.style.resolvedMinDimension(
       direction,
       dimension,
       ownerDim,
@@ -758,7 +755,7 @@ function calculateAvailableInnerDimension(
     );
     const minInnerDim = minDimension !== minDimension ? 0.0 : minDimension - paddingAndBorder;
 
-    const maxDimension = node.style.resolvedMaxDimensionValue(
+    const maxDimension = node.style.resolvedMaxDimension(
       direction,
       dimension,
       ownerDim,
@@ -1044,7 +1041,7 @@ function computeAutoMinMainSize(
 
   // Transferred size suggestion: cross × aspect-ratio, if both are definite.
   let transferredMain = NaN;
-  const ratio = child.style.aspectRatio.unwrap();
+  const ratio = child.style.aspectRatio;
   if (ratio === ratio) {
     const crossOwner = isMainAxisRow ? ownerHeight : ownerWidth;
     const crossValue = child.getResolvedDimension(direction, crossDim, crossOwner, ownerWidth);
@@ -1078,7 +1075,7 @@ function computeAutoMinMainSize(
   }
 
   // §4.5: cap by the max main size.
-  const maxMain = child.style.resolvedMaxDimensionValue(
+  const maxMain = child.style.resolvedMaxDimension(
     direction,
     mainDim,
     ownerMainAxisSize,
@@ -1215,7 +1212,7 @@ function distributeFreeSpaceSecondPass(
     let childCrossSizingMode: SizingMode;
     let childMainSizingMode: SizingMode = SizingMode.StretchFit;
 
-    const aspectRatio = childStyle.aspectRatio.unwrap();
+    const aspectRatio = childStyle.aspectRatio;
     if (aspectRatio === aspectRatio) {
       childCrossSize = isMainAxisRow
         ? (childMainSize - marginMain) / aspectRatio
@@ -1547,7 +1544,7 @@ function justifyMainAxis(
   // If we are using "at most" rules in the main axis, make sure that
   // remainingFreeSpace is 0 when min main dimension is not given
   if (sizingModeMainDim === SizingMode.FitContent && flexLine.layout.remainingFreeSpace > 0) {
-    const minMainDim = style.resolvedMinDimensionValue(
+    const minMainDim = style.resolvedMinDimension(
       direction,
       dimension(mainAxis),
       mainAxisOwnerSize,
@@ -2050,14 +2047,14 @@ function calculateLayoutImpl(
     // violate min and max
     if (sizingModeMainDim !== SizingMode.StretchFit) {
       const minInnerMainDim = isMainAxisRow
-        ? style.resolvedMinDimensionValue(direction, Dimension.Width, ownerWidth, ownerWidth) -
+        ? style.resolvedMinDimension(direction, Dimension.Width, ownerWidth, ownerWidth) -
           paddingAndBorderAxisRow
-        : style.resolvedMinDimensionValue(direction, Dimension.Height, ownerHeight, ownerWidth) -
+        : style.resolvedMinDimension(direction, Dimension.Height, ownerHeight, ownerWidth) -
           paddingAndBorderAxisColumn;
       const maxInnerMainDim = isMainAxisRow
-        ? style.resolvedMaxDimensionValue(direction, Dimension.Width, ownerWidth, ownerWidth) -
+        ? style.resolvedMaxDimension(direction, Dimension.Width, ownerWidth, ownerWidth) -
           paddingAndBorderAxisRow
-        : style.resolvedMaxDimensionValue(direction, Dimension.Height, ownerHeight, ownerWidth) -
+        : style.resolvedMaxDimension(direction, Dimension.Height, ownerHeight, ownerWidth) -
           paddingAndBorderAxisColumn;
 
       if (flexLine.sizeConsumed < minInnerMainDim) {
@@ -2196,7 +2193,7 @@ function calculateLayoutImpl(
           // no need to stretch.
           if (!child.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim)) {
             let childMainSize = child.layout.measuredDimensions[dimension(mainAxis)];
-            const aspectRatio = childStyle.aspectRatio.unwrap();
+            const aspectRatio = childStyle.aspectRatio;
             let childCrossSize =
               aspectRatio === aspectRatio
                 ? childStyle.computeMarginForAxis(crossAxis, availableInnerWidth) +
@@ -2882,12 +2879,7 @@ export function calculateLayout(
   let width: number;
   let widthSizingMode: SizingMode;
   const style = node.style;
-  const maxWidth = style.resolvedMaxDimensionValue(
-    direction,
-    Dimension.Width,
-    ownerWidth,
-    ownerWidth,
-  );
+  const maxWidth = style.resolvedMaxDimension(direction, Dimension.Width, ownerWidth, ownerWidth);
   if (node.hasDefiniteLength(Dimension.Width, ownerWidth)) {
     width =
       node.getResolvedDimension(direction, dimension(FlexDirection.Row), ownerWidth, ownerWidth) +
@@ -2903,7 +2895,7 @@ export function calculateLayout(
 
   let height: number;
   let heightSizingMode: SizingMode;
-  const maxHeight = style.resolvedMaxDimensionValue(
+  const maxHeight = style.resolvedMaxDimension(
     direction,
     Dimension.Height,
     ownerHeight,

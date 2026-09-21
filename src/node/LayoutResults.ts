@@ -1,5 +1,3 @@
-// `FloatOptional` members are plain numbers here (NaN is undefined).
-
 import { Direction } from "../enums.ts";
 import { inexactEqualsArray } from "../numeric/Comparison.ts";
 import { CachedMeasurement } from "./CachedMeasurement.ts";

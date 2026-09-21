@@ -1,6 +1,5 @@
 import { Unit } from "../enums.ts";
 import { inexactEquals as inexactEqualsNumber } from "../numeric/Comparison.ts";
-import { FloatOptional } from "../numeric/FloatOptional.ts";
 import type { Value } from "../types.ts";
 
 /**
@@ -71,16 +70,8 @@ export class StyleLength {
     return this.unit_ === Unit.Percent;
   }
 
-  value(): FloatOptional {
-    return new FloatOptional(this.value_);
-  }
-
-  resolve(referenceLength: number): FloatOptional {
-    return new FloatOptional(this.resolveValue(referenceLength));
-  }
-
-  /** Allocation-free `resolve` for the layout algorithm: NaN when undefined. */
-  resolveValue(referenceLength: number): number {
+  /** The length in points, or NaN when it is undefined or auto. */
+  resolve(referenceLength: number): number {
     switch (this.unit_) {
       case Unit.Point:
         return this.value_;

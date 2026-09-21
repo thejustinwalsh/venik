@@ -337,7 +337,7 @@ function layoutAbsoluteChild(
   // Exactly one dimension needs to be defined for us to be able to do aspect
   // ratio calculation. One dimension being the anchor and the other being
   // flexible.
-  const aspectRatio = childStyle.aspectRatio.unwrap();
+  const aspectRatio = childStyle.aspectRatio;
   if ((childWidth !== childWidth) !== (childHeight !== childHeight)) {
     if (aspectRatio === aspectRatio) {
       if (childWidth !== childWidth) {

@@ -1,5 +1,3 @@
-// `FloatOptional` values are plain numbers here (NaN is undefined).
-
 import { Dimension, type Direction, type FlexDirection } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { maxOrDefined } from "../numeric/Comparison.ts";
@@ -28,8 +26,8 @@ export function boundAxisWithinMinAndMax(
 ): number {
   const style = node.style;
   const dim = isColumn(axis) ? Dimension.Height : Dimension.Width;
-  const min = style.resolvedMinDimensionValue(direction, dim, axisSize, widthSize);
-  const max = style.resolvedMaxDimensionValue(direction, dim, axisSize, widthSize);
+  const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
+  const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
 
   if (max >= 0 && value > max) {
     return max;

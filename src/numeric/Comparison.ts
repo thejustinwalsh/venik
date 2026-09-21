@@ -1,9 +1,3 @@
-// C++ overloads on float/double/std::array collapse as follows:
-//   - `inexactEquals(float|double, float|double)` -> `inexactEquals(a, b)`
-//   - `inexactEquals(std::array, std::array)`     -> `inexactEqualsArray(a, b)`
-// The `FloatOptional` overloads of `maxOrDefined`/`inexactEquals` live in
-// `./FloatOptional.ts`.
-
 /** max(a, b) if both are defined, otherwise whichever one is defined (NaN if neither). */
 export function maxOrDefined(a: number, b: number): number {
   if (a === a && b === b) {

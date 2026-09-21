@@ -25,7 +25,6 @@ import {
   Wrap,
 } from "../enums.ts";
 import { maxOrDefined } from "../numeric/Comparison.ts";
-import { FloatOptional } from "../numeric/FloatOptional.ts";
 import { StyleLength } from "./StyleLength.ts";
 import { StyleSizeLength } from "./StyleSizeLength.ts";
 
@@ -56,12 +55,13 @@ export class Style {
   display: Display = Display.Flex;
   boxSizing: BoxSizing = BoxSizing.BorderBox;
 
-  flex: FloatOptional = UNDEFINED_NUMBER;
-  flexGrow: FloatOptional = UNDEFINED_NUMBER;
-  flexShrink: FloatOptional = UNDEFINED_NUMBER;
+  // NaN is undefined.
+  flex: number = NaN;
+  flexGrow: number = NaN;
+  flexShrink: number = NaN;
   flexBasis: StyleSizeLength = StyleSizeLength.ofAuto();
   /** Degenerate ratios (0, infinite) are stored as undefined by `Node.setAspectRatio`. */
-  aspectRatio: FloatOptional = UNDEFINED_NUMBER;
+  aspectRatio: number = NaN;
 
   // Indexed by `Edge`, `Gutter` and `Dimension`.
   readonly margin: EdgeLengths = undefinedEdges();
@@ -132,9 +132,9 @@ export class Style {
       this.flexWrap === other.flexWrap &&
       this.overflow === other.overflow &&
       this.display === other.display &&
-      this.flex.equals(other.flex) &&
-      this.flexGrow.equals(other.flexGrow) &&
-      this.flexShrink.equals(other.flexShrink) &&
+      Object.is(this.flex, other.flex) &&
+      Object.is(this.flexGrow, other.flexGrow) &&
+      Object.is(this.flexShrink, other.flexShrink) &&
       this.flexBasis.equals(other.flexBasis) &&
       lengthsEqual(this.margin, other.margin) &&
       lengthsEqual(this.position, other.position) &&
@@ -144,29 +144,7 @@ export class Style {
       lengthsEqual(this.dimensions, other.dimensions) &&
       lengthsEqual(this.minDimensions, other.minDimensions) &&
       lengthsEqual(this.maxDimensions, other.maxDimensions) &&
-      this.aspectRatio.equals(other.aspectRatio)
-    );
-  }
-
-  resolvedMinDimension(
-    direction: Direction,
-    axis: Dimension,
-    referenceLength: number,
-    ownerWidth: number,
-  ): FloatOptional {
-    return new FloatOptional(
-      this.resolvedMinDimensionValue(direction, axis, referenceLength, ownerWidth),
-    );
-  }
-
-  resolvedMaxDimension(
-    direction: Direction,
-    axis: Dimension,
-    referenceLength: number,
-    ownerWidth: number,
-  ): FloatOptional {
-    return new FloatOptional(
-      this.resolvedMaxDimensionValue(direction, axis, referenceLength, ownerWidth),
+      Object.is(this.aspectRatio, other.aspectRatio)
     );
   }
 
@@ -225,110 +203,99 @@ export class Style {
   }
 
   computeFlexStartPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position, flexStartEdge(axis), direction).resolveValue(axisSize);
+    const value = computeEdge(this.position, flexStartEdge(axis), direction).resolve(axisSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineStartPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(
-      this.position,
-      inlineStartEdge(axis, direction),
-      direction,
-    ).resolveValue(axisSize);
+    const value = computeEdge(this.position, inlineStartEdge(axis, direction), direction).resolve(
+      axisSize,
+    );
     return value !== value ? 0 : value;
   }
 
   computeFlexEndPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(this.position, flexEndEdge(axis), direction).resolveValue(axisSize);
+    const value = computeEdge(this.position, flexEndEdge(axis), direction).resolve(axisSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineEndPosition(axis: FlexDirection, direction: Direction, axisSize: number): number {
-    const value = computeEdge(
-      this.position,
-      inlineEndEdge(axis, direction),
-      direction,
-    ).resolveValue(axisSize);
+    const value = computeEdge(this.position, inlineEndEdge(axis, direction), direction).resolve(
+      axisSize,
+    );
     return value !== value ? 0 : value;
   }
 
   computeFlexStartMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin, flexStartEdge(axis), direction).resolveValue(widthSize);
+    const value = computeEdge(this.margin, flexStartEdge(axis), direction).resolve(widthSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineStartMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(
-      this.margin,
-      inlineStartEdge(axis, direction),
-      direction,
-    ).resolveValue(widthSize);
+    const value = computeEdge(this.margin, inlineStartEdge(axis, direction), direction).resolve(
+      widthSize,
+    );
     return value !== value ? 0 : value;
   }
 
   computeFlexEndMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin, flexEndEdge(axis), direction).resolveValue(widthSize);
+    const value = computeEdge(this.margin, flexEndEdge(axis), direction).resolve(widthSize);
     return value !== value ? 0 : value;
   }
 
   computeInlineEndMargin(axis: FlexDirection, direction: Direction, widthSize: number): number {
-    const value = computeEdge(this.margin, inlineEndEdge(axis, direction), direction).resolveValue(
+    const value = computeEdge(this.margin, inlineEndEdge(axis, direction), direction).resolve(
       widthSize,
     );
     return value !== value ? 0 : value;
   }
 
   computeFlexStartBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(
-      computeEdge(this.border, flexStartEdge(axis), direction).resolveValue(0),
-      0,
-    );
+    return maxOrDefined(computeEdge(this.border, flexStartEdge(axis), direction).resolve(0), 0);
   }
 
   computeInlineStartBorder(axis: FlexDirection, direction: Direction): number {
     return maxOrDefined(
-      computeEdge(this.border, inlineStartEdge(axis, direction), direction).resolveValue(0),
+      computeEdge(this.border, inlineStartEdge(axis, direction), direction).resolve(0),
       0,
     );
   }
 
   computeFlexEndBorder(axis: FlexDirection, direction: Direction): number {
-    return maxOrDefined(computeEdge(this.border, flexEndEdge(axis), direction).resolveValue(0), 0);
+    return maxOrDefined(computeEdge(this.border, flexEndEdge(axis), direction).resolve(0), 0);
   }
 
   computeInlineEndBorder(axis: FlexDirection, direction: Direction): number {
     return maxOrDefined(
-      computeEdge(this.border, inlineEndEdge(axis, direction), direction).resolveValue(0),
+      computeEdge(this.border, inlineEndEdge(axis, direction), direction).resolve(0),
       0,
     );
   }
 
   computeFlexStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
     return maxOrDefined(
-      computeEdge(this.padding, flexStartEdge(axis), direction).resolveValue(widthSize),
+      computeEdge(this.padding, flexStartEdge(axis), direction).resolve(widthSize),
       0,
     );
   }
 
   computeInlineStartPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
     return maxOrDefined(
-      computeEdge(this.padding, inlineStartEdge(axis, direction), direction).resolveValue(
-        widthSize,
-      ),
+      computeEdge(this.padding, inlineStartEdge(axis, direction), direction).resolve(widthSize),
       0,
     );
   }
 
   computeFlexEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
     return maxOrDefined(
-      computeEdge(this.padding, flexEndEdge(axis), direction).resolveValue(widthSize),
+      computeEdge(this.padding, flexEndEdge(axis), direction).resolve(widthSize),
       0,
     );
   }
 
   computeInlineEndPadding(axis: FlexDirection, direction: Direction, widthSize: number): number {
     return maxOrDefined(
-      computeEdge(this.padding, inlineEndEdge(axis, direction), direction).resolveValue(widthSize),
+      computeEdge(this.padding, inlineEndEdge(axis, direction), direction).resolve(widthSize),
       0,
     );
   }
@@ -409,7 +376,7 @@ export class Style {
 
   computeGapForAxis(axis: FlexDirection, ownerSize: number): number {
     const gap = isRow(axis) ? this.computeColumnGap() : this.computeRowGap();
-    return maxOrDefined(gap.resolveValue(ownerSize), 0);
+    return maxOrDefined(gap.resolve(ownerSize), 0);
   }
 
   flexStartMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
@@ -421,7 +388,7 @@ export class Style {
   }
 
   /** Allocation-free `resolvedMinDimension` for the layout algorithm: NaN when undefined. */
-  resolvedMinDimensionValue(
+  resolvedMinDimension(
     direction: Direction,
     axis: Dimension,
     referenceLength: number,
@@ -437,7 +404,7 @@ export class Style {
   }
 
   /** Allocation-free `resolvedMaxDimension` for the layout algorithm: NaN when undefined. */
-  resolvedMaxDimensionValue(
+  resolvedMaxDimension(
     direction: Direction,
     axis: Dimension,
     referenceLength: number,
@@ -459,7 +426,7 @@ export class Style {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    const value = bound.resolveValue(referenceLength);
+    const value = bound.resolve(referenceLength);
     if (this.boxSizing === BoxSizing.BorderBox || value !== value) {
       return value;
     }
@@ -486,8 +453,6 @@ export class Style {
     return row.isDefined() ? row : this.gap[Gutter.All]!;
   }
 }
-
-const UNDEFINED_NUMBER = new FloatOptional();
 
 type EdgeLengths = [
   StyleLength,

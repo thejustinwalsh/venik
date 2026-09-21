@@ -26,7 +26,6 @@ import {
 } from "../enums.ts";
 import { Event } from "../event/event.ts";
 import { maxOrDefined } from "../numeric/Comparison.ts";
-import { FloatOptional } from "../numeric/FloatOptional.ts";
 import { Style } from "../style/Style.ts";
 import { StyleLength } from "../style/StyleLength.ts";
 import { StyleSizeLength } from "../style/StyleSizeLength.ts";
@@ -517,49 +516,49 @@ export class Node {
     return this.style.boxSizing;
   }
   setFlex(flex: number | undefined): void {
-    const value = new FloatOptional(flex ?? NaN);
-    if (!this.style.flex.equals(value)) {
+    const value = flex ?? NaN;
+    if (!Object.is(this.style.flex, value)) {
       this.style.flex = value;
       this.markDirtyAndPropagate();
     }
   }
   getFlex(): number {
-    return this.style.flex.unwrap();
+    return this.style.flex;
   }
   setFlexGrow(flexGrow: number | undefined): void {
-    const value = new FloatOptional(flexGrow ?? NaN);
-    if (!this.style.flexGrow.equals(value)) {
+    const value = flexGrow ?? NaN;
+    if (!Object.is(this.style.flexGrow, value)) {
       this.style.flexGrow = value;
       this.markDirtyAndPropagate();
     }
   }
   getFlexGrow(): number {
-    return this.style.flexGrow.unwrapOrDefault(Style.DefaultFlexGrow);
+    const flexGrow = this.style.flexGrow;
+    return Number.isNaN(flexGrow) ? Style.DefaultFlexGrow : flexGrow;
   }
   setFlexShrink(flexShrink: number | undefined): void {
-    const value = new FloatOptional(flexShrink ?? NaN);
-    if (!this.style.flexShrink.equals(value)) {
+    const value = flexShrink ?? NaN;
+    if (!Object.is(this.style.flexShrink, value)) {
       this.style.flexShrink = value;
       this.markDirtyAndPropagate();
     }
   }
   getFlexShrink(): number {
-    return this.style.flexShrink.unwrapOrDefault(Style.DefaultFlexShrink);
+    const flexShrink = this.style.flexShrink;
+    return Number.isNaN(flexShrink) ? Style.DefaultFlexShrink : flexShrink;
   }
   setAspectRatio(aspectRatio: number | undefined): void {
     // Degenerate aspect ratios (0, infinite) act as auto.
     // See https://drafts.csswg.org/css-sizing-4/#valdef-aspect-ratio-ratio
     const ratio = aspectRatio ?? NaN;
-    const value = new FloatOptional(
-      ratio === 0 || ratio === Infinity || ratio === -Infinity ? NaN : ratio,
-    );
-    if (!this.style.aspectRatio.equals(value)) {
+    const value = ratio === 0 || ratio === Infinity || ratio === -Infinity ? NaN : ratio;
+    if (!Object.is(this.style.aspectRatio, value)) {
       this.style.aspectRatio = value;
       this.markDirtyAndPropagate();
     }
   }
   getAspectRatio(): number {
-    return this.style.aspectRatio.unwrap();
+    return this.style.aspectRatio;
   }
 
   // Style: flex basis and dimensions
@@ -814,7 +813,7 @@ export class Node {
    * https://www.w3.org/TR/css-sizing-3/#definite
    */
   hasDefiniteLength(dimension: Dimension, ownerSize: number): boolean {
-    return this.processedDimensions_[dimension]!.resolveValue(ownerSize) >= 0;
+    return this.processedDimensions_[dimension]!.resolve(ownerSize) >= 0;
   }
 
   /** @internal */
@@ -834,7 +833,7 @@ export class Node {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    const value = this.processedDimensions_[dimension]!.resolveValue(referenceLength);
+    const value = this.processedDimensions_[dimension]!.resolve(referenceLength);
     if (this.style.boxSizing === BoxSizing.BorderBox) {
       return value;
     }
@@ -918,7 +917,7 @@ export class Node {
       return flexBasis;
     }
     // `flex: <positive number>` is `<number> 1 0` in CSS
-    if (this.style.flex.unwrap() > 0) {
+    if (this.style.flex > 0) {
       return StyleSizeLength.points(0);
     }
     return StyleSizeLength.ofAuto();
@@ -931,7 +930,7 @@ export class Node {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    const value = this.processFlexBasis().resolveValue(referenceLength);
+    const value = this.processFlexBasis().resolve(referenceLength);
     if (this.style.boxSizing === BoxSizing.BorderBox) {
       return value;
     }
@@ -1057,11 +1056,11 @@ export class Node {
     if (this.owner === null) {
       return 0.0;
     }
-    const flexGrow = this.style.flexGrow.unwrap();
+    const flexGrow = this.style.flexGrow;
     if (flexGrow === flexGrow) {
       return flexGrow;
     }
-    const flex = this.style.flex.unwrap();
+    const flex = this.style.flex;
     if (flex > 0) {
       return flex;
     }
@@ -1073,7 +1072,7 @@ export class Node {
     if (this.owner === null) {
       return 0.0;
     }
-    const flexShrink = this.style.flexShrink.unwrap();
+    const flexShrink = this.style.flexShrink;
     if (flexShrink === flexShrink) {
       return flexShrink;
     }
