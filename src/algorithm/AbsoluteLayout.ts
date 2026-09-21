@@ -444,6 +444,12 @@ export function layoutAbsoluteDescendants(
   currentNodeTopOffsetFromContainingBlock: number,
 ): boolean {
   let hasNewLayout = false;
+  const containingBlockWidth =
+    containingNode.layout.measuredDimensions[Dimension.Width] -
+    containingNode.style.computeBorderForAxis(FlexDirection.Row);
+  const containingBlockHeight =
+    containingNode.layout.measuredDimensions[Dimension.Height] -
+    containingNode.style.computeBorderForAxis(FlexDirection.Column);
   const children = currentNode.getLayoutChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
@@ -451,13 +457,6 @@ export function layoutAbsoluteDescendants(
     if (childStyle.display === Display.None) {
       continue;
     } else if (childStyle.positionType === PositionType.Absolute) {
-      const containingBlockWidth =
-        containingNode.layout.measuredDimensions[Dimension.Width] -
-        containingNode.style.computeBorderForAxis(FlexDirection.Row);
-      const containingBlockHeight =
-        containingNode.layout.measuredDimensions[Dimension.Height] -
-        containingNode.style.computeBorderForAxis(FlexDirection.Column);
-
       layoutAbsoluteChild(
         containingNode,
         currentNode,
@@ -537,6 +536,29 @@ export function layoutAbsoluteDescendants(
         currentNodeLeftOffsetFromContainingBlock + child.layout.position[PhysicalEdge.Left];
       const childTopOffsetFromContainingBlock =
         currentNodeTopOffsetFromContainingBlock + child.layout.position[PhysicalEdge.Top];
+
+      // A change anywhere below `child` dirties it, and a dirty node is visited.
+      // So when this pass has not visited it, and the walk arrives with what
+      // it came with last time, the absolute descendants are laid out already.
+      const childLayout = child.layout;
+      if (
+        childLayout.generationCount !== generationCount &&
+        childLayout.absoluteWalkDirection === childDirection &&
+        childLayout.absoluteWalkSizingMode === widthSizingMode &&
+        childLayout.absoluteWalkContainingWidth === containingBlockWidth &&
+        childLayout.absoluteWalkContainingHeight === containingBlockHeight &&
+        childLayout.absoluteWalkLeft === childLeftOffsetFromContainingBlock &&
+        childLayout.absoluteWalkTop === childTopOffsetFromContainingBlock
+      ) {
+        continue;
+      }
+      childLayout.absoluteWalkGeneration = generationCount;
+      childLayout.absoluteWalkDirection = childDirection;
+      childLayout.absoluteWalkSizingMode = widthSizingMode;
+      childLayout.absoluteWalkContainingWidth = containingBlockWidth;
+      childLayout.absoluteWalkContainingHeight = containingBlockHeight;
+      childLayout.absoluteWalkLeft = childLeftOffsetFromContainingBlock;
+      childLayout.absoluteWalkTop = childTopOffsetFromContainingBlock;
 
       hasNewLayout =
         layoutAbsoluteDescendants(

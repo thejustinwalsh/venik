@@ -2697,7 +2697,7 @@ export function calculateLayout(
       )
     ) {
       node.setLayoutPositionFromStyle(node.layout.direction, ownerWidth, ownerHeight);
-      roundLayoutResultsToPixelGrid(node);
+      roundLayoutResultsToPixelGrid(node, generationCount);
     }
   } finally {
     // Only does anything when a measure or baseline function threw.

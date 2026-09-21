@@ -1,4 +1,4 @@
-import { Dimension } from "../enums.ts";
+import { Dimension, Display } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { inexactEquals } from "../math.ts";
 import { PhysicalEdge } from "./FlexDirection.ts";
@@ -55,14 +55,14 @@ let absolutePositions = new Float64Array(64);
 /**
  * Round the layout results of a node and its subtree to the pixel grid.
  */
-export function roundLayoutResultsToPixelGrid(node: Node): void {
+export function roundLayoutResultsToPixelGrid(node: Node, generationCount: number): void {
   absolutePositions[0] = 0;
   absolutePositions[1] = 0;
-  roundSubtreeToPixelGrid(node, 0);
+  roundSubtreeToPixelGrid(node, 0, generationCount);
 }
 
 /** `offset` is where the absolute position of the node's parent is in `absolutePositions`. */
-function roundSubtreeToPixelGrid(node: Node, offset: number): void {
+function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: number): void {
   if (offset + 4 > absolutePositions.length) {
     const grown = new Float64Array(absolutePositions.length * 2);
     grown.set(absolutePositions);
@@ -135,9 +135,21 @@ function roundSubtreeToPixelGrid(node: Node, offset: number): void {
 
   const children = node.getChildren();
   for (let i = 0, length = children.length; i < length; i++) {
+    // A subtree this pass neither visited nor walked for absolute descendants
+    // is as the last pass rounded it: positions and sizes already on the grid.
+    // Rounding those again changes nothing, wherever the subtree has moved.
+    // A `display: contents` node is never visited itself, but its children are.
+    const childLayout = children[i]!.layout;
+    if (
+      childLayout.generationCount !== generationCount &&
+      childLayout.absoluteWalkGeneration !== generationCount &&
+      children[i]!.style.display !== Display.Contents
+    ) {
+      continue;
+    }
     // Written on every iteration: the child's subtree may have replaced the array.
     absolutePositions[offset + 2] = absoluteNodeLeft;
     absolutePositions[offset + 3] = absoluteNodeTop;
-    roundSubtreeToPixelGrid(children[i]!, offset + 2);
+    roundSubtreeToPixelGrid(children[i]!, offset + 2, generationCount);
   }
 }

@@ -1,4 +1,4 @@
-import { Direction } from "../enums.ts";
+import { Direction, SizingMode } from "../enums.ts";
 import { CachedMeasurement } from "./CachedMeasurement.ts";
 
 export class LayoutResults {
@@ -22,6 +22,18 @@ export class LayoutResults {
 
   direction: Direction = Direction.Inherit;
   hadOverflow: boolean = false;
+
+  // The pass that last walked through this node looking for absolute
+  // descendants of a containing block further up, and what it came with.
+  // While those stay the same and the node goes unvisited, its absolute
+  // descendants cannot change either.
+  absoluteWalkGeneration: number = 0;
+  absoluteWalkDirection: Direction = Direction.Inherit;
+  absoluteWalkSizingMode: SizingMode = SizingMode.StretchFit;
+  absoluteWalkContainingWidth: number = NaN;
+  absoluteWalkContainingHeight: number = NaN;
+  absoluteWalkLeft: number = NaN;
+  absoluteWalkTop: number = NaN;
 
   // Indexed by `Dimension`.
   readonly dimensions: [number, number] = [NaN, NaN];
@@ -61,6 +73,8 @@ export class LayoutResults {
     this.cachedLayout.reset();
     this.direction = Direction.Inherit;
     this.hadOverflow = false;
+    this.absoluteWalkGeneration = 0;
+    this.absoluteWalkContainingWidth = NaN;
     this.dimensions.fill(NaN);
     this.measuredDimensions.fill(NaN);
     this.rawDimensions.fill(NaN);
