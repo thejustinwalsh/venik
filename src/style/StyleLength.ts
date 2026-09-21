@@ -35,19 +35,38 @@ export class StyleLength {
 
   private static readonly UNDEFINED = new StyleLength();
   private static readonly AUTO = StyleLength.make(NaN, Unit.Auto);
+  private static readonly ZERO = StyleLength.make(0, Unit.Point);
 
-  /** Undefined if `value` is NaN or infinite. */
-  static points(value: number): StyleLength {
-    return Number.isFinite(value) ? StyleLength.make(value, Unit.Point) : StyleLength.UNDEFINED;
+  /**
+   * Undefined if `value` is NaN or infinite. Returns `reuse` instead of a new
+   * instance if that already is this length, which keeps a style setter called
+   * with an unchanged value (every frame, say) from allocating.
+   */
+  static points(value: number, reuse?: StyleLength): StyleLength {
+    if (!Number.isFinite(value)) {
+      return StyleLength.UNDEFINED;
+    }
+    return reuse !== undefined && reuse.unit_ === Unit.Point && reuse.value_ === value
+      ? reuse
+      : StyleLength.make(value, Unit.Point);
   }
 
-  /** Undefined if `value` is NaN or infinite. */
-  static percent(value: number): StyleLength {
-    return Number.isFinite(value) ? StyleLength.make(value, Unit.Percent) : StyleLength.UNDEFINED;
+  /** Like `points`, for a percentage. */
+  static percent(value: number, reuse?: StyleLength): StyleLength {
+    if (!Number.isFinite(value)) {
+      return StyleLength.UNDEFINED;
+    }
+    return reuse !== undefined && reuse.unit_ === Unit.Percent && reuse.value_ === value
+      ? reuse
+      : StyleLength.make(value, Unit.Percent);
   }
 
   static ofAuto(): StyleLength {
     return StyleLength.AUTO;
+  }
+
+  static zero(): StyleLength {
+    return StyleLength.ZERO;
   }
 
   static undefined(): StyleLength {

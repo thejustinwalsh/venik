@@ -23,7 +23,13 @@ import type { StyleLength } from "../style/StyleLength.ts";
 import { layoutAbsoluteDescendants } from "./AbsoluteLayout.ts";
 import { fallbackAlignment, fallbackJustification, resolveChildAlignment } from "./Align.ts";
 import { calculateBaseline, isBaselineLayout } from "./Baseline.ts";
-import { boundAxis, boundAxisWithinMinAndMax, paddingAndBorderForAxis } from "./BoundAxis.ts";
+import {
+  boundAxis,
+  boundAxisInPlace,
+  boundAxisValue,
+  boundAxisWithinMinAndMax,
+  paddingAndBorderForAxis,
+} from "./BoundAxis.ts";
 import { canUseCachedMeasurement } from "./Cache.ts";
 import {
   dimension,
@@ -34,7 +40,14 @@ import {
   resolveCrossDirection,
   resolveDirection,
 } from "./FlexDirection.ts";
-import { calculateFlexLine, type FlexLine } from "./FlexLine.ts";
+import {
+  acquireFlexLine,
+  calculateFlexLine,
+  type FlexLine,
+  flexLinePoolDepth,
+  releaseFlexLine,
+  restoreFlexLinePool,
+} from "./FlexLine.ts";
 import { roundLayoutResultsToPixelGrid } from "./PixelGrid.ts";
 import { needsTrailingPosition, setChildTrailingPosition } from "./TrailingPosition.ts";
 
@@ -209,17 +222,23 @@ function isHeightFitContentIndependent(node: Node): boolean {
   );
 }
 
+// Scratch stack of `canSkipHeightFitContent`, which calls nothing re-entrant.
+const heightFitContentStack: Node[] = [];
+
 function canSkipHeightFitContent(root: Node | null): boolean {
   if (root === null) {
     return false;
   }
 
   const maxPendingNodes = 64;
-  const stack: Node[] = [root];
+  const stack = heightFitContentStack;
+  stack.length = 0;
+  stack.push(root);
 
   while (stack.length > 0) {
     const node = stack.pop()!;
     if (!isHeightFitContentIndependent(node)) {
+      stack.length = 0;
       return false;
     }
 
@@ -227,6 +246,7 @@ function canSkipHeightFitContent(root: Node | null): boolean {
     for (let i = 0, length = children.length; i < length; i++) {
       const child = children[i]!;
       if (stack.length === maxPendingNodes) {
+        stack.length = 0;
         return false;
       }
       stack.push(child);
@@ -244,6 +264,11 @@ function maxSizeForMode(
   ownerAxisSize: number,
   ownerWidth: number,
 ): number {
+  // Returning the NaN literal matters: V8 boxes a computed double that a
+  // function returns (unless the call is inlined), but not a constant.
+  if (node.style.maxDimensions[dimension(axis)].isUndefined()) {
+    return NaN;
+  }
   return (
     node.style.resolvedMaxDimension(direction, dimension(axis), ownerAxisSize, ownerWidth) +
     node.style.computeMarginForAxis(axis, ownerWidth)
@@ -685,7 +710,7 @@ function measureNodeWithFixedSize(
 }
 
 function resetLayout(node: Node): void {
-  node.layout = new LayoutResults();
+  node.layout.reset();
   node.setLayoutDimension(0, Dimension.Width);
   node.setLayoutDimension(0, Dimension.Height);
 }
@@ -880,7 +905,7 @@ function distributeFreeSpaceSecondPass(
   const isMainAxisRow = isRow(mainAxis);
   const isNodeFlexWrap = node.style.flexWrap !== Wrap.NoWrap;
 
-  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+  for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
     childFlexBasis = boundAxisWithinMinAndMax(
       currentLineChild,
@@ -913,30 +938,33 @@ function distributeFreeSpaceSecondPass(
               flexShrinkScaledFactor;
         }
 
-        updatedMainSize = boundAxis(
+        boundAxisValue[0] = childSize;
+        boundAxisInPlace(
           currentLineChild,
           mainAxis,
           direction,
-          childSize,
           availableInnerMainDim,
           availableInnerWidth,
         );
+        updatedMainSize = boundAxisValue[0];
       }
     } else if (flexLine.layout.remainingFreeSpace > 0) {
       flexGrowFactor = currentLineChild.resolveFlexGrow();
 
       // Is this child able to grow?
       if (flexGrowFactor === flexGrowFactor && flexGrowFactor !== 0) {
-        updatedMainSize = boundAxis(
+        boundAxisValue[0] =
+          childFlexBasis +
+          (flexLine.layout.remainingFreeSpace / flexLine.layout.totalFlexGrowFactors) *
+            flexGrowFactor;
+        boundAxisInPlace(
           currentLineChild,
           mainAxis,
           direction,
-          childFlexBasis +
-            (flexLine.layout.remainingFreeSpace / flexLine.layout.totalFlexGrowFactors) *
-              flexGrowFactor,
           availableInnerMainDim,
           availableInnerWidth,
         );
+        updatedMainSize = boundAxisValue[0];
       }
     }
 
@@ -1074,7 +1102,7 @@ function distributeFreeSpaceFirstPass(
   const originalTotalFlexGrowFactors = flexLine.layout.totalFlexGrowFactors;
   const originalTotalFlexShrinkScaledFactors = flexLine.layout.totalFlexShrinkScaledFactors;
 
-  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+  for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
     const childFlexBasis = boundAxisWithinMinAndMax(
       currentLineChild,
@@ -1094,14 +1122,15 @@ function distributeFreeSpaceFirstPass(
           childFlexBasis +
           (flexLine.layout.remainingFreeSpace / originalTotalFlexShrinkScaledFactors) *
             flexShrinkScaledFactor;
-        boundMainSize = boundAxis(
+        boundAxisValue[0] = baseMainSize;
+        boundAxisInPlace(
           currentLineChild,
           mainAxis,
           direction,
-          baseMainSize,
           availableInnerMainDim,
           availableInnerWidth,
         );
+        boundMainSize = boundAxisValue[0];
         if (
           baseMainSize === baseMainSize &&
           boundMainSize === boundMainSize &&
@@ -1124,14 +1153,15 @@ function distributeFreeSpaceFirstPass(
         baseMainSize =
           childFlexBasis +
           (flexLine.layout.remainingFreeSpace / originalTotalFlexGrowFactors) * flexGrowFactor;
-        boundMainSize = boundAxis(
+        boundAxisValue[0] = baseMainSize;
+        boundAxisInPlace(
           currentLineChild,
           mainAxis,
           direction,
-          baseMainSize,
           availableInnerMainDim,
           availableInnerWidth,
         );
+        boundMainSize = boundAxisValue[0];
 
         if (
           baseMainSize === baseMainSize &&
@@ -1297,7 +1327,7 @@ function justifyMainAxis(
       ? style.justifyContent
       : fallbackJustification(style.justifyContent);
 
-  const itemCount = flexLine.itemsInFlow.length;
+  const itemCount = flexLine.itemCount;
   if (flexLine.numberOfAutoMargins === 0) {
     switch (justifyContent) {
       case Justify.Start:
@@ -1341,7 +1371,7 @@ function justifyMainAxis(
   let maxDescentForCurrentLine = 0;
   const isNodeBaselineLayout = isBaselineLayout(node);
   const lastChild = flexLine.itemsInFlow[itemCount - 1];
-  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+  for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const child = flexLine.itemsInFlow[i]!;
     const childLayout = child.layout;
     const childStyle = child.style;
@@ -1731,8 +1761,9 @@ function calculateLayoutImpl(
 
   // Max main dimension of all the lines.
   let maxLineMainDim = 0;
+  const flexLine = acquireFlexLine();
   for (; startOfLineIndex < layoutChildren.length; lineCount++) {
-    const flexLine = calculateFlexLine(
+    calculateFlexLine(
       node,
       ownerDirection,
       ownerWidth,
@@ -1742,6 +1773,7 @@ function calculateLayoutImpl(
       layoutChildren,
       startOfLineIndex,
       lineCount,
+      flexLine,
     );
     startOfLineIndex = flexLine.endOfLineIndex;
 
@@ -1883,7 +1915,7 @@ function calculateLayoutImpl(
     // STEP 7: CROSS-AXIS ALIGNMENT
     // We can skip child alignment if we're just measuring the container.
     if (performLayout) {
-      for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
+      for (let i = 0, length = flexLine.itemCount; i < length; i++) {
         const child = flexLine.itemsInFlow[i]!;
         const childStyle = child.style;
         let leadingCrossDim = leadingPaddingAndBorderCross;
@@ -2000,6 +2032,7 @@ function calculateLayoutImpl(
     totalLineCrossDim += flexLine.layout.crossDim + appliedCrossGap;
     maxLineMainDim = maxOrDefined(maxLineMainDim, flexLine.layout.mainDim);
   }
+  releaseFlexLine(flexLine);
 
   // STEP 8: MULTI-LINE CONTENT ALIGNMENT
   // currentLead stores the size of the cross dim
@@ -2632,25 +2665,32 @@ export function calculateLayout(
   // A measure function may run a nested layout pass, in
   // which case the global count has moved on from `currentGenerationCount`.
   const generationCount = currentGenerationCount;
-  if (
-    calculateLayoutInternal(
-      node,
-      width,
-      height,
-      ownerDirection,
-      widthSizingMode,
-      heightSizingMode,
-      ownerWidth,
-      ownerHeight,
-      true,
-      LayoutPassReason.Initial,
-      markerData,
-      0, // tree root
-      generationCount,
-    )
-  ) {
-    node.setLayoutPositionFromStyle(node.layout.direction, ownerWidth, ownerHeight);
-    roundLayoutResultsToPixelGrid(node, 0.0, 0.0);
+  // Non-zero when this pass runs inside a measure function of another one.
+  const poolDepth = flexLinePoolDepth();
+  try {
+    if (
+      calculateLayoutInternal(
+        node,
+        width,
+        height,
+        ownerDirection,
+        widthSizingMode,
+        heightSizingMode,
+        ownerWidth,
+        ownerHeight,
+        true,
+        LayoutPassReason.Initial,
+        markerData,
+        0, // tree root
+        generationCount,
+      )
+    ) {
+      node.setLayoutPositionFromStyle(node.layout.direction, ownerWidth, ownerHeight);
+      roundLayoutResultsToPixelGrid(node);
+    }
+  } finally {
+    // Only does anything when a measure or baseline function threw.
+    restoreFlexLinePool(poolDepth);
   }
 
   if (__EVENTS__) Event.publish(node, Event.LayoutPassEnd, { layoutData: markerData });

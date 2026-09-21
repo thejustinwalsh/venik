@@ -65,6 +65,8 @@ export class Node {
   private dirtiedFunc_: DirtiedFunction | null = null;
   private contentsChildrenCount_: number = 0;
   private children_: Node[] = [];
+  // Scratch list behind `getLayoutChildren`, only for nodes with `display: contents` children.
+  private layoutChildren_: Node[] | null = null;
   private config_: Config;
   private processedDimensions_: StyleLength[] = [StyleLength.undefined(), StyleLength.undefined()];
 
@@ -421,10 +423,10 @@ export class Node {
 
   // Style: flex basis and dimensions
   setFlexBasis(flexBasis: number | "auto" | Percent | undefined): void {
-    this.updateFlexBasis(parseLength(flexBasis));
+    this.updateFlexBasis(parseLength(flexBasis, this.style.flexBasis));
   }
   setFlexBasisPercent(flexBasis: number | undefined): void {
-    this.updateFlexBasis(StyleLength.percent(flexBasis ?? NaN));
+    this.updateFlexBasis(StyleLength.percent(flexBasis ?? NaN, this.style.flexBasis));
   }
   setFlexBasisAuto(): void {
     this.updateFlexBasis(StyleLength.ofAuto());
@@ -433,10 +435,16 @@ export class Node {
     return this.style.flexBasis.toValue();
   }
   setWidth(width: number | "auto" | Percent | undefined): void {
-    this.updateDimension(Dimension.Width, parseLength(width));
+    this.updateDimension(
+      Dimension.Width,
+      parseLength(width, this.style.dimensions[Dimension.Width]),
+    );
   }
   setWidthPercent(width: number | undefined): void {
-    this.updateDimension(Dimension.Width, StyleLength.percent(width ?? NaN));
+    this.updateDimension(
+      Dimension.Width,
+      StyleLength.percent(width ?? NaN, this.style.dimensions[Dimension.Width]),
+    );
   }
   setWidthAuto(): void {
     this.updateDimension(Dimension.Width, StyleLength.ofAuto());
@@ -445,10 +453,16 @@ export class Node {
     return this.style.dimensions[Dimension.Width].toValue();
   }
   setHeight(height: number | "auto" | Percent | undefined): void {
-    this.updateDimension(Dimension.Height, parseLength(height));
+    this.updateDimension(
+      Dimension.Height,
+      parseLength(height, this.style.dimensions[Dimension.Height]),
+    );
   }
   setHeightPercent(height: number | undefined): void {
-    this.updateDimension(Dimension.Height, StyleLength.percent(height ?? NaN));
+    this.updateDimension(
+      Dimension.Height,
+      StyleLength.percent(height ?? NaN, this.style.dimensions[Dimension.Height]),
+    );
   }
   setHeightAuto(): void {
     this.updateDimension(Dimension.Height, StyleLength.ofAuto());
@@ -457,37 +471,61 @@ export class Node {
     return this.style.dimensions[Dimension.Height].toValue();
   }
   setMinWidth(minWidth: number | Percent | undefined): void {
-    this.updateMinDimension(Dimension.Width, parseLength(minWidth));
+    this.updateMinDimension(
+      Dimension.Width,
+      parseLength(minWidth, this.style.minDimensions[Dimension.Width]),
+    );
   }
   setMinWidthPercent(minWidth: number | undefined): void {
-    this.updateMinDimension(Dimension.Width, StyleLength.percent(minWidth ?? NaN));
+    this.updateMinDimension(
+      Dimension.Width,
+      StyleLength.percent(minWidth ?? NaN, this.style.minDimensions[Dimension.Width]),
+    );
   }
   getMinWidth(): Value {
     return this.style.minDimensions[Dimension.Width].toValue();
   }
   setMinHeight(minHeight: number | Percent | undefined): void {
-    this.updateMinDimension(Dimension.Height, parseLength(minHeight));
+    this.updateMinDimension(
+      Dimension.Height,
+      parseLength(minHeight, this.style.minDimensions[Dimension.Height]),
+    );
   }
   setMinHeightPercent(minHeight: number | undefined): void {
-    this.updateMinDimension(Dimension.Height, StyleLength.percent(minHeight ?? NaN));
+    this.updateMinDimension(
+      Dimension.Height,
+      StyleLength.percent(minHeight ?? NaN, this.style.minDimensions[Dimension.Height]),
+    );
   }
   getMinHeight(): Value {
     return this.style.minDimensions[Dimension.Height].toValue();
   }
   setMaxWidth(maxWidth: number | Percent | undefined): void {
-    this.updateMaxDimension(Dimension.Width, parseLength(maxWidth));
+    this.updateMaxDimension(
+      Dimension.Width,
+      parseLength(maxWidth, this.style.maxDimensions[Dimension.Width]),
+    );
   }
   setMaxWidthPercent(maxWidth: number | undefined): void {
-    this.updateMaxDimension(Dimension.Width, StyleLength.percent(maxWidth ?? NaN));
+    this.updateMaxDimension(
+      Dimension.Width,
+      StyleLength.percent(maxWidth ?? NaN, this.style.maxDimensions[Dimension.Width]),
+    );
   }
   getMaxWidth(): Value {
     return this.style.maxDimensions[Dimension.Width].toValue();
   }
   setMaxHeight(maxHeight: number | Percent | undefined): void {
-    this.updateMaxDimension(Dimension.Height, parseLength(maxHeight));
+    this.updateMaxDimension(
+      Dimension.Height,
+      parseLength(maxHeight, this.style.maxDimensions[Dimension.Height]),
+    );
   }
   setMaxHeightPercent(maxHeight: number | undefined): void {
-    this.updateMaxDimension(Dimension.Height, StyleLength.percent(maxHeight ?? NaN));
+    this.updateMaxDimension(
+      Dimension.Height,
+      StyleLength.percent(maxHeight ?? NaN, this.style.maxDimensions[Dimension.Height]),
+    );
   }
   getMaxHeight(): Value {
     return this.style.maxDimensions[Dimension.Height].toValue();
@@ -495,10 +533,14 @@ export class Node {
 
   // Style: edges and gutters
   setPosition(edge: Edge, position: number | "auto" | Percent | undefined): void {
-    this.updateEdge(this.style.position, edge, parseLength(position));
+    this.updateEdge(this.style.position, edge, parseLength(position, this.style.position[edge]));
   }
   setPositionPercent(edge: Edge, position: number | undefined): void {
-    this.updateEdge(this.style.position, edge, StyleLength.percent(position ?? NaN));
+    this.updateEdge(
+      this.style.position,
+      edge,
+      StyleLength.percent(position ?? NaN, this.style.position[edge]),
+    );
   }
   setPositionAuto(edge: Edge): void {
     this.updateEdge(this.style.position, edge, StyleLength.ofAuto());
@@ -507,10 +549,14 @@ export class Node {
     return this.style.position[edge].toValue();
   }
   setMargin(edge: Edge, margin: number | "auto" | Percent | undefined): void {
-    this.updateEdge(this.style.margin, edge, parseLength(margin));
+    this.updateEdge(this.style.margin, edge, parseLength(margin, this.style.margin[edge]));
   }
   setMarginPercent(edge: Edge, margin: number | undefined): void {
-    this.updateEdge(this.style.margin, edge, StyleLength.percent(margin ?? NaN));
+    this.updateEdge(
+      this.style.margin,
+      edge,
+      StyleLength.percent(margin ?? NaN, this.style.margin[edge]),
+    );
   }
   setMarginAuto(edge: Edge): void {
     this.updateEdge(this.style.margin, edge, StyleLength.ofAuto());
@@ -519,16 +565,24 @@ export class Node {
     return this.style.margin[edge].toValue();
   }
   setPadding(edge: Edge, padding: number | Percent | undefined): void {
-    this.updateEdge(this.style.padding, edge, parseLength(padding));
+    this.updateEdge(this.style.padding, edge, parseLength(padding, this.style.padding[edge]));
   }
   setPaddingPercent(edge: Edge, padding: number | undefined): void {
-    this.updateEdge(this.style.padding, edge, StyleLength.percent(padding ?? NaN));
+    this.updateEdge(
+      this.style.padding,
+      edge,
+      StyleLength.percent(padding ?? NaN, this.style.padding[edge]),
+    );
   }
   getPadding(edge: Edge): Value {
     return this.style.padding[edge].toValue();
   }
   setBorder(edge: Edge, border: number | undefined): void {
-    this.updateEdge(this.style.border, edge, StyleLength.points(border ?? NaN));
+    this.updateEdge(
+      this.style.border,
+      edge,
+      StyleLength.points(border ?? NaN, this.style.border[edge]),
+    );
   }
   getBorder(edge: Edge): number {
     const border = this.style.border[edge];
@@ -539,10 +593,14 @@ export class Node {
     return border.toValue().value;
   }
   setGap(gutter: Gutter, gapLength: number | Percent | undefined): void {
-    this.updateEdge(this.style.gap, gutter, parseLength(gapLength));
+    this.updateEdge(this.style.gap, gutter, parseLength(gapLength, this.style.gap[gutter]));
   }
   setGapPercent(gutter: Gutter, gapLength: number | undefined): void {
-    this.updateEdge(this.style.gap, gutter, StyleLength.percent(gapLength ?? NaN));
+    this.updateEdge(
+      this.style.gap,
+      gutter,
+      StyleLength.percent(gapLength ?? NaN, this.style.gap[gutter]),
+    );
   }
   getGap(gutter: Gutter): Value {
     return this.style.gap[gutter].toValue();
@@ -559,12 +617,19 @@ export class Node {
     // Like the C++ iterator this looks at the children's current display
     // rather than at `contentsChildrenCount_`, which goes stale when a child's
     // display changes after it was inserted.
-    if (!this.children_.some(isContentsNode)) {
+    if (!hasContentsNode(this.children_)) {
+      this.layoutChildren_ = null;
       return this.children_;
     }
 
-    const layoutChildren: Node[] = [];
-    collectLayoutChildren(this, layoutChildren);
+    // Refilled on every call and reused, so the list is only valid until the
+    // tree changes. Callers within a layout pass all see the same contents.
+    const layoutChildren = (this.layoutChildren_ ??= []);
+    const count = collectLayoutChildren(this, layoutChildren, 0);
+    // Truncating an array makes V8 drop its storage, so only do it when the list shrank.
+    if (layoutChildren.length !== count) {
+      layoutChildren.length = count;
+    }
     return layoutChildren;
   }
   /** @internal */
@@ -763,7 +828,7 @@ export class Node {
     }
     // `flex: <positive number>` is `<number> 1 0` in CSS
     if (this.style.flex > 0) {
-      return StyleLength.points(0);
+      return StyleLength.zero();
     }
     return StyleLength.ofAuto();
   }
@@ -775,7 +840,12 @@ export class Node {
     referenceLength: number,
     ownerWidth: number,
   ): number {
-    const value = this.processFlexBasis().resolve(referenceLength);
+    const flexBasis = this.processFlexBasis();
+    if (flexBasis.isAuto()) {
+      // The literal, so that V8 has no computed double to box.
+      return NaN;
+    }
+    const value = flexBasis.resolve(referenceLength);
     if (this.style.boxSizing === BoxSizing.BorderBox) {
       return value;
     }
@@ -941,25 +1011,41 @@ export class Node {
 
 const DIMENSIONS = [Dimension.Width, Dimension.Height] as const;
 
-function isContentsNode(node: Node): boolean {
-  return node.style.display === Display.Contents;
+function hasContentsNode(children: readonly Node[]): boolean {
+  for (let i = 0, length = children.length; i < length; i++) {
+    if (children[i]!.style.display === Display.Contents) {
+      return true;
+    }
+  }
+  return false;
 }
 
-function collectLayoutChildren(node: Node, out: Node[]): void {
+/** Writes the layout children of `node` into `out` from index `count` on; returns the new count. */
+function collectLayoutChildren(node: Node, out: Node[], count: number): number {
   const children = node.getChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
     if (child.style.display === Display.Contents) {
-      collectLayoutChildren(child, out);
-    } else {
+      count = collectLayoutChildren(child, out, count);
+    } else if (count === out.length) {
       out.push(child);
+      count++;
+    } else {
+      out[count++] = child;
     }
   }
+  return count;
 }
 
-function parseLength(value: number | "auto" | Percent | undefined): StyleLength {
+/** `current` is the length being replaced, which is returned if it already has the parsed value. */
+function parseLength(
+  value: number | "auto" | Percent | undefined,
+  current: StyleLength,
+): StyleLength {
   if (typeof value === "string") {
-    return value === "auto" ? StyleLength.ofAuto() : StyleLength.percent(Number.parseFloat(value));
+    return value === "auto"
+      ? StyleLength.ofAuto()
+      : StyleLength.percent(Number.parseFloat(value), current);
   }
-  return StyleLength.points(value ?? NaN);
+  return StyleLength.points(value ?? NaN, current);
 }

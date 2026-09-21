@@ -3,9 +3,13 @@ import type { Node } from "../node/Node.ts";
 import { inexactEquals } from "../math.ts";
 import { PhysicalEdge } from "./FlexDirection.ts";
 
+// Operand and result of `roundScratchToPixelGrid`: [value, pointScaleFactor].
+// V8 boxes fractional doubles that cross a call it doesn't inline, both as
+// arguments and as return value, so the tree walk below rounds through here.
+const roundingScratch = new Float64Array(2);
+
 /**
  * Rounds a point value to the nearest physical pixel given the scale factor.
- * Equivalent of `YGRoundValueToPixelGrid`.
  */
 export function roundValueToPixelGrid(
   value: number,
@@ -13,7 +17,16 @@ export function roundValueToPixelGrid(
   forceCeil: boolean,
   forceFloor: boolean,
 ): number {
-  let scaledValue = value * pointScaleFactor;
+  roundingScratch[0] = value;
+  roundingScratch[1] = pointScaleFactor;
+  roundScratchToPixelGrid(forceCeil, forceFloor);
+  return roundingScratch[0]!;
+}
+
+/** Rounds `roundingScratch[0]` in place, using the scale factor in `roundingScratch[1]`. */
+function roundScratchToPixelGrid(forceCeil: boolean, forceFloor: boolean): void {
+  const pointScaleFactor = roundingScratch[1]!;
+  let scaledValue = roundingScratch[0]! * pointScaleFactor;
   // We want to calculate `fractial` such that `floor(scaledValue) = scaledValue
   // - fractial`.
   let fractial = scaledValue % 1.0;
@@ -52,19 +65,36 @@ export function roundValueToPixelGrid(
       fractial +
       (fractial === fractial && (fractial > 0.5 || inexactEquals(fractial, 0.5)) ? 1.0 : 0.0);
   }
-  return scaledValue !== scaledValue || pointScaleFactor !== pointScaleFactor
-    ? NaN
-    : scaledValue / pointScaleFactor;
+  roundingScratch[0] =
+    scaledValue !== scaledValue || pointScaleFactor !== pointScaleFactor
+      ? NaN
+      : scaledValue / pointScaleFactor;
 }
+
+// Absolute left/top of the ancestors being rounded, two entries per tree
+// depth. The recursion hands these down through here instead of as arguments,
+// because V8 boxes every fractional double passed to a call it doesn't inline.
+let absolutePositions = new Float64Array(64);
 
 /**
  * Round the layout results of a node and its subtree to the pixel grid.
  */
-export function roundLayoutResultsToPixelGrid(
-  node: Node,
-  absoluteLeft: number,
-  absoluteTop: number,
-): void {
+export function roundLayoutResultsToPixelGrid(node: Node): void {
+  absolutePositions[0] = 0;
+  absolutePositions[1] = 0;
+  roundSubtreeToPixelGrid(node, 0);
+}
+
+/** `offset` is where the absolute position of the node's parent is in `absolutePositions`. */
+function roundSubtreeToPixelGrid(node: Node, offset: number): void {
+  if (offset + 4 > absolutePositions.length) {
+    const grown = new Float64Array(absolutePositions.length * 2);
+    grown.set(absolutePositions);
+    absolutePositions = grown;
+  }
+  const absoluteLeft = absolutePositions[offset]!;
+  const absoluteTop = absolutePositions[offset + 1]!;
+
   const pointScaleFactor = node.getConfig().getPointScaleFactor();
   const layout = node.layout;
 
@@ -85,19 +115,16 @@ export function roundLayoutResultsToPixelGrid(
     // size as this could lead to unwanted text truncation.
     const textRounding = node.hasMeasureFunc();
 
-    layout.position[PhysicalEdge.Left] = roundValueToPixelGrid(
-      nodeLeft,
-      pointScaleFactor,
-      false,
-      textRounding,
-    );
+    const scratch = roundingScratch;
+    scratch[1] = pointScaleFactor;
 
-    layout.position[PhysicalEdge.Top] = roundValueToPixelGrid(
-      nodeTop,
-      pointScaleFactor,
-      false,
-      textRounding,
-    );
+    scratch[0] = nodeLeft;
+    roundScratchToPixelGrid(false, textRounding);
+    layout.position[PhysicalEdge.Left] = scratch[0];
+
+    scratch[0] = nodeTop;
+    roundScratchToPixelGrid(false, textRounding);
+    layout.position[PhysicalEdge.Top] = scratch[0];
 
     // We multiply dimension by scale factor and if the result is close to the
     // whole number, we don't have any fraction To verify if the result is close
@@ -109,29 +136,32 @@ export function roundLayoutResultsToPixelGrid(
     const scaledNodeHeight = nodeHeight * pointScaleFactor;
     const hasFractionalHeight = !inexactEquals(Math.round(scaledNodeHeight), scaledNodeHeight);
 
-    layout.dimensions[Dimension.Width] =
-      roundValueToPixelGrid(
-        absoluteNodeRight,
-        pointScaleFactor,
-        textRounding && hasFractionalWidth,
-        textRounding && !hasFractionalWidth,
-      ) - roundValueToPixelGrid(absoluteNodeLeft, pointScaleFactor, false, textRounding);
+    scratch[0] = absoluteNodeLeft;
+    roundScratchToPixelGrid(false, textRounding);
+    const roundedAbsoluteLeft = scratch[0];
+    scratch[0] = absoluteNodeRight;
+    roundScratchToPixelGrid(
+      textRounding && hasFractionalWidth,
+      textRounding && !hasFractionalWidth,
+    );
+    layout.dimensions[Dimension.Width] = scratch[0] - roundedAbsoluteLeft;
 
-    layout.dimensions[Dimension.Height] =
-      roundValueToPixelGrid(
-        absoluteNodeBottom,
-        pointScaleFactor,
-        textRounding && hasFractionalHeight,
-        textRounding && !hasFractionalHeight,
-      ) - roundValueToPixelGrid(absoluteNodeTop, pointScaleFactor, false, textRounding);
+    scratch[0] = absoluteNodeTop;
+    roundScratchToPixelGrid(false, textRounding);
+    const roundedAbsoluteTop = scratch[0];
+    scratch[0] = absoluteNodeBottom;
+    roundScratchToPixelGrid(
+      textRounding && hasFractionalHeight,
+      textRounding && !hasFractionalHeight,
+    );
+    layout.dimensions[Dimension.Height] = scratch[0] - roundedAbsoluteTop;
   }
 
   const children = node.getChildren();
   for (let i = 0, length = children.length; i < length; i++) {
-    const child = children[i]!;
-    if (child.owner !== node) {
-      continue;
-    }
-    roundLayoutResultsToPixelGrid(child, absoluteNodeLeft, absoluteNodeTop);
+    // Written on every iteration: the child's subtree may have replaced the array.
+    absolutePositions[offset + 2] = absoluteNodeLeft;
+    absolutePositions[offset + 3] = absoluteNodeTop;
+    roundSubtreeToPixelGrid(children[i]!, offset + 2);
   }
 }

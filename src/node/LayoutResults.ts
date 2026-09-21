@@ -32,6 +32,29 @@ export class LayoutResults {
   readonly margin: PhysicalEdges = [0, 0, 0, 0];
   readonly border: PhysicalEdges = [0, 0, 0, 0];
   readonly padding: PhysicalEdges = [0, 0, 0, 0];
+
+  /** Back to the state of a new `LayoutResults`, without allocating. */
+  reset(): void {
+    this.computedFlexBasisGeneration = 0;
+    this.computedFlexBasis = NaN;
+    this.generationCount = 0;
+    this.configVersion = 0;
+    this.lastOwnerDirection = Direction.Inherit;
+    this.nextCachedMeasurementsIndex = 0;
+    for (let i = 0; i < LayoutResults.MaxCachedMeasurements; i++) {
+      this.cachedMeasurements[i]!.reset();
+    }
+    this.cachedLayout.reset();
+    this.direction = Direction.Inherit;
+    this.hadOverflow = false;
+    this.dimensions.fill(NaN);
+    this.measuredDimensions.fill(NaN);
+    this.rawDimensions.fill(NaN);
+    this.position.fill(0);
+    this.margin.fill(0);
+    this.border.fill(0);
+    this.padding.fill(0);
+  }
 }
 
 type PhysicalEdges = [number, number, number, number];

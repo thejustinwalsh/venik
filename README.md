@@ -19,6 +19,25 @@ static `create`/`destroy`), enums are only the `Align.Center`-style objects
 (no flat `ALIGN_CENTER` constants, no default export), and the defaults differ
 (see below).
 
+## Use in a render loop
+
+The layout path is written to produce as little garbage as possible, so
+`calculateLayout()` can run every frame:
+
+- A clean tree returns immediately; a dirty one only revisits dirty branches.
+- Layout allocates no objects or arrays. Scratch structures (flex lines, the
+  flattened child list of `display: contents` parents) are pooled and reused.
+- Style setters called with the value a node already has allocate nothing and
+  don't dirty the node. A setter that changes a length allocates one small object.
+- A measure function may return the same `{ width, height }` object every time;
+  it is read before the function can be called again.
+- Read results with `getComputedLeft()` / `getComputedWidth()` and friends.
+  `getComputedLayout()` allocates its result object.
+
+What remains is V8 boxing fractional and `NaN` doubles that cross function calls
+it doesn't inline: short-lived 16-byte numbers, proportional to the number of
+nodes relaid out.
+
 ## Status
 
 Test-driven rewrite of the reference C++ sources:
