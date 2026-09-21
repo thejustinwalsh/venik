@@ -34,9 +34,6 @@ test("scale_change_invalidates_layout", () => {
   expect(root_child0.getComputedLeft()).toBe(0);
   // Left should change due to pixel alignment of new scale factor
   expect(root_child1.getComputedLeft()).toBeCloseTo(25.333334, 4);
-
-  root.freeRecursive();
-  config.free();
 });
 
 test("setting_compatible_config_maintains_layout_cache", () => {
@@ -91,8 +88,4 @@ test("setting_compatible_config_maintains_layout_cache", () => {
   expect(measureCallCount).toBe(1);
   expect(root_child0.getComputedLeft()).toBe(0);
   expect(root_child1.getComputedLeft()).toBe(25);
-
-  root.freeRecursive();
-  config.free();
-  config2.free();
 });

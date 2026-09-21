@@ -69,9 +69,7 @@ test("auto_width", () => {
   expect(root_child2.getComputedWidth()).toBe(50);
   expect(root_child2.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("auto_height", () => {
@@ -140,9 +138,7 @@ test("auto_height", () => {
   expect(root_child2.getComputedWidth()).toBe(50);
   expect(root_child2.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("auto_flex_basis", () => {
@@ -211,9 +207,7 @@ test("auto_flex_basis", () => {
   expect(root_child2.getComputedWidth()).toBe(50);
   expect(root_child2.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("auto_position", () => {
@@ -253,9 +247,7 @@ test("auto_position", () => {
   expect(root_child0.getComputedWidth()).toBe(25);
   expect(root_child0.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("auto_margin", () => {
@@ -295,7 +287,5 @@ test("auto_margin", () => {
   expect(root_child0.getComputedWidth()).toBe(25);
   expect(root_child0.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });

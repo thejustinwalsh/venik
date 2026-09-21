@@ -25,6 +25,4 @@ test("zero_out_layout", () => {
 
   expect(child.getComputedMargin(Edge.Top)).toBe(0);
   expect(child.getComputedPadding(Edge.Top)).toBe(0);
-
-  root.freeRecursive();
 });

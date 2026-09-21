@@ -40,9 +40,7 @@ test("contains_inner_text_long_word", () => {
   expect(root_child0.getComputedWidth()).toBe(1300);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_no_width_no_height", () => {
@@ -83,9 +81,7 @@ test("contains_inner_text_no_width_no_height", () => {
   expect(root_child0.getComputedWidth()).toBe(2000);
   expect(root_child0.getComputedHeight()).toBe(70);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_no_width_no_height_long_word_in_paragraph", () => {
@@ -126,9 +122,7 @@ test("contains_inner_text_no_width_no_height_long_word_in_paragraph", () => {
   expect(root_child0.getComputedWidth()).toBe(2000);
   expect(root_child0.getComputedHeight()).toBe(70);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_fixed_width", () => {
@@ -170,9 +164,7 @@ test("contains_inner_text_fixed_width", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(1290);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_no_width_fixed_height", () => {
@@ -214,9 +206,7 @@ test("contains_inner_text_no_width_fixed_height", () => {
   expect(root_child0.getComputedWidth()).toBe(2000);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_fixed_width_fixed_height", () => {
@@ -259,9 +249,7 @@ test("contains_inner_text_fixed_width_fixed_height", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_max_width_max_height", () => {
@@ -304,9 +292,7 @@ test("contains_inner_text_max_width_max_height", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_max_width_max_height_column", () => {
@@ -346,9 +332,7 @@ test("contains_inner_text_max_width_max_height_column", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(1890);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_max_width", () => {
@@ -390,9 +374,7 @@ test("contains_inner_text_max_width", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(1290);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_fixed_width_shorter_text", () => {
@@ -434,9 +416,7 @@ test("contains_inner_text_fixed_width_shorter_text", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_fixed_height_shorter_text", () => {
@@ -478,9 +458,7 @@ test("contains_inner_text_fixed_height_shorter_text", () => {
   expect(root_child0.getComputedWidth()).toBe(110);
   expect(root_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("contains_inner_text_max_height", () => {
@@ -522,7 +500,5 @@ test("contains_inner_text_max_height", () => {
   expect(root_child0.getComputedWidth()).toBe(2000);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });

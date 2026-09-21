@@ -25,40 +25,6 @@ export function newFixtureNode(config?: Config): Node {
   return node;
 }
 
-let nodeInstanceCount = 0;
-
-const yogaEventSubscriber: Subscriber = (_node, eventType, _eventData) => {
-  switch (eventType) {
-    case Event.NodeAllocation:
-      nodeInstanceCount++;
-      break;
-    case Event.NodeDeallocation:
-      nodeInstanceCount--;
-      break;
-    default:
-      break;
-  }
-};
-
-/** Counts live nodes through the allocation and deallocation events. */
-export const TestUtil = {
-  startCountingNodes(): void {
-    nodeInstanceCount = 0;
-    Event.subscribe(yogaEventSubscriber);
-  },
-
-  nodeCount(): number {
-    return nodeInstanceCount;
-  },
-
-  stopCountingNodes(): number {
-    Event.reset();
-    const prev = nodeInstanceCount;
-    nodeInstanceCount = 0;
-    return prev;
-  },
-};
-
 /**
  * Subscribes on construction; `dispose()` unsubscribes everything
  * (`Event.reset()`). Construct it in `beforeEach` and dispose it in

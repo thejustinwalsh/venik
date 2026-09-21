@@ -56,9 +56,7 @@ test("rounding_feature_with_custom_measure_func_floor", () => {
   expect(root_child0.getComputedWidth()).toBe(12);
   expect(root_child0.getComputedHeight()).toBe(12);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_feature_with_custom_measure_func_ceil", () => {
@@ -76,9 +74,7 @@ test("rounding_feature_with_custom_measure_func_ceil", () => {
   expect(root_child0.getComputedWidth()).toBe(11);
   expect(root_child0.getComputedHeight()).toBe(11);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_feature_with_custom_measure_and_fractial_matching_scale", () => {
@@ -100,7 +96,5 @@ test("rounding_feature_with_custom_measure_and_fractial_matching_scale", () => {
   expect(root_child0.getComputedHeight()).toBeCloseTo(0.5, 4);
   expect(root_child0.getComputedLeft()).toBeCloseTo(73.5, 4);
 
-  root.freeRecursive();
 
-  config.free();
 });

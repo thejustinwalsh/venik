@@ -35,9 +35,7 @@ test("wrap_child", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("wrap_grandchild", () => {
@@ -87,7 +85,5 @@ test("wrap_grandchild", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(100);
   expect(root_child0_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });

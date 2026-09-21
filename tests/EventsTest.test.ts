@@ -54,9 +54,6 @@ const listen: Subscriber = (node, type, data) => {
     case Event.NodeAllocation:
       events.push(createArgs(node, type, data));
       break;
-    case Event.NodeDeallocation:
-      events.push(createArgs(node, type, data));
-      break;
     case Event.NodeLayout:
       events.push(createArgs(node, type, data));
       break;
@@ -109,8 +106,6 @@ describe("EventTest", () => {
     expect(lastEvent().node).toBe(n);
     expect(lastEvent().type).toBe(Event.NodeAllocation);
     expect(data(lastEvent(), Event.NodeAllocation).config).toBe(c);
-
-    n.free();
   });
 
   test("new_node_with_config_event", () => {
@@ -120,21 +115,6 @@ describe("EventTest", () => {
     expect(lastEvent().node).toBe(n);
     expect(lastEvent().type).toBe(Event.NodeAllocation);
     expect(data(lastEvent(), Event.NodeAllocation).config).toBe(c);
-
-    n.free();
-    c.free();
-  });
-
-  test("free_node_event", () => {
-    const c = new Config();
-    const n = new Node(c);
-    n.free();
-
-    expect(lastEvent().node).toBe(n);
-    expect(lastEvent().type).toBe(Event.NodeDeallocation);
-    expect(data(lastEvent(), Event.NodeDeallocation).config).toBe(c);
-
-    c.free();
   });
 
   test("layout_events", () => {
@@ -161,8 +141,6 @@ describe("EventTest", () => {
 
     expect(events[7]!.node).toBe(root);
     expect(events[7]!.type).toBe(Event.LayoutPassEnd);
-
-    root.freeRecursive();
   });
 
   test("layout_events_single_node", () => {

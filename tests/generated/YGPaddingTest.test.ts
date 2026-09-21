@@ -22,9 +22,7 @@ test("padding_no_size", () => {
   expect(root.getComputedWidth()).toBe(20);
   expect(root.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("padding_container_match_child", () => {
@@ -62,9 +60,7 @@ test("padding_container_match_child", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("padding_flex_child", () => {
@@ -104,9 +100,7 @@ test("padding_flex_child", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(80);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("padding_stretch_child", () => {
@@ -145,9 +139,7 @@ test("padding_stretch_child", () => {
   expect(root_child0.getComputedWidth()).toBe(80);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("padding_center_child", () => {
@@ -191,9 +183,7 @@ test("padding_center_child", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("child_with_padding_align_end", () => {
@@ -235,9 +225,7 @@ test("child_with_padding_align_end", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("physical_and_relative_edge_defined", () => {
@@ -278,7 +266,5 @@ test("physical_and_relative_edge_defined", () => {
   expect(root_child0.getComputedWidth()).toBe(150);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });

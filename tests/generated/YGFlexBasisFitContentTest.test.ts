@@ -51,9 +51,7 @@ test("container_child_overflows_definite_parent_column", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(50);
   expect(root_child0_child0.getComputedHeight()).toBe(500);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("container_child_overflows_definite_parent_row", () => {
@@ -106,9 +104,7 @@ test("container_child_overflows_definite_parent_row", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(500);
   expect(root_child0_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("container_child_within_bounds_column", () => {
@@ -160,9 +156,7 @@ test("container_child_within_bounds_column", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(50);
   expect(root_child0_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("multiple_container_children_overflow_column", () => {
@@ -240,9 +234,7 @@ test("multiple_container_children_overflow_column", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(200);
   expect(root_child1_child0.getComputedHeight()).toBe(500);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("scroll_container_column", () => {
@@ -294,9 +286,7 @@ test("scroll_container_column", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(200);
   expect(root_child0_child0.getComputedHeight()).toBe(500);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("explicit_and_container_children_column", () => {
@@ -361,7 +351,5 @@ test("explicit_and_container_children_column", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(200);
   expect(root_child1_child0.getComputedHeight()).toBe(500);
 
-  root.freeRecursive();
 
-  config.free();
 });

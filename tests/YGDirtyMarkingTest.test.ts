@@ -30,8 +30,6 @@ test("dirty_propagation", () => {
   expect(root_child0.isDirty()).toBe(false);
   expect(root_child1.isDirty()).toBe(false);
   expect(root.isDirty()).toBe(false);
-
-  root.freeRecursive();
 });
 
 test("dirty_propagation_only_if_prop_changed", () => {
@@ -57,8 +55,6 @@ test("dirty_propagation_only_if_prop_changed", () => {
   expect(root_child0.isDirty()).toBe(false);
   expect(root_child1.isDirty()).toBe(false);
   expect(root.isDirty()).toBe(false);
-
-  root.freeRecursive();
 });
 
 test("dirty_propagation_changing_layout_config", () => {
@@ -104,9 +100,6 @@ test("dirty_propagation_changing_layout_config", () => {
   expect(root_child0.isDirty()).toBe(false);
   expect(root_child1.isDirty()).toBe(false);
   expect(root_child0_child0.isDirty()).toBe(false);
-
-  newConfig.free();
-  root.freeRecursive();
 });
 
 test("dirty_propagation_changing_benign_config", () => {
@@ -144,9 +137,6 @@ test("dirty_propagation_changing_benign_config", () => {
   expect(root_child0.isDirty()).toBe(false);
   expect(root_child1.isDirty()).toBe(false);
   expect(root_child0_child0.isDirty()).toBe(false);
-
-  newConfig.free();
-  root.freeRecursive();
 });
 
 test("dirty_mark_all_children_as_dirty_when_display_changes", () => {
@@ -193,8 +183,6 @@ test("dirty_mark_all_children_as_dirty_when_display_changes", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
   expect(child1_child0_child0.getComputedWidth()).toBe(8);
   expect(child1_child0_child0.getComputedHeight()).toBe(16);
-
-  root.freeRecursive();
 });
 
 test("dirty_node_only_if_children_are_actually_removed", () => {
@@ -213,13 +201,9 @@ test("dirty_node_only_if_children_are_actually_removed", () => {
   const child1 = new Node();
   root.removeChild(child1);
   expect(root.isDirty()).toBe(false);
-  child1.free();
 
   root.removeChild(child0);
   expect(root.isDirty()).toBe(true);
-  child0.free();
-
-  root.freeRecursive();
 });
 
 test("dirty_node_only_if_undefined_values_gets_set_to_undefined", () => {
@@ -234,8 +218,6 @@ test("dirty_node_only_if_undefined_values_gets_set_to_undefined", () => {
   root.setMinWidth(undefined);
 
   expect(root.isDirty()).toBe(false);
-
-  root.freeRecursive();
 });
 
 test("dirty_removed_child_node", () => {
@@ -257,9 +239,6 @@ test("dirty_removed_child_node", () => {
   // Child should be marked dirty after removal so layout is recalculated
   // when the child is reused (e.g., in a recycling view system)
   expect(child.isDirty()).toBe(true);
-
-  child.free();
-  root.freeRecursive();
 });
 
 test("dirty_removed_child_nodes_when_removing_all", () => {
@@ -287,13 +266,9 @@ test("dirty_removed_child_nodes_when_removing_all", () => {
   // All children should be marked dirty after removal
   expect(child0.isDirty()).toBe(true);
   expect(child1.isDirty()).toBe(true);
-
-  child0.free();
-  child1.free();
-  root.freeRecursive();
 });
 
-test("dirty_parent_when_child_freed", () => {
+test("dirty_parent_when_child_detached", () => {
   const root = new Node();
   root.setWidth(100);
   root.setHeight(100);
@@ -306,24 +281,9 @@ test("dirty_parent_when_child_freed", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
   expect(root.isDirty()).toBe(false);
 
-  child.free();
+  child.detach();
 
   expect(root.isDirty()).toBe(true);
-  root.free();
-});
-
-test("dirty_parent_when_subtree_freed_recursive", () => {
-  const root = new Node();
-  const child = new Node();
-  const grandchild = new Node();
-  root.insertChild(child, 0);
-  child.insertChild(grandchild, 0);
-
-  root.calculateLayout(undefined, undefined, Direction.LTR);
-  expect(root.isDirty()).toBe(false);
-
-  child.freeRecursive();
-
-  expect(root.isDirty()).toBe(true);
-  root.free();
+  expect(child.owner).toBe(null);
+  expect(root.getChildCount()).toBe(0);
 });

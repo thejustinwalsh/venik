@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { newFixtureNode } from "./util/testUtil.ts";
 import {
   Config,
@@ -35,13 +35,6 @@ describe("YGFlexBasisFitContentTest", () => {
   beforeEach(() => {
     root = null;
     config = new Config();
-  });
-
-  afterEach(() => {
-    if (root !== null) {
-      root.freeRecursive();
-    }
-    config.free();
   });
 
   // Auto-height container with a percentage-height child produces the same

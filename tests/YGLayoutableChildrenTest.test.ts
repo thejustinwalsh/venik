@@ -32,8 +32,6 @@ test("layoutable_children_single_contents_node", () => {
     expect(node).toBe(order[correctOrderIt]);
     correctOrderIt++;
   }
-
-  root.freeRecursive();
 });
 
 test("layoutable_children_multiple_contents_nodes", () => {
@@ -79,8 +77,6 @@ test("layoutable_children_multiple_contents_nodes", () => {
     expect(node).toBe(order[correctOrderIt]);
     correctOrderIt++;
   }
-
-  root.freeRecursive();
 });
 
 test("layoutable_children_nested_contents_nodes", () => {
@@ -122,8 +118,6 @@ test("layoutable_children_nested_contents_nodes", () => {
     expect(node).toBe(order[correctOrderIt]);
     correctOrderIt++;
   }
-
-  root.freeRecursive();
 });
 
 test("layoutable_children_contents_leaf_node", () => {
@@ -149,8 +143,6 @@ test("layoutable_children_contents_leaf_node", () => {
     expect(node).toBe(order[correctOrderIt]);
     correctOrderIt++;
   }
-
-  root.freeRecursive();
 });
 
 test("layoutable_children_contents_root_node", () => {
@@ -177,6 +169,4 @@ test("layoutable_children_contents_root_node", () => {
     expect(node).toBe(order[correctOrderIt]);
     correctOrderIt++;
   }
-
-  root.freeRecursive();
 });

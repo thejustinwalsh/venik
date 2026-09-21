@@ -16,8 +16,6 @@ test("computed_layout_margin", () => {
 
   expect(root.getComputedMargin(Edge.Left)).toBe(0);
   expect(root.getComputedMargin(Edge.Right)).toBe(10);
-
-  root.freeRecursive();
 });
 
 test("margin_side_overrides_horizontal_and_vertical", () => {
@@ -37,8 +35,6 @@ test("margin_side_overrides_horizontal_and_vertical", () => {
       root.calculateLayout(100, 100, Direction.LTR);
 
       expect(root.getComputedMargin(edge)).toBe(edgeValue);
-
-      root.freeRecursive();
     }
   }
 });
@@ -57,8 +53,6 @@ test("margin_side_overrides_all", () => {
       root.calculateLayout(100, 100, Direction.LTR);
 
       expect(root.getComputedMargin(edge)).toBe(edgeValue);
-
-      root.freeRecursive();
     }
   }
 });
@@ -85,8 +79,6 @@ test("margin_horizontal_and_vertical_overrides_all", () => {
         expect(root.getComputedMargin(Edge.Left)).toBe(directionValue);
         expect(root.getComputedMargin(Edge.Right)).toBe(directionValue);
       }
-
-      root.freeRecursive();
     }
   }
 });

@@ -79,62 +79,6 @@ export class Node {
     if (__EVENTS__) Event.publish(this, Event.NodeAllocation, { config });
   }
 
-  // Lifecycle
-  free(): void {
-    const owner = this.owner;
-    if (owner !== null) {
-      owner.removeChildRaw(this);
-      this.owner = null;
-      owner.markDirtyAndPropagate();
-    }
-
-    for (let i = 0, length = this.children_.length; i < length; i++) {
-      const child = this.children_[i]!;
-      child.owner = null;
-    }
-
-    this.clearChildren();
-    if (__EVENTS__) Event.publish(this, Event.NodeDeallocation, { config: this.config_ });
-  }
-  freeRecursive(): void {
-    let skipped = 0;
-    while (this.children_.length > skipped) {
-      const child = this.children_[skipped]!;
-      if (child.owner !== this) {
-        // Don't free shared nodes that we don't own.
-        skipped += 1;
-      } else {
-        this.removeChild(child);
-        child.freeRecursive();
-      }
-    }
-    this.free();
-  }
-  reset(): void {
-    if (this.children_.length !== 0) {
-      throw new Error("Cannot reset a node which still has children attached");
-    }
-    if (this.owner !== null) {
-      throw new Error("Cannot reset a node still attached to a owner");
-    }
-
-    this.hasNewLayout = true;
-    this.isReferenceBaseline_ = false;
-    this.isDirty_ = true;
-    this.context = null;
-    this.measureFunc_ = null;
-    this.minContentMeasureFunc_ = null;
-    this.minContentWidth_ = NaN;
-    this.minContentHeight_ = NaN;
-    this.baselineFunc_ = null;
-    this.dirtiedFunc_ = null;
-    this.style = new Style();
-    this.layout = new LayoutResults();
-    this.lineIndex = 0;
-    this.contentsChildrenCount_ = 0;
-    this.processedDimensions_ = [StyleLength.undefined(), StyleLength.undefined()];
-  }
-
   // Layout
   calculateLayout(width?: number | "auto", height?: number | "auto", direction?: Direction): void {
     calculateLayout(
@@ -182,6 +126,10 @@ export class Node {
       child.detachFromOwner();
       this.markDirtyAndPropagate();
     }
+  }
+  /** Removes this node from its owner, if it has one. */
+  detach(): void {
+    this.owner?.removeChild(this);
   }
   removeAllChildren(): void {
     if (this.children_.length === 0) {

@@ -37,9 +37,7 @@ test("align_items_stretch", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_center", () => {
@@ -79,9 +77,7 @@ test("align_items_center", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_flex_start", () => {
@@ -121,9 +117,7 @@ test("align_items_flex_start", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_flex_end", () => {
@@ -163,9 +157,7 @@ test("align_items_flex_end", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline", () => {
@@ -221,9 +213,7 @@ test("align_baseline", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child", () => {
@@ -294,9 +284,7 @@ test("align_baseline_child", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(50);
   expect(root_child1_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child_multiline", () => {
@@ -414,9 +402,7 @@ test("align_baseline_child_multiline", () => {
   expect(root_child1_child3.getComputedWidth()).toBe(25);
   expect(root_child1_child3.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child_multiline_override", () => {
@@ -536,9 +522,7 @@ test("align_baseline_child_multiline_override", () => {
   expect(root_child1_child3.getComputedWidth()).toBe(25);
   expect(root_child1_child3.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child_multiline_no_override_on_secondline", () => {
@@ -657,9 +641,7 @@ test("align_baseline_child_multiline_no_override_on_secondline", () => {
   expect(root_child1_child3.getComputedWidth()).toBe(25);
   expect(root_child1_child3.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child_top", () => {
@@ -731,9 +713,7 @@ test("align_baseline_child_top", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(50);
   expect(root_child1_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child_top2", () => {
@@ -805,9 +785,7 @@ test("align_baseline_child_top2", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(50);
   expect(root_child1_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_double_nested_child", () => {
@@ -893,9 +871,7 @@ test("align_baseline_double_nested_child", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(50);
   expect(root_child1_child0.getComputedHeight()).toBe(15);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_column", () => {
@@ -950,9 +926,7 @@ test("align_baseline_column", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child_margin", () => {
@@ -1025,9 +999,7 @@ test("align_baseline_child_margin", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(50);
   expect(root_child1_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_child_padding", () => {
@@ -1100,9 +1072,7 @@ test("align_baseline_child_padding", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(50);
   expect(root_child1_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_multiline", () => {
@@ -1219,9 +1189,7 @@ test("align_baseline_multiline", () => {
   expect(root_child3.getComputedWidth()).toBe(50);
   expect(root_child3.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_multiline_row_and_column", () => {
@@ -1338,9 +1306,7 @@ test("align_baseline_multiline_row_and_column", () => {
   expect(root_child3.getComputedWidth()).toBe(50);
   expect(root_child3.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_center_child_with_margin_bigger_than_parent", () => {
@@ -1397,9 +1363,7 @@ test("align_items_center_child_with_margin_bigger_than_parent", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(52);
   expect(root_child0_child0.getComputedHeight()).toBe(52);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_flex_end_child_with_margin_bigger_than_parent", () => {
@@ -1456,9 +1420,7 @@ test("align_items_flex_end_child_with_margin_bigger_than_parent", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(52);
   expect(root_child0_child0.getComputedHeight()).toBe(52);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_center_child_without_margin_bigger_than_parent", () => {
@@ -1513,9 +1475,7 @@ test("align_items_center_child_without_margin_bigger_than_parent", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(72);
   expect(root_child0_child0.getComputedHeight()).toBe(72);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_flex_end_child_without_margin_bigger_than_parent", () => {
@@ -1570,9 +1530,7 @@ test("align_items_flex_end_child_without_margin_bigger_than_parent", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(72);
   expect(root_child0_child0.getComputedHeight()).toBe(72);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_center_should_size_based_on_content", () => {
@@ -1643,9 +1601,7 @@ test("align_center_should_size_based_on_content", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(20);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_stretch_should_size_based_on_parent", () => {
@@ -1715,9 +1671,7 @@ test("align_stretch_should_size_based_on_parent", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(20);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_flex_start_with_shrinking_children", () => {
@@ -1785,9 +1739,7 @@ test("align_flex_start_with_shrinking_children", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(0);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_flex_start_with_stretching_children", () => {
@@ -1854,9 +1806,7 @@ test("align_flex_start_with_stretching_children", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(500);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_flex_start_with_shrinking_children_with_stretch", () => {
@@ -1924,9 +1874,7 @@ test("align_flex_start_with_shrinking_children_with_stretch", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(0);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_flex_end_with_row_reverse", () => {
@@ -1984,9 +1932,7 @@ test("align_flex_end_with_row_reverse", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_stretch_with_row_reverse", () => {
@@ -2043,9 +1989,7 @@ test("align_stretch_with_row_reverse", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_non_stretch_s526008", () => {
@@ -2125,7 +2069,5 @@ test("align_items_non_stretch_s526008", () => {
   expect(root_child0_child0_child0_child0.getComputedWidth()).toBe(0);
   expect(root_child0_child0_child0_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });

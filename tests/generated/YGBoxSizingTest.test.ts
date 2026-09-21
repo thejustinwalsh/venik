@@ -26,9 +26,7 @@ test("box_sizing_content_box_simple", () => {
   expect(root.getComputedWidth()).toBe(130);
   expect(root.getComputedHeight()).toBe(130);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_simple", () => {
@@ -54,9 +52,7 @@ test("box_sizing_border_box_simple", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_percent", () => {
@@ -98,9 +94,7 @@ test("box_sizing_content_box_percent", () => {
   expect(root_child0.getComputedWidth()).toBe(90);
   expect(root_child0.getComputedHeight()).toBe(65);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_percent", () => {
@@ -141,9 +135,7 @@ test("box_sizing_border_box_percent", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_absolute", () => {
@@ -185,9 +177,7 @@ test("box_sizing_content_box_absolute", () => {
   expect(root_child0.getComputedWidth()).toBe(40);
   expect(root_child0.getComputedHeight()).toBe(65);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_absolute", () => {
@@ -228,9 +218,7 @@ test("box_sizing_border_box_absolute", () => {
   expect(root_child0.getComputedWidth()).toBe(40);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_comtaining_block", () => {
@@ -287,9 +275,7 @@ test("box_sizing_content_box_comtaining_block", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(50);
   expect(root_child0_child0.getComputedHeight()).toBe(31);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_comtaining_block", () => {
@@ -345,9 +331,7 @@ test("box_sizing_border_box_comtaining_block", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(50);
   expect(root_child0_child0.getComputedHeight()).toBe(21);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_padding_only", () => {
@@ -373,9 +357,7 @@ test("box_sizing_content_box_padding_only", () => {
   expect(root.getComputedWidth()).toBe(110);
   expect(root.getComputedHeight()).toBe(110);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_padding_only_percent", () => {
@@ -416,9 +398,7 @@ test("box_sizing_content_box_padding_only_percent", () => {
   expect(root_child0.getComputedWidth()).toBe(70);
   expect(root_child0.getComputedHeight()).toBe(95);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_padding_only", () => {
@@ -443,9 +423,7 @@ test("box_sizing_border_box_padding_only", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_padding_only_percent", () => {
@@ -485,9 +463,7 @@ test("box_sizing_border_box_padding_only_percent", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(75);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_border_only", () => {
@@ -513,9 +489,7 @@ test("box_sizing_content_box_border_only", () => {
   expect(root.getComputedWidth()).toBe(120);
   expect(root.getComputedHeight()).toBe(120);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_border_only_percent", () => {
@@ -554,9 +528,7 @@ test("box_sizing_content_box_border_only_percent", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_border_only", () => {
@@ -581,9 +553,7 @@ test("box_sizing_border_box_border_only", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_border_only_percent", () => {
@@ -621,9 +591,7 @@ test("box_sizing_border_box_border_only_percent", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_no_padding_no_border", () => {
@@ -648,9 +616,7 @@ test("box_sizing_content_box_no_padding_no_border", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_no_padding_no_border", () => {
@@ -674,9 +640,7 @@ test("box_sizing_border_box_no_padding_no_border", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_children", () => {
@@ -763,9 +727,7 @@ test("box_sizing_content_box_children", () => {
   expect(root_child3.getComputedWidth()).toBe(25);
   expect(root_child3.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_children", () => {
@@ -851,9 +813,7 @@ test("box_sizing_border_box_children", () => {
   expect(root_child3.getComputedWidth()).toBe(25);
   expect(root_child3.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_siblings", () => {
@@ -940,9 +900,7 @@ test("box_sizing_content_box_siblings", () => {
   expect(root_child3.getComputedWidth()).toBe(25);
   expect(root_child3.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_siblings", () => {
@@ -1028,9 +986,7 @@ test("box_sizing_border_box_siblings", () => {
   expect(root_child3.getComputedWidth()).toBe(25);
   expect(root_child3.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_max_width", () => {
@@ -1087,9 +1043,7 @@ test("box_sizing_content_box_max_width", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_max_width", () => {
@@ -1145,9 +1099,7 @@ test("box_sizing_border_box_max_width", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_max_height", () => {
@@ -1204,9 +1156,7 @@ test("box_sizing_content_box_max_height", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_max_height", () => {
@@ -1262,9 +1212,7 @@ test("box_sizing_border_box_max_height", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_min_width", () => {
@@ -1321,9 +1269,7 @@ test("box_sizing_content_box_min_width", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_min_width", () => {
@@ -1379,9 +1325,7 @@ test("box_sizing_border_box_min_width", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_min_height", () => {
@@ -1438,9 +1382,7 @@ test("box_sizing_content_box_min_height", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_min_height", () => {
@@ -1496,9 +1438,7 @@ test("box_sizing_border_box_min_height", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_no_height_no_width", () => {
@@ -1538,9 +1478,7 @@ test("box_sizing_content_box_no_height_no_width", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(18);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_no_height_no_width", () => {
@@ -1579,9 +1517,7 @@ test("box_sizing_border_box_no_height_no_width", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(18);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_nested", () => {
@@ -1644,9 +1580,7 @@ test("box_sizing_content_box_nested", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(16);
   expect(root_child0_child0.getComputedHeight()).toBe(11);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_nested", () => {
@@ -1706,9 +1640,7 @@ test("box_sizing_border_box_nested", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(10);
   expect(root_child0_child0.getComputedHeight()).toBe(6);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_nested_alternating", () => {
@@ -1787,9 +1719,7 @@ test("box_sizing_content_box_nested_alternating", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(10);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(5);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_nested_alternating", () => {
@@ -1868,9 +1798,7 @@ test("box_sizing_border_box_nested_alternating", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(14);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(9);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_flex_basis_row", () => {
@@ -1912,9 +1840,7 @@ test("box_sizing_border_box_flex_basis_row", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(30);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_flex_basis_column", () => {
@@ -1955,9 +1881,7 @@ test("box_sizing_border_box_flex_basis_column", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_padding_start", () => {
@@ -1983,9 +1907,7 @@ test("box_sizing_content_box_padding_start", () => {
   expect(root.getComputedWidth()).toBe(105);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_padding_start", () => {
@@ -2010,9 +1932,7 @@ test("box_sizing_border_box_padding_start", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_padding_end", () => {
@@ -2038,9 +1958,7 @@ test("box_sizing_content_box_padding_end", () => {
   expect(root.getComputedWidth()).toBe(105);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_padding_end", () => {
@@ -2065,9 +1983,7 @@ test("box_sizing_border_box_padding_end", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_border_start", () => {
@@ -2093,9 +2009,7 @@ test("box_sizing_content_box_border_start", () => {
   expect(root.getComputedWidth()).toBe(105);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_border_start", () => {
@@ -2120,9 +2034,7 @@ test("box_sizing_border_box_border_start", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_content_box_border_end", () => {
@@ -2148,9 +2060,7 @@ test("box_sizing_content_box_border_end", () => {
   expect(root.getComputedWidth()).toBe(105);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("box_sizing_border_box_border_end", () => {
@@ -2175,7 +2085,5 @@ test("box_sizing_border_box_border_end", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });

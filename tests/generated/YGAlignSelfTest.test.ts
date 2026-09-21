@@ -39,9 +39,7 @@ test("align_self_center", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_self_flex_end", () => {
@@ -81,9 +79,7 @@ test("align_self_flex_end", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_self_flex_start", () => {
@@ -123,9 +119,7 @@ test("align_self_flex_start", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_self_flex_end_override_flex_start", () => {
@@ -166,9 +160,7 @@ test("align_self_flex_end_override_flex_start", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_self_baseline", () => {
@@ -240,7 +232,5 @@ test("align_self_baseline", () => {
   expect(root_child1_child0.getComputedWidth()).toBe(50);
   expect(root_child1_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });

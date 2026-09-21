@@ -15,8 +15,6 @@ describe("YogaTest", () => {
 
     // Verify the value was not changed after the failed set
     expect(config.getPointScaleFactor()).toBe(0);
-
-    config.free();
   });
 
   test("config_version_increments_only_on_actual_changes", () => {
@@ -31,8 +29,6 @@ describe("YogaTest", () => {
     // Setting the same value again should NOT increment version
     config.setPointScaleFactor(2.0);
     expect(config.getVersion()).toBe(initialVersion + 1);
-
-    config.free();
   });
 
   test("config_update_invalidates_layout_detects_each_property", () => {
@@ -49,8 +45,5 @@ describe("YogaTest", () => {
     // Make them match again
     config1.setPointScaleFactor(3.0);
     expect(configUpdateInvalidatesLayout(config1, config2)).toBe(false);
-
-    config1.free();
-    config2.free();
   });
 });

@@ -17,9 +17,7 @@ test("dont_cache_computed_flex_basis_between_layouts", () => {
 
   expect(root_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("recalculate_resolvedDimonsion_onchange", () => {
@@ -37,8 +35,6 @@ test("recalculate_resolvedDimonsion_onchange", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
   expect(root_child0.getComputedHeight()).toBe(0);
-
-  root.freeRecursive();
 });
 
 test("relayout_containing_block_size_changes", () => {
@@ -194,9 +190,7 @@ test("relayout_containing_block_size_changes", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(182);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(263);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("has_new_layout_flag_set_static", () => {
@@ -241,6 +235,4 @@ test("has_new_layout_flag_set_static", () => {
   expect(root_child0.hasNewLayout).toBe(true);
   expect(root_child0_child0.hasNewLayout).toBe(true);
   expect(root_child0_child0_child0.hasNewLayout).toBe(true);
-
-  root.freeRecursive();
 });

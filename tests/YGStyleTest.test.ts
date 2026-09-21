@@ -6,9 +6,6 @@ test("copy_style_same", () => {
   const node1 = new Node();
 
   node0.copyStyle(node1);
-
-  node0.free();
-  node1.free();
 });
 
 test("copy_style_modified", () => {
@@ -23,9 +20,6 @@ test("copy_style_modified", () => {
   node0.copyStyle(node1);
   expect(node0.getFlexDirection()).toBe(FlexDirection.Column);
   expect(node0.getMaxHeight().value).toBe(10);
-
-  node0.free();
-  node1.free();
 });
 
 test("copy_style_modified_same", () => {
@@ -39,9 +33,6 @@ test("copy_style_modified_same", () => {
   node1.setMaxHeight(10);
 
   node0.copyStyle(node1);
-
-  node0.free();
-  node1.free();
 });
 
 test("initialise_flexShrink_flexGrow", () => {
@@ -58,5 +49,4 @@ test("initialise_flexShrink_flexGrow", () => {
   node0.setFlexShrink(3);
   expect(node0.getFlexGrow()).toBe(0); // Default value is Zero, if flex grow is not defined
   expect(node0.getFlexShrink()).toBe(3);
-  node0.free();
 });

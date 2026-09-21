@@ -32,8 +32,6 @@ test("set_children_adds_children_to_parent", () => {
   const owners = [root_child0.owner, root_child1.owner];
   const expectedOwners: (Node | null)[] = [root, root];
   expectSameNodes(owners, expectedOwners);
-
-  root.freeRecursive();
 });
 
 test("set_children_to_empty_removes_old_children", () => {
@@ -51,8 +49,6 @@ test("set_children_to_empty_removes_old_children", () => {
   const owners = [root_child0.owner, root_child1.owner];
   const expectedOwners: (Node | null)[] = [null, null];
   expectSameNodes(owners, expectedOwners);
-
-  root.freeRecursive();
 });
 
 test("set_children_replaces_non_common_children", () => {
@@ -75,10 +71,6 @@ test("set_children_replaces_non_common_children", () => {
   const owners = [root_child0.owner, root_child1.owner];
   const expectedOwners: (Node | null)[] = [null, null];
   expectSameNodes(owners, expectedOwners);
-
-  root.freeRecursive();
-  root_child0.free();
-  root_child1.free();
 });
 
 test("set_children_keeps_and_reorders_common_children", () => {
@@ -106,7 +98,4 @@ test("set_children_keeps_and_reorders_common_children", () => {
   ];
   const expectedOwners: (Node | null)[] = [null, root, root, root];
   expectSameNodes(owners, expectedOwners);
-
-  root.freeRecursive();
-  root_child0.free();
 });

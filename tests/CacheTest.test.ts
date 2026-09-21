@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { canUseCachedMeasurement } from "../src/algorithm/Cache.ts";
 import { SizingMode } from "../src/algorithm/SizingMode.ts";
 import { Config } from "../src/index.ts";
@@ -8,10 +8,6 @@ describe("CacheTest", () => {
 
   beforeEach(() => {
     config_ = new Config();
-  });
-
-  afterEach(() => {
-    config_.free();
   });
 
   test("negativeCachedMeasurementDisablesCache", () => {

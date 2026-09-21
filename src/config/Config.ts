@@ -13,10 +13,6 @@ export class Config {
     return (Config.default_ ??= new Config());
   }
 
-  free(): void {
-    // Nothing to release: configs are garbage collected.
-  }
-
   setPointScaleFactor(pixelsInPoint: number): void {
     if (pixelsInPoint < 0.0 || pixelsInPoint !== pixelsInPoint) {
       throw new Error("Scale factor should not be less than zero");

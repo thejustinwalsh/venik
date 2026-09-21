@@ -71,7 +71,5 @@ test("test1", () => {
   expect(root_child0_child1.getComputedWidth()).toBe(50);
   expect(root_child0_child1.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });

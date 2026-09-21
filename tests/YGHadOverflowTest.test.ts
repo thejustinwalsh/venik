@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { newFixtureNode } from "./util/testUtil.ts";
 import { Config, Direction, Edge, FlexDirection, Node, Wrap } from "../src/index.ts";
 
@@ -13,11 +13,6 @@ describe("YogaTest_HadOverflowTests", () => {
     root.setHeight(100);
     root.setFlexDirection(FlexDirection.Column);
     root.setFlexWrap(Wrap.NoWrap);
-  });
-
-  afterEach(() => {
-    root.freeRecursive();
-    config.free();
   });
 
   test("children_overflow_no_wrap_and_no_flex_children", () => {

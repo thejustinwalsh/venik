@@ -44,7 +44,6 @@ function layoutRow(
     widths[i] = root.getChild(i)!.getComputedWidth();
   }
 
-  root.freeRecursive();
   return widths;
 }
 
@@ -60,8 +59,6 @@ function expectAllGrowToMax(minWidth0: number, minWidth1: number, minWidth2: num
       `child[${i}] should grow to maxWidth, not collapse to its minWidth`,
     ).toBeCloseTo(180.0, 3);
   }
-
-  config.free();
 }
 
 test("first_child_larger_minwidth_row", () => {

@@ -59,8 +59,6 @@ describe("YogaTest", () => {
     // The layout itself still skips measuring, but CSS Flexbox §4.5 automatic
     // minimum sizing probes the flexible item's min-content size once.
     expect(measureCount.count).toBe(1);
-
-    root.freeRecursive();
   });
 
   test("measure_absolute_child_with_no_constraints", () => {
@@ -80,8 +78,6 @@ describe("YogaTest", () => {
     root.calculateLayout(undefined, undefined, Direction.LTR);
 
     expect(measureCount.count).toBe(1);
-
-    root.freeRecursive();
   });
 
   test("dont_measure_when_min_equals_max", () => {
@@ -108,8 +104,6 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedTop()).toBe(0);
     expect(root_child0.getComputedWidth()).toBe(10);
     expect(root_child0.getComputedHeight()).toBe(10);
-
-    root.freeRecursive();
   });
 
   test("dont_measure_when_min_equals_max_percentages", () => {
@@ -136,8 +130,6 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedTop()).toBe(0);
     expect(root_child0.getComputedWidth()).toBe(10);
     expect(root_child0.getComputedHeight()).toBe(10);
-
-    root.freeRecursive();
   });
 
   test("measure_nodes_with_margin_auto_and_stretch", () => {
@@ -156,8 +148,6 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedTop()).toBe(0);
     expect(root_child0.getComputedWidth()).toBe(10);
     expect(root_child0.getComputedHeight()).toBe(10);
-
-    root.freeRecursive();
   });
 
   test("dont_measure_when_min_equals_max_mixed_width_percent", () => {
@@ -184,8 +174,6 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedTop()).toBe(0);
     expect(root_child0.getComputedWidth()).toBe(10);
     expect(root_child0.getComputedHeight()).toBe(10);
-
-    root.freeRecursive();
   });
 
   test("dont_measure_when_min_equals_max_mixed_height_percent", () => {
@@ -212,8 +200,6 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedTop()).toBe(0);
     expect(root_child0.getComputedWidth()).toBe(10);
     expect(root_child0.getComputedHeight()).toBe(10);
-
-    root.freeRecursive();
   });
 
   test("measure_enough_size_should_be_in_single_line", () => {
@@ -230,8 +216,6 @@ describe("YogaTest", () => {
 
     expect(root_child0.getComputedWidth()).toBe(68);
     expect(root_child0.getComputedHeight()).toBe(16);
-
-    root.freeRecursive();
   });
 
   test("measure_not_enough_size_should_wrap", () => {
@@ -247,8 +231,6 @@ describe("YogaTest", () => {
 
     expect(root_child0.getComputedWidth()).toBe(50);
     expect(root_child0.getComputedHeight()).toBe(32);
-
-    root.freeRecursive();
   });
 
   test("measure_zero_space_should_grow", () => {
@@ -271,8 +253,6 @@ describe("YogaTest", () => {
 
     expect(root_child0.getComputedWidth()).toBe(282);
     expect(root_child0.getComputedTop()).toBe(0);
-
-    root.freeRecursive();
   });
 
   test("measure_flex_direction_row_and_padding", () => {
@@ -312,9 +292,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("measure_flex_direction_column_and_padding", () => {
@@ -351,9 +329,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("measure_flex_direction_row_no_padding", () => {
@@ -390,9 +366,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("measure_flex_direction_row_no_padding_align_items_flexstart", () => {
@@ -430,9 +404,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("measure_with_fixed_size", () => {
@@ -471,9 +443,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("measure_with_flex_shrink", () => {
@@ -512,9 +482,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("measure_no_padding", () => {
@@ -551,9 +519,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 
-    root.freeRecursive();
 
-    config.free();
   });
 });
 
@@ -564,8 +530,6 @@ describe("YogaDeathTest", () => {
 
     const root_child0 = newFixtureNode();
     expect(() => root.insertChild(root_child0, 0)).toThrow();
-    root_child0.free();
-    root.freeRecursive();
   });
 
   test("cannot_add_nonnull_measure_func_to_non_leaf_node", () => {
@@ -573,7 +537,6 @@ describe("YogaDeathTest", () => {
     const root_child0 = newFixtureNode();
     root.insertChild(root_child0, 0);
     expect(() => root.setMeasureFunc(_measure)).toThrow();
-    root.freeRecursive();
   });
 });
 
@@ -583,7 +546,6 @@ describe("YogaTest", () => {
     root.insertChild(newFixtureNode(), 0);
     root.setMeasureFunc(null);
     expect(root.hasMeasureFunc()).toBe(false);
-    root.freeRecursive();
   });
 
   test("cant_call_negative_measure", () => {
@@ -600,9 +562,6 @@ describe("YogaTest", () => {
     root.insertChild(root_child0, 0);
 
     root.calculateLayout(undefined, undefined, Direction.LTR);
-
-    root.freeRecursive();
-    config.free();
   });
 
   test("cant_call_negative_measure_horizontal", () => {
@@ -619,9 +578,6 @@ describe("YogaTest", () => {
     root.insertChild(root_child0, 0);
 
     root.calculateLayout(undefined, undefined, Direction.LTR);
-
-    root.freeRecursive();
-    config.free();
   });
 
   const _measure_90_10: MeasureFunction = () => {
@@ -668,9 +624,7 @@ describe("YogaTest", () => {
     expect(root_child1.getComputedWidth()).toBe(50);
     expect(root_child1.getComputedHeight()).toBe(60);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("percent_margin_with_measure_func", () => {
@@ -736,9 +690,7 @@ describe("YogaTest", () => {
     expect(root_child3.getComputedWidth()).toBe(100);
     expect(root_child3.getComputedHeight()).toBe(100);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("percent_padding_with_measure_func", () => {
@@ -802,9 +754,7 @@ describe("YogaTest", () => {
     expect(root_child3.getComputedWidth()).toBe(100);
     expect(root_child3.getComputedHeight()).toBe(200);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   test("percent_padding_and_percent_margin_with_measure_func", () => {
@@ -870,9 +820,7 @@ describe("YogaTest", () => {
     expect(root_child3.getComputedWidth()).toBe(100);
     expect(root_child3.getComputedHeight()).toBe(200);
 
-    root.freeRecursive();
 
-    config.free();
   });
 
   const _measure_half_width_height: MeasureFunction = (
@@ -918,8 +866,6 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedTop()).toBe(15);
     expect(root_child0.getComputedWidth()).toBe(100);
     expect(root_child0.getComputedHeight()).toBe(100);
-
-    root.freeRecursive();
   });
 
   test("measure_border_box", () => {
@@ -950,8 +896,6 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedTop()).toBe(15);
     expect(root_child0.getComputedWidth()).toBe(70);
     expect(root_child0.getComputedHeight()).toBe(85);
-
-    root.freeRecursive();
   });
 
   test("min_width_larger_than_width_propagates_to_auto_parent", () => {
@@ -984,7 +928,5 @@ describe("YogaTest", () => {
     expect(root_child0_child0.getComputedTop()).toBe(0);
     expect(root_child0_child0.getComputedWidth()).toBe(100);
     expect(root_child0_child0.getComputedHeight()).toBe(50);
-
-    root.freeRecursive();
   });
 });

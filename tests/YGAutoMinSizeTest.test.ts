@@ -88,8 +88,6 @@ class ShrinkRow {
 
   // Stands in for the C++ destructor; called at the end of each test.
   dispose(): void {
-    this.root.freeRecursive();
-    this.config.free();
   }
 
   layout(): void {
@@ -142,9 +140,6 @@ test("auto_min_includes_leaf_padding_and_border_width", () => {
   // Floor = content kWordWidth(30) + padding(4+4) + border(1+1) = 40. Without
   // the padding/border contribution the leaf would be wrongly floored at 30.
   expect(text.getComputedWidth()).toBe(40);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Same fix on the column (cross) axis: vertical padding must be included in the
@@ -174,9 +169,6 @@ test("auto_min_includes_leaf_padding_height", () => {
 
   // Column probe height = natural kLineHeight(16) + padding(4+4) = 24.
   expect(text.getComputedHeight()).toBe(24);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // flex-basis: 0 with intrinsic content (the under-protection case from the
@@ -204,9 +196,6 @@ test("flex_basis_zero_floors_at_min_content", () => {
   // Each auto-min = kWordWidth. Container 50, total floor 60, overflows.
   expect(a.getComputedWidth()).toBe(kWordWidth);
   expect(b.getComputedWidth()).toBe(kWordWidth);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Explicit width (basis) > content: floor = min(content, specified) =
@@ -243,9 +232,6 @@ test("auto_min_capped_by_max_size", () => {
 
   // Auto-min = min(content=30) capped by max=20 → 20. Text floored at 20.
   expect(text.getComputedWidth()).toBe(20);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Explicit min-width: 0 opts out (CSS escape hatch).
@@ -273,9 +259,6 @@ test("explicit_min_width_zero_opts_out", () => {
 
   // min-width:0 → no auto-min. Text shrinks to 10 (container - spacer).
   expect(text.getComputedWidth()).toBe(10);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Aspect-ratio item with definite cross-size and no specified main:
@@ -308,9 +291,6 @@ test("aspect_ratio_transferred_size_floors_main", () => {
   // smaller — pragmatic but slightly under-protective for replaced
   // elements without intrinsic size.
   expect(img.getComputedWidth()).toBe(30);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Multi-level: outer column has limited height; inner wrapper has a
@@ -339,9 +319,6 @@ test("nested_flexbox_recurses_into_min_content", () => {
   // Wrapper's recursive min-content = leaf's intrinsic 50. Floor 50,
   // container 30 → wrapper protected at 50, container overflows.
   expect(wrapper.getComputedHeight()).toBe(50);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // overflow != visible disables auto-min on that item (CSS spec).
@@ -370,9 +347,6 @@ test("overflow_hidden_disables_auto_min", () => {
   // overflow:hidden → auto-min = 0 → text shrinks to 10 (container -
   // spacer), well below kWordWidth.
   expect(text.getComputedWidth()).toBe(10);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Counter for the min-content callback invocations, used by the next test.
@@ -426,9 +400,6 @@ test("min_content_measure_func_preferred_during_probe", () => {
   // would be floored at kWordWidth (30).
   expect(item.getComputedWidth()).toBe(10);
   expect(gMinContentCalls).toBeGreaterThan(0);
-
-  root.freeRecursive();
-  config.free();
 });
 
 test("has_min_content_measure_func_tracks_setter", () => {
@@ -438,7 +409,6 @@ test("has_min_content_measure_func_tracks_setter", () => {
   expect(node.hasMinContentMeasureFunc()).toBe(true);
   node.setMinContentMeasureFunc(null);
   expect(node.hasMinContentMeasureFunc()).toBe(false);
-  node.free();
 });
 
 // Static min-content takes precedence over the dynamic callback AND over
@@ -478,9 +448,6 @@ test("static_min_content_width_short_circuits_probe", () => {
   expect(item.getComputedWidth()).toBe(10);
   // Dynamic callback should not have been invoked — the static value wins.
   expect(gMinContentCalls).toBe(0);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Static min-content on a CONTAINER short-circuits subtree recursion. The
@@ -516,9 +483,6 @@ test("static_min_content_short_circuits_container_recursion", () => {
   // Container shrinks to 10 (container 20 - spacer 10) instead of being
   // floored at the inner text's kWordWidth = 30.
   expect(item.getComputedWidth()).toBe(10);
-
-  root.freeRecursive();
-  config.free();
 });
 
 // Static min-content getter / setter round-trip smoke test.
@@ -535,7 +499,5 @@ test("static_min_content_getter_setter_round_trip", () => {
   node.setMinContentWidth(undefined);
   expect(node.getMinContentWidth()).toBeNaN();
   expect(node.getMinContentHeight()).toBe(42);
-
-  node.free();
 });
 

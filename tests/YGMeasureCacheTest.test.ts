@@ -64,8 +64,6 @@ test("measure_once_single_flexible_child", () => {
   // One measure for the layout, plus one min-content probe for the flexible
   // item's CSS Flexbox §4.5 automatic minimum size.
   expect(measureCount.count).toBe(2);
-
-  root.freeRecursive();
 });
 
 test("remeasure_with_same_exact_width_larger_than_needed_height", () => {
@@ -81,8 +79,6 @@ test("remeasure_with_same_exact_width_larger_than_needed_height", () => {
   root.calculateLayout(100, 50, Direction.LTR);
 
   expect(measureCount.count).toBe(1);
-
-  root.freeRecursive();
 });
 
 test("remeasure_with_same_atmost_width_larger_than_needed_height", () => {
@@ -99,8 +95,6 @@ test("remeasure_with_same_atmost_width_larger_than_needed_height", () => {
   root.calculateLayout(100, 50, Direction.LTR);
 
   expect(measureCount.count).toBe(1);
-
-  root.freeRecursive();
 });
 
 test("remeasure_with_computed_width_larger_than_needed_height", () => {
@@ -118,8 +112,6 @@ test("remeasure_with_computed_width_larger_than_needed_height", () => {
   root.calculateLayout(10, 50, Direction.LTR);
 
   expect(measureCount.count).toBe(1);
-
-  root.freeRecursive();
 });
 
 test("remeasure_with_atmost_computed_width_undefined_height", () => {
@@ -136,8 +128,6 @@ test("remeasure_with_atmost_computed_width_undefined_height", () => {
   root.calculateLayout(10, undefined, Direction.LTR);
 
   expect(measureCount.count).toBe(1);
-
-  root.freeRecursive();
 });
 
 test("remeasure_with_already_measured_value_smaller_but_still_float_equal", () => {
@@ -162,7 +152,6 @@ test("remeasure_with_already_measured_value_smaller_but_still_float_equal", () =
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
-  root.freeRecursive();
 
   expect(measureCount.count).toBe(1);
 });

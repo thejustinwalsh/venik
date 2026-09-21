@@ -66,9 +66,7 @@ test("rounding_flex_basis_flex_grow_row_width_of_100", () => {
   expect(root_child2.getComputedWidth()).toBe(33);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_flex_basis_flex_grow_row_prime_number_width", () => {
@@ -163,9 +161,7 @@ test("rounding_flex_basis_flex_grow_row_prime_number_width", () => {
   expect(root_child4.getComputedWidth()).toBe(23);
   expect(root_child4.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_flex_basis_flex_shrink_row", () => {
@@ -233,9 +229,7 @@ test("rounding_flex_basis_flex_shrink_row", () => {
   expect(root_child2.getComputedWidth()).toBe(25);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_flex_basis_overrides_main_size", () => {
@@ -305,9 +299,7 @@ test("rounding_flex_basis_overrides_main_size", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(24);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_total_fractial", () => {
@@ -377,9 +369,7 @@ test("rounding_total_fractial", () => {
   expect(root_child2.getComputedWidth()).toBe(87);
   expect(root_child2.getComputedHeight()).toBe(24);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_total_fractial_nested", () => {
@@ -483,9 +473,7 @@ test("rounding_total_fractial_nested", () => {
   expect(root_child2.getComputedWidth()).toBe(87);
   expect(root_child2.getComputedHeight()).toBe(24);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_fractial_input_1", () => {
@@ -555,9 +543,7 @@ test("rounding_fractial_input_1", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(24);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_fractial_input_2", () => {
@@ -627,9 +613,7 @@ test("rounding_fractial_input_2", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_fractial_input_3", () => {
@@ -700,9 +684,7 @@ test("rounding_fractial_input_3", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_fractial_input_4", () => {
@@ -773,9 +755,7 @@ test("rounding_fractial_input_4", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(24);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_inner_node_controversy_horizontal", () => {
@@ -859,9 +839,7 @@ test("rounding_inner_node_controversy_horizontal", () => {
   expect(root_child2.getComputedWidth()).toBe(107);
   expect(root_child2.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_inner_node_controversy_vertical", () => {
@@ -944,9 +922,7 @@ test("rounding_inner_node_controversy_vertical", () => {
   expect(root_child2.getComputedWidth()).toBe(10);
   expect(root_child2.getComputedHeight()).toBe(107);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("rounding_inner_node_controversy_combined", () => {
@@ -1076,7 +1052,5 @@ test("rounding_inner_node_controversy_combined", () => {
   expect(root_child2.getComputedWidth()).toBe(213);
   expect(root_child2.getComputedHeight()).toBe(320);
 
-  root.freeRecursive();
 
-  config.free();
 });

@@ -80,7 +80,5 @@ test("gap_negative_value", () => {
   expect(root_child3.getComputedWidth()).toBe(20);
   expect(root_child3.getComputedHeight()).toBe(200);
 
-  root.freeRecursive();
 
-  config.free();
 });

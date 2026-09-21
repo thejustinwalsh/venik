@@ -51,9 +51,7 @@ test("nested_overflowing_child", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(200);
   expect(root_child0_child0.getComputedHeight()).toBe(200);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("nested_overflowing_child_in_constraint_parent", () => {
@@ -107,9 +105,7 @@ test("nested_overflowing_child_in_constraint_parent", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(200);
   expect(root_child0_child0.getComputedHeight()).toBe(200);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("parent_wrap_child_size_overflowing_parent", () => {
@@ -162,7 +158,5 @@ test("parent_wrap_child_size_overflowing_parent", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(100);
   expect(root_child0_child0.getComputedHeight()).toBe(200);
 
-  root.freeRecursive();
 
-  config.free();
 });

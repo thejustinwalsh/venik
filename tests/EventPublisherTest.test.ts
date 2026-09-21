@@ -105,8 +105,6 @@ describe("EventPublisherTest", () => {
     expect(subscriberBCallCount).toBe(1);
     expect(subscriberAReceivedNode).toBe(sentinelNode);
     expect(subscriberAReceivedType).toBe(Event.LayoutPassStart);
-
-    sentinelNode.free();
   });
 
   test("publishForwardsTypedEventDataPayloadUnmodified", () => {

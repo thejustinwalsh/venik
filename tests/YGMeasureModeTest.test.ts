@@ -46,7 +46,6 @@ test("exactly_measure_stretched_child_column", () => {
 
   expect(constraintList[0]?.width).toBe(100);
   expect(constraintList[0]?.widthMode).toBe(MeasureMode.Exactly);
-  root.freeRecursive();
 });
 
 test("exactly_measure_stretched_child_row", () => {
@@ -68,7 +67,6 @@ test("exactly_measure_stretched_child_row", () => {
 
   expect(constraintList[0]?.height).toBe(100);
   expect(constraintList[0]?.heightMode).toBe(MeasureMode.Exactly);
-  root.freeRecursive();
 });
 
 test("at_most_main_axis_column", () => {
@@ -89,7 +87,6 @@ test("at_most_main_axis_column", () => {
 
   expect(constraintList[0]?.height).toBe(100);
   expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
-  root.freeRecursive();
 });
 
 test("at_most_cross_axis_column", () => {
@@ -111,7 +108,6 @@ test("at_most_cross_axis_column", () => {
 
   expect(constraintList[0]?.width).toBe(100);
   expect(constraintList[0]?.widthMode).toBe(MeasureMode.AtMost);
-  root.freeRecursive();
 });
 
 test("at_most_main_axis_row", () => {
@@ -133,7 +129,6 @@ test("at_most_main_axis_row", () => {
 
   expect(constraintList[0]?.width).toBe(100);
   expect(constraintList[0]?.widthMode).toBe(MeasureMode.AtMost);
-  root.freeRecursive();
 });
 
 test("at_most_cross_axis_row", () => {
@@ -156,7 +151,6 @@ test("at_most_cross_axis_row", () => {
 
   expect(constraintList[0]?.height).toBe(100);
   expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
-  root.freeRecursive();
 });
 
 test("flex_child", () => {
@@ -184,7 +178,6 @@ test("flex_child", () => {
 
   expect(constraintList[2]?.height).toBe(100);
   expect(constraintList[2]?.heightMode).toBe(MeasureMode.Exactly);
-  root.freeRecursive();
 });
 
 test("flex_child_with_flex_basis", () => {
@@ -210,7 +203,6 @@ test("flex_child_with_flex_basis", () => {
 
   expect(constraintList[1]?.height).toBe(100);
   expect(constraintList[1]?.heightMode).toBe(MeasureMode.Exactly);
-  root.freeRecursive();
 });
 
 test("overflow_scroll_column", () => {
@@ -236,7 +228,6 @@ test("overflow_scroll_column", () => {
 
   expect(constraintList[0]?.height).toBeNaN();
   expect(constraintList[0]?.heightMode).toBe(MeasureMode.Undefined);
-  root.freeRecursive();
 });
 
 test("overflow_scroll_row", () => {
@@ -263,5 +254,4 @@ test("overflow_scroll_row", () => {
 
   expect(constraintList[0]?.height).toBe(100);
   expect(constraintList[0]?.heightMode).toBe(MeasureMode.AtMost);
-  root.freeRecursive();
 });

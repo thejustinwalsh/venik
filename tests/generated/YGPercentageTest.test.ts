@@ -39,9 +39,7 @@ test("percentage_width_height", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(60);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_position_left_top", () => {
@@ -83,9 +81,7 @@ test("percentage_position_left_top", () => {
   expect(root_child0.getComputedWidth()).toBe(180);
   expect(root_child0.getComputedHeight()).toBe(220);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_position_bottom_right", () => {
@@ -127,9 +123,7 @@ test("percentage_position_bottom_right", () => {
   expect(root_child0.getComputedWidth()).toBe(275);
   expect(root_child0.getComputedHeight()).toBe(75);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis", () => {
@@ -184,9 +178,7 @@ test("percentage_flex_basis", () => {
   expect(root_child1.getComputedWidth()).toBe(75);
   expect(root_child1.getComputedHeight()).toBe(200);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis_cross", () => {
@@ -240,9 +232,7 @@ test("percentage_flex_basis_cross", () => {
   expect(root_child1.getComputedWidth()).toBe(200);
   expect(root_child1.getComputedHeight()).toBe(75);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis_main_max_height", () => {
@@ -299,9 +289,7 @@ test("percentage_flex_basis_main_max_height", () => {
   expect(root_child1.getComputedWidth()).toBe(148);
   expect(root_child1.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis_cross_max_height", () => {
@@ -357,9 +345,7 @@ test("percentage_flex_basis_cross_max_height", () => {
   expect(root_child1.getComputedWidth()).toBe(200);
   expect(root_child1.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis_main_max_width", () => {
@@ -416,9 +402,7 @@ test("percentage_flex_basis_main_max_width", () => {
   expect(root_child1.getComputedWidth()).toBe(40);
   expect(root_child1.getComputedHeight()).toBe(200);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis_cross_max_width", () => {
@@ -474,9 +458,7 @@ test("percentage_flex_basis_cross_max_width", () => {
   expect(root_child1.getComputedWidth()).toBe(40);
   expect(root_child1.getComputedHeight()).toBe(150);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis_main_min_width", () => {
@@ -533,9 +515,7 @@ test("percentage_flex_basis_main_min_width", () => {
   expect(root_child1.getComputedWidth()).toBe(80);
   expect(root_child1.getComputedHeight()).toBe(200);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_flex_basis_cross_min_width", () => {
@@ -591,9 +571,7 @@ test("percentage_flex_basis_cross_min_width", () => {
   expect(root_child1.getComputedWidth()).toBe(200);
   expect(root_child1.getComputedHeight()).toBe(150);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_multiple_nested_with_padding_margin_and_percentage_values", () => {
@@ -683,9 +661,7 @@ test("percentage_multiple_nested_with_padding_margin_and_percentage_values", () 
   expect(root_child1.getComputedWidth()).toBe(200);
   expect(root_child1.getComputedHeight()).toBe(142);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_margin_should_calculate_based_only_on_width", () => {
@@ -739,9 +715,7 @@ test("percentage_margin_should_calculate_based_only_on_width", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(10);
   expect(root_child0_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_padding_should_calculate_based_only_on_width", () => {
@@ -795,9 +769,7 @@ test("percentage_padding_should_calculate_based_only_on_width", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(10);
   expect(root_child0_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_absolute_position", () => {
@@ -839,9 +811,7 @@ test("percentage_absolute_position", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_width_height_undefined_parent_size", () => {
@@ -878,9 +848,7 @@ test("percentage_width_height_undefined_parent_size", () => {
   expect(root_child0.getComputedWidth()).toBe(0);
   expect(root_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_within_flex_grow", () => {
@@ -961,9 +929,7 @@ test("percent_within_flex_grow", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percentage_container_in_wrapping_container", () => {
@@ -1048,9 +1014,7 @@ test("percentage_container_in_wrapping_container", () => {
   expect(root_child0_child0_child1.getComputedWidth()).toBe(50);
   expect(root_child0_child0_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_absolute_position", () => {
@@ -1120,9 +1084,7 @@ test("percent_absolute_position", () => {
   expect(root_child0_child1.getComputedWidth()).toBe(60);
   expect(root_child0_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_of_minmax_main", () => {
@@ -1163,9 +1125,7 @@ test("percent_of_minmax_main", () => {
   expect(root_child0.getComputedWidth()).toBe(30);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_of_minmax_cross_stretched", () => {
@@ -1205,9 +1165,7 @@ test("percent_of_minmax_cross_stretched", () => {
   expect(root_child0.getComputedWidth()).toBe(30);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_absolute_of_minmax_cross_stretched", () => {
@@ -1248,9 +1206,7 @@ test("percent_absolute_of_minmax_cross_stretched", () => {
   expect(root_child0.getComputedWidth()).toBe(30);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_of_minmax_cross_unstretched", () => {
@@ -1291,9 +1247,7 @@ test("percent_of_minmax_cross_unstretched", () => {
   expect(root_child0.getComputedWidth()).toBe(30);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_of_max_cross_unstretched", () => {
@@ -1333,7 +1287,5 @@ test("percent_of_max_cross_unstretched", () => {
   expect(root_child0.getComputedWidth()).toBe(0);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });

@@ -22,9 +22,7 @@ test("border_no_size", () => {
   expect(root.getComputedWidth()).toBe(20);
   expect(root.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("border_container_match_child", () => {
@@ -62,9 +60,7 @@ test("border_container_match_child", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("border_flex_child", () => {
@@ -104,9 +100,7 @@ test("border_flex_child", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(80);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("border_stretch_child", () => {
@@ -145,9 +139,7 @@ test("border_stretch_child", () => {
   expect(root_child0.getComputedWidth()).toBe(80);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("border_center_child", () => {
@@ -191,7 +183,5 @@ test("border_center_child", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });

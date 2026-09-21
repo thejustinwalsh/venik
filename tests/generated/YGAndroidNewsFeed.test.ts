@@ -278,7 +278,5 @@ test("android_news_feed", () => {
   expect(root_child0_child0_child1_child0_child1_child1.getComputedWidth()).toBe(0);
   expect(root_child0_child0_child1_child0_child1_child1.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });

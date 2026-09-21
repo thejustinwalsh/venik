@@ -85,14 +85,13 @@ export function LayoutPassReasonToString(value: LayoutPassReason | number): stri
 
 export const EventType = {
   NodeAllocation: 0,
-  NodeDeallocation: 1,
-  NodeLayout: 2,
-  LayoutPassStart: 3,
-  LayoutPassEnd: 4,
-  MeasureCallbackStart: 5,
-  MeasureCallbackEnd: 6,
-  NodeBaselineStart: 7,
-  NodeBaselineEnd: 8,
+  NodeLayout: 1,
+  LayoutPassStart: 2,
+  LayoutPassEnd: 3,
+  MeasureCallbackStart: 4,
+  MeasureCallbackEnd: 5,
+  NodeBaselineStart: 6,
+  NodeBaselineEnd: 7,
 } as const;
 export type EventType = (typeof EventType)[keyof typeof EventType];
 
@@ -102,7 +101,6 @@ export type EmptyEventData = Readonly<Record<string, never>>;
 /** Payload per event type; the specialisations of `Event::TypedData<E>`. */
 export type EventDataMap = {
   [EventType.NodeAllocation]: { readonly config: Config };
-  [EventType.NodeDeallocation]: { readonly config: Config };
   [EventType.NodeLayout]: { readonly layoutType: LayoutType };
   [EventType.LayoutPassStart]: EmptyEventData;
   /** `layoutData` is live and owned by the layout pass; copy it to keep it. */

@@ -38,9 +38,7 @@ test("max_width", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("max_height", () => {
@@ -80,9 +78,7 @@ test("max_height", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("justify_content_min_max", () => {
@@ -123,9 +119,7 @@ test("justify_content_min_max", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(60);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_items_min_max", () => {
@@ -166,9 +160,7 @@ test("align_items_min_max", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(60);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("justify_content_overflow_min_max", () => {
@@ -238,9 +230,7 @@ test("justify_content_overflow_min_max", () => {
   expect(root_child2.getComputedWidth()).toBe(50);
   expect(root_child2.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_to_min", () => {
@@ -294,9 +284,7 @@ test("flex_grow_to_min", () => {
   expect(root_child1.getComputedWidth()).toBe(100);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_in_at_most_container", () => {
@@ -351,9 +339,7 @@ test("flex_grow_in_at_most_container", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(0);
   expect(root_child0_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_child", () => {
@@ -392,9 +378,7 @@ test("flex_grow_child", () => {
   expect(root_child0.getComputedWidth()).toBe(0);
   expect(root_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_within_constrained_min_max_column", () => {
@@ -446,9 +430,7 @@ test("flex_grow_within_constrained_min_max_column", () => {
   expect(root_child1.getComputedWidth()).toBe(0);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_within_max_width", () => {
@@ -502,9 +484,7 @@ test("flex_grow_within_max_width", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(100);
   expect(root_child0_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_within_constrained_max_width", () => {
@@ -558,9 +538,7 @@ test("flex_grow_within_constrained_max_width", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(200);
   expect(root_child0_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_root_ignored", () => {
@@ -615,9 +593,7 @@ test("flex_root_ignored", () => {
   expect(root_child1.getComputedWidth()).toBe(100);
   expect(root_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_root_minimized", () => {
@@ -687,9 +663,7 @@ test("flex_grow_root_minimized", () => {
   expect(root_child0_child1.getComputedWidth()).toBe(100);
   expect(root_child0_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_height_maximized", () => {
@@ -758,9 +732,7 @@ test("flex_grow_height_maximized", () => {
   expect(root_child0_child1.getComputedWidth()).toBe(100);
   expect(root_child0_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_within_constrained_min_row", () => {
@@ -813,9 +785,7 @@ test("flex_grow_within_constrained_min_row", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_within_constrained_min_column", () => {
@@ -866,9 +836,7 @@ test("flex_grow_within_constrained_min_column", () => {
   expect(root_child1.getComputedWidth()).toBe(0);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_within_constrained_max_row", () => {
@@ -936,9 +904,7 @@ test("flex_grow_within_constrained_max_row", () => {
   expect(root_child0_child1.getComputedWidth()).toBe(50);
   expect(root_child0_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_within_constrained_max_column", () => {
@@ -991,9 +957,7 @@ test("flex_grow_within_constrained_max_column", () => {
   expect(root_child1.getComputedWidth()).toBe(100);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("child_min_max_width_flexing", () => {
@@ -1050,9 +1014,7 @@ test("child_min_max_width_flexing", () => {
   expect(root_child1.getComputedWidth()).toBe(20);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("min_width_overrides_width", () => {
@@ -1076,9 +1038,7 @@ test("min_width_overrides_width", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("max_width_overrides_width", () => {
@@ -1102,9 +1062,7 @@ test("max_width_overrides_width", () => {
   expect(root.getComputedWidth()).toBe(100);
   expect(root.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("min_height_overrides_height", () => {
@@ -1128,9 +1086,7 @@ test("min_height_overrides_height", () => {
   expect(root.getComputedWidth()).toBe(0);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("max_height_overrides_height", () => {
@@ -1154,9 +1110,7 @@ test("max_height_overrides_height", () => {
   expect(root.getComputedWidth()).toBe(0);
   expect(root.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("min_max_percent_no_width_height", () => {
@@ -1198,7 +1152,5 @@ test("min_max_percent_no_width_height", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });

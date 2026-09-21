@@ -51,8 +51,6 @@ test("contents_child_hasNewLayout_not_stamped_on_measure_only_visit", () => {
       "(cleanupContentsNodesRecursively ran with performLayout=false " +
       "but no matching performLayout=true visit occurred this pass)",
   ).toBe(false);
-
-  root.freeRecursive();
 });
 
 // Regression test for `cleanupContentsNodesRecursively` invoked from
@@ -112,8 +110,6 @@ test("absolute_descendant_through_contents_is_reachable_via_hasNewLayout", () =>
       "descendant must have hasNewLayout=true so consumers can traverse " +
       "to it",
   ).toBe(true);
-
-  root.freeRecursive();
 });
 
 // Regression test for `cleanupContentsNodesRecursively` invoked from
@@ -176,6 +172,4 @@ test("absolute_phase_cleanup_does_not_stamp_when_parent_layout_skipped", () => {
     "contents.hasNewLayout was stamped during a walk where its " +
       "parent's hasNewLayout remained false this pass",
   ).toBe(false);
-
-  root.freeRecursive();
 });

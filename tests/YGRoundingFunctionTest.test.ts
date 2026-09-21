@@ -102,9 +102,7 @@ test("consistent_rounding_during_repeated_layouts", () => {
     expect(node1.getComputedHeight()).toBe(10);
   }
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("per_node_point_scale_factor", () => {
@@ -142,11 +140,7 @@ test("per_node_point_scale_factor", () => {
   expect(node1.getComputedWidth()).toBe(8);
   expect(node1.getComputedHeight()).toBe(8);
 
-  root.freeRecursive();
 
-  config1.free();
-  config2.free();
-  config3.free();
 });
 
 test("raw_layout_dimensions", () => {
@@ -164,7 +158,5 @@ test("raw_layout_dimensions", () => {
   expect(root.getComputedRawWidth()).toBeCloseTo(11.5, 4);
   expect(root.getComputedRawHeight()).toBeCloseTo(9.5, 4);
 
-  root.freeRecursive();
 
-  config.free();
 });

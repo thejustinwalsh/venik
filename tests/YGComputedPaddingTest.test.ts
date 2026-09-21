@@ -16,8 +16,6 @@ test("computed_layout_padding", () => {
 
   expect(root.getComputedPadding(Edge.Left)).toBe(0);
   expect(root.getComputedPadding(Edge.Right)).toBe(10);
-
-  root.freeRecursive();
 });
 
 test("padding_side_overrides_horizontal_and_vertical", () => {
@@ -37,8 +35,6 @@ test("padding_side_overrides_horizontal_and_vertical", () => {
       root.calculateLayout(100, 100, Direction.LTR);
 
       expect(root.getComputedPadding(edge)).toBe(edgeValue);
-
-      root.freeRecursive();
     }
   }
 });
@@ -57,8 +53,6 @@ test("padding_side_overrides_all", () => {
       root.calculateLayout(100, 100, Direction.LTR);
 
       expect(root.getComputedPadding(edge)).toBe(edgeValue);
-
-      root.freeRecursive();
     }
   }
 });
@@ -85,8 +79,6 @@ test("padding_horizontal_and_vertical_overrides_all", () => {
         expect(root.getComputedPadding(Edge.Left)).toBe(directionValue);
         expect(root.getComputedPadding(Edge.Right)).toBe(directionValue);
       }
-
-      root.freeRecursive();
     }
   }
 });

@@ -91,21 +91,6 @@ test("assert_default_values", () => {
   expect(root.getComputedWidth()).toBeNaN();
   expect(root.getComputedHeight()).toBeNaN();
   expect(root.getComputedDirection()).toBe(Direction.Inherit);
-
-  root.freeRecursive();
-});
-
-test("assert_default_values_reset", () => {
-  const config = new Config();
-  const root = new Node(config);
-  root.reset();
-
-  expect(root.getFlexDirection()).toBe(FlexDirection.Row);
-  expect(root.getAlignContent()).toBe(Align.Stretch);
-  expect(root.getFlexShrink()).toBe(1);
-
-  root.freeRecursive();
-  config.free();
 });
 
 test("assert_box_sizing_border_box", () => {
@@ -114,7 +99,5 @@ test("assert_box_sizing_border_box", () => {
 
   expect(root.getBoxSizing()).toBe(BoxSizing.BorderBox);
 
-  root.freeRecursive();
 
-  config.free();
 });

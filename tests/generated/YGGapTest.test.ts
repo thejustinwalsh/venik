@@ -74,9 +74,7 @@ test("column_gap_flexible", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_inflexible", () => {
@@ -144,9 +142,7 @@ test("column_gap_inflexible", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_mixed_flexible", () => {
@@ -216,9 +212,7 @@ test("column_gap_mixed_flexible", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_child_margins", () => {
@@ -295,9 +289,7 @@ test("column_gap_child_margins", () => {
   expect(root_child2.getComputedWidth()).toBe(2);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_row_gap_wrapping", () => {
@@ -459,9 +451,7 @@ test("column_row_gap_wrapping", () => {
   expect(root_child8.getComputedWidth()).toBe(20);
   expect(root_child8.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_start_index", () => {
@@ -549,9 +539,7 @@ test("column_gap_start_index", () => {
   expect(root_child3.getComputedWidth()).toBe(20);
   expect(root_child3.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_justify_flex_start", () => {
@@ -619,9 +607,7 @@ test("column_gap_justify_flex_start", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_justify_center", () => {
@@ -690,9 +676,7 @@ test("column_gap_justify_center", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_justify_flex_end", () => {
@@ -761,9 +745,7 @@ test("column_gap_justify_flex_end", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_justify_space_between", () => {
@@ -832,9 +814,7 @@ test("column_gap_justify_space_between", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_justify_space_around", () => {
@@ -903,9 +883,7 @@ test("column_gap_justify_space_around", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_justify_space_evenly", () => {
@@ -974,9 +952,7 @@ test("column_gap_justify_space_evenly", () => {
   expect(root_child2.getComputedWidth()).toBe(20);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_wrap_align_flex_start", () => {
@@ -1094,9 +1070,7 @@ test("column_gap_wrap_align_flex_start", () => {
   expect(root_child5.getComputedWidth()).toBe(20);
   expect(root_child5.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_wrap_align_center", () => {
@@ -1215,9 +1189,7 @@ test("column_gap_wrap_align_center", () => {
   expect(root_child5.getComputedWidth()).toBe(20);
   expect(root_child5.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_wrap_align_flex_end", () => {
@@ -1336,9 +1308,7 @@ test("column_gap_wrap_align_flex_end", () => {
   expect(root_child5.getComputedWidth()).toBe(20);
   expect(root_child5.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_wrap_align_space_between", () => {
@@ -1457,9 +1427,7 @@ test("column_gap_wrap_align_space_between", () => {
   expect(root_child5.getComputedWidth()).toBe(20);
   expect(root_child5.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_wrap_align_space_around", () => {
@@ -1578,9 +1546,7 @@ test("column_gap_wrap_align_space_around", () => {
   expect(root_child5.getComputedWidth()).toBe(20);
   expect(root_child5.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_wrap_align_stretch", () => {
@@ -1683,9 +1649,7 @@ test("column_gap_wrap_align_stretch", () => {
   expect(root_child4.getComputedWidth()).toBe(300);
   expect(root_child4.getComputedHeight()).toBe(150);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("column_gap_determines_parent_width", () => {
@@ -1752,9 +1716,7 @@ test("column_gap_determines_parent_width", () => {
   expect(root_child2.getComputedWidth()).toBe(30);
   expect(root_child2.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_align_items_stretch", () => {
@@ -1867,9 +1829,7 @@ test("row_gap_align_items_stretch", () => {
   expect(root_child5.getComputedWidth()).toBe(20);
   expect(root_child5.getComputedHeight()).toBe(90);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_align_items_end", () => {
@@ -1982,9 +1942,7 @@ test("row_gap_align_items_end", () => {
   expect(root_child5.getComputedWidth()).toBe(20);
   expect(root_child5.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_column_child_margins", () => {
@@ -2060,9 +2018,7 @@ test("row_gap_column_child_margins", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(42);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_row_wrap_child_margins", () => {
@@ -2134,9 +2090,7 @@ test("row_gap_row_wrap_child_margins", () => {
   expect(root_child2.getComputedWidth()).toBe(60);
   expect(root_child2.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_determines_parent_height", () => {
@@ -2202,9 +2156,7 @@ test("row_gap_determines_parent_height", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(30);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_wrapping", () => {
@@ -2307,9 +2259,7 @@ test("row_gap_percent_wrapping", () => {
   expect(root_child4.getComputedWidth()).toBe(100);
   expect(root_child4.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_determines_parent_height", () => {
@@ -2410,9 +2360,7 @@ test("row_gap_percent_determines_parent_height", () => {
   expect(root_child4.getComputedWidth()).toBe(100);
   expect(root_child4.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_wrapping_with_both_content_padding_and_item_padding", () => {
@@ -2520,9 +2468,7 @@ test("row_gap_percent_wrapping_with_both_content_padding_and_item_padding", () =
   expect(root_child4.getComputedWidth()).toBe(100);
   expect(root_child4.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_wrapping_with_both_content_padding", () => {
@@ -2625,9 +2571,7 @@ test("row_gap_percent_wrapping_with_both_content_padding", () => {
   expect(root_child4.getComputedWidth()).toBe(100);
   expect(root_child4.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_wrapping_with_content_margin", () => {
@@ -2730,9 +2674,7 @@ test("row_gap_percent_wrapping_with_content_margin", () => {
   expect(root_child4.getComputedWidth()).toBe(100);
   expect(root_child4.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_wrapping_with_content_margin_and_padding", () => {
@@ -2836,9 +2778,7 @@ test("row_gap_percent_wrapping_with_content_margin_and_padding", () => {
   expect(root_child4.getComputedWidth()).toBe(100);
   expect(root_child4.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_wrapping_with_flexible_content", () => {
@@ -2912,9 +2852,7 @@ test("row_gap_percent_wrapping_with_flexible_content", () => {
   expect(root_child2.getComputedWidth()).toBe(80);
   expect(root_child2.getComputedHeight()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("row_gap_percent_wrapping_with_mixed_flexible_content", () => {
@@ -2984,7 +2922,5 @@ test("row_gap_percent_wrapping_with_mixed_flexible_content", () => {
   expect(root_child2.getComputedWidth()).toBe(30);
   expect(root_child2.getComputedHeight()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });

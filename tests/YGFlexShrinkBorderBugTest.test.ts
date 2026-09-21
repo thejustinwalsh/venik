@@ -37,7 +37,4 @@ test("flex_basis_0_border_minwidth_row", () => {
       200,
     );
   }
-
-  root.freeRecursive();
-  config.free();
 });

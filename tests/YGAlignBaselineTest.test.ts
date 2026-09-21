@@ -72,9 +72,7 @@ test("align_baseline_parent_ht_not_specified", () => {
   expect(root_child1.getComputedWidth()).toBe(279);
   expect(root_child1.getComputedHeight()).toBe(126);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_with_no_parent_ht", () => {
@@ -113,9 +111,7 @@ test("align_baseline_with_no_parent_ht", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_with_no_baseline_func_and_no_parent_ht", () => {
@@ -153,9 +149,7 @@ test("align_baseline_with_no_baseline_func_and_no_parent_ht", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_column_as_reference", () => {
@@ -191,9 +185,7 @@ test("align_baseline_parent_using_child_in_column_as_reference", () => {
   expect(root_child1_child1.getComputedLeft()).toBe(0);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_with_padding_in_column_as_reference", () => {
@@ -233,9 +225,7 @@ test("align_baseline_parent_using_child_with_padding_in_column_as_reference", ()
   expect(root_child1_child1.getComputedLeft()).toBe(0);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_with_padding_using_child_in_column_as_reference", () => {
@@ -275,9 +265,7 @@ test("align_baseline_parent_with_padding_using_child_in_column_as_reference", ()
   expect(root_child1_child1.getComputedLeft()).toBe(100);
   expect(root_child1_child1.getComputedTop()).toBe(400);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_with_margin_using_child_in_column_as_reference", () => {
@@ -317,9 +305,7 @@ test("align_baseline_parent_with_margin_using_child_in_column_as_reference", () 
   expect(root_child1_child1.getComputedLeft()).toBe(0);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_with_margin_in_column_as_reference", () => {
@@ -359,9 +345,7 @@ test("align_baseline_parent_using_child_with_margin_in_column_as_reference", () 
   expect(root_child1_child1.getComputedLeft()).toBe(100);
   expect(root_child1_child1.getComputedTop()).toBe(400);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_row_as_reference", () => {
@@ -397,9 +381,7 @@ test("align_baseline_parent_using_child_in_row_as_reference", () => {
   expect(root_child1_child1.getComputedLeft()).toBe(500);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_with_padding_in_row_as_reference", () => {
@@ -439,9 +421,7 @@ test("align_baseline_parent_using_child_with_padding_in_row_as_reference", () =>
   expect(root_child1_child1.getComputedLeft()).toBe(500);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_with_margin_in_row_as_reference", () => {
@@ -481,9 +461,7 @@ test("align_baseline_parent_using_child_with_margin_in_row_as_reference", () => 
   expect(root_child1_child1.getComputedLeft()).toBe(600);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_column_as_reference_with_no_baseline_func", () => {
@@ -518,9 +496,7 @@ test("align_baseline_parent_using_child_in_column_as_reference_with_no_baseline_
   expect(root_child1_child1.getComputedLeft()).toBe(0);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_row_as_reference_with_no_baseline_func", () => {
@@ -555,9 +531,7 @@ test("align_baseline_parent_using_child_in_row_as_reference_with_no_baseline_fun
   expect(root_child1_child1.getComputedLeft()).toBe(500);
   expect(root_child1_child1.getComputedTop()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_column_as_reference_with_height_not_specified", () => {
@@ -601,9 +575,7 @@ test("align_baseline_parent_using_child_in_column_as_reference_with_height_not_s
   expect(root_child1_child1.getComputedLeft()).toBe(0);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_row_as_reference_with_height_not_specified", () => {
@@ -647,9 +619,7 @@ test("align_baseline_parent_using_child_in_row_as_reference_with_height_not_spec
   expect(root_child1_child1.getComputedLeft()).toBe(500);
   expect(root_child1_child1.getComputedTop()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_column_as_reference_with_no_baseline_func_and_height_not_specified", () => {
@@ -692,9 +662,7 @@ test("align_baseline_parent_using_child_in_column_as_reference_with_no_baseline_
   expect(root_child1_child1.getComputedLeft()).toBe(0);
   expect(root_child1_child1.getComputedTop()).toBe(300);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("align_baseline_parent_using_child_in_row_as_reference_with_no_baseline_func_and_height_not_specified", () => {
@@ -737,7 +705,5 @@ test("align_baseline_parent_using_child_in_row_as_reference_with_no_baseline_fun
   expect(root_child1_child1.getComputedLeft()).toBe(500);
   expect(root_child1_child1.getComputedTop()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });

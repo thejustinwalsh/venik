@@ -21,8 +21,6 @@ test("start_overrides", () => {
   root.calculateLayout(undefined, undefined, Direction.RTL);
   expect(root_child0.getComputedLeft()).toBe(20);
   expect(root_child0.getComputedRight()).toBe(10);
-
-  root.freeRecursive();
 });
 
 test("end_overrides", () => {
@@ -45,8 +43,6 @@ test("end_overrides", () => {
   root.calculateLayout(undefined, undefined, Direction.RTL);
   expect(root_child0.getComputedLeft()).toBe(10);
   expect(root_child0.getComputedRight()).toBe(20);
-
-  root.freeRecursive();
 });
 
 test("horizontal_overridden", () => {
@@ -64,8 +60,6 @@ test("horizontal_overridden", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
   expect(root_child0.getComputedLeft()).toBe(20);
   expect(root_child0.getComputedRight()).toBe(10);
-
-  root.freeRecursive();
 });
 
 test("vertical_overridden", () => {
@@ -83,8 +77,6 @@ test("vertical_overridden", () => {
   root.calculateLayout(undefined, undefined, Direction.LTR);
   expect(root_child0.getComputedTop()).toBe(20);
   expect(root_child0.getComputedBottom()).toBe(10);
-
-  root.freeRecursive();
 });
 
 test("horizontal_overrides_all", () => {
@@ -104,8 +96,6 @@ test("horizontal_overrides_all", () => {
   expect(root_child0.getComputedTop()).toBe(20);
   expect(root_child0.getComputedRight()).toBe(10);
   expect(root_child0.getComputedBottom()).toBe(20);
-
-  root.freeRecursive();
 });
 
 test("vertical_overrides_all", () => {
@@ -125,8 +115,6 @@ test("vertical_overrides_all", () => {
   expect(root_child0.getComputedTop()).toBe(10);
   expect(root_child0.getComputedRight()).toBe(20);
   expect(root_child0.getComputedBottom()).toBe(10);
-
-  root.freeRecursive();
 });
 
 test("all_overridden", () => {
@@ -149,6 +137,4 @@ test("all_overridden", () => {
   expect(root_child0.getComputedTop()).toBe(10);
   expect(root_child0.getComputedRight()).toBe(10);
   expect(root_child0.getComputedBottom()).toBe(10);
-
-  root.freeRecursive();
 });

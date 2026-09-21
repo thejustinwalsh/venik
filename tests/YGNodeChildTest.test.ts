@@ -22,9 +22,6 @@ test("reset_layout_when_child_removed", () => {
   expect(root_child0.getComputedTop()).toBe(0);
   expect(root_child0.getComputedWidth()).toBeNaN();
   expect(root_child0.getComputedHeight()).toBeNaN();
-
-  root.freeRecursive();
-  root_child0.freeRecursive();
 });
 
 test("removed_child_can_be_reused_with_valid_layout", () => {
@@ -56,6 +53,4 @@ test("removed_child_can_be_reused_with_valid_layout", () => {
   expect(child.getComputedWidth()).toBe(100);
   expect(child.getComputedHeight()).toBe(100);
   expect(child.isDirty()).toBe(false);
-
-  root.freeRecursive();
 });

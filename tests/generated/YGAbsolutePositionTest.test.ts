@@ -41,9 +41,7 @@ test("absolute_layout_width_height_start_top", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_width_height_left_auto_right", () => {
@@ -85,9 +83,7 @@ test("absolute_layout_width_height_left_auto_right", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_width_height_left_right_auto", () => {
@@ -129,9 +125,7 @@ test("absolute_layout_width_height_left_right_auto", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_width_height_left_auto_right_auto", () => {
@@ -173,9 +167,7 @@ test("absolute_layout_width_height_left_auto_right_auto", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_width_height_end_bottom", () => {
@@ -217,9 +209,7 @@ test("absolute_layout_width_height_end_bottom", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_start_top_end_bottom", () => {
@@ -261,9 +251,7 @@ test("absolute_layout_start_top_end_bottom", () => {
   expect(root_child0.getComputedWidth()).toBe(80);
   expect(root_child0.getComputedHeight()).toBe(80);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_width_height_start_top_end_bottom", () => {
@@ -307,9 +295,7 @@ test("absolute_layout_width_height_start_top_end_bottom", () => {
   expect(root_child0.getComputedWidth()).toBe(10);
   expect(root_child0.getComputedHeight()).toBe(10);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("do_not_clamp_height_of_absolute_node_to_height_of_its_overflow_hidden_parent", () => {
@@ -366,9 +352,7 @@ test("do_not_clamp_height_of_absolute_node_to_height_of_its_overflow_hidden_pare
   expect(root_child0_child0.getComputedWidth()).toBe(100);
   expect(root_child0_child0.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_within_border", () => {
@@ -469,9 +453,7 @@ test("absolute_layout_within_border", () => {
   expect(root_child3.getComputedWidth()).toBe(50);
   expect(root_child3.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_and_justify_content_center", () => {
@@ -514,9 +496,7 @@ test("absolute_layout_align_items_and_justify_content_center", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_and_justify_content_flex_end", () => {
@@ -559,9 +539,7 @@ test("absolute_layout_align_items_and_justify_content_flex_end", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_justify_content_center", () => {
@@ -603,9 +581,7 @@ test("absolute_layout_justify_content_center", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_center", () => {
@@ -647,9 +623,7 @@ test("absolute_layout_align_items_center", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_center_on_child_only", () => {
@@ -691,9 +665,7 @@ test("absolute_layout_align_items_center_on_child_only", () => {
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_and_justify_content_center_and_top_position", () => {
@@ -737,9 +709,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_top_position", 
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_and_justify_content_center_and_bottom_position", () => {
@@ -783,9 +753,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_bottom_position
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_and_justify_content_center_and_left_position", () => {
@@ -829,9 +797,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_left_position",
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_align_items_and_justify_content_center_and_right_position", () => {
@@ -875,9 +841,7 @@ test("absolute_layout_align_items_and_justify_content_center_and_right_position"
   expect(root_child0.getComputedWidth()).toBe(60);
   expect(root_child0.getComputedHeight()).toBe(40);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("position_root_with_rtl_should_position_withoutdirection", () => {
@@ -902,9 +866,7 @@ test("position_root_with_rtl_should_position_withoutdirection", () => {
   expect(root.getComputedWidth()).toBe(52);
   expect(root.getComputedHeight()).toBe(52);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_percentage_bottom_based_on_parent_height", () => {
@@ -979,9 +941,7 @@ test("absolute_layout_percentage_bottom_based_on_parent_height", () => {
   expect(root_child2.getComputedWidth()).toBe(10);
   expect(root_child2.getComputedHeight()).toBe(160);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_in_wrap_reverse_column_container", () => {
@@ -1022,9 +982,7 @@ test("absolute_layout_in_wrap_reverse_column_container", () => {
   expect(root_child0.getComputedWidth()).toBe(20);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_in_wrap_reverse_row_container", () => {
@@ -1066,9 +1024,7 @@ test("absolute_layout_in_wrap_reverse_row_container", () => {
   expect(root_child0.getComputedWidth()).toBe(20);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_in_wrap_reverse_column_container_flex_end", () => {
@@ -1110,9 +1066,7 @@ test("absolute_layout_in_wrap_reverse_column_container_flex_end", () => {
   expect(root_child0.getComputedWidth()).toBe(20);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_in_wrap_reverse_row_container_flex_end", () => {
@@ -1155,9 +1109,7 @@ test("absolute_layout_in_wrap_reverse_row_container_flex_end", () => {
   expect(root_child0.getComputedWidth()).toBe(20);
   expect(root_child0.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("percent_absolute_position_infinite_height", () => {
@@ -1212,9 +1164,7 @@ test("percent_absolute_position_infinite_height", () => {
   expect(root_child1.getComputedWidth()).toBe(60);
   expect(root_child1.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_percentage_height_based_on_padded_parent", () => {
@@ -1256,9 +1206,7 @@ test("absolute_layout_percentage_height_based_on_padded_parent", () => {
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(45);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_percentage_height_based_on_padded_parent_and_align_items_center", () => {
@@ -1301,9 +1249,7 @@ test("absolute_layout_percentage_height_based_on_padded_parent_and_align_items_c
   expect(root_child0.getComputedWidth()).toBe(100);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_padding_left", () => {
@@ -1344,9 +1290,7 @@ test("absolute_layout_padding_left", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_padding_right", () => {
@@ -1387,9 +1331,7 @@ test("absolute_layout_padding_right", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_padding_top", () => {
@@ -1430,9 +1372,7 @@ test("absolute_layout_padding_top", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_padding_bottom", () => {
@@ -1473,9 +1413,7 @@ test("absolute_layout_padding_bottom", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_padding", () => {
@@ -1546,9 +1484,7 @@ test("absolute_layout_padding", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(50);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_border", () => {
@@ -1619,9 +1555,7 @@ test("absolute_layout_border", () => {
   expect(root_child0_child0_child0.getComputedWidth()).toBe(50);
   expect(root_child0_child0_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("absolute_layout_column_reverse_margin_border", () => {
@@ -1668,7 +1602,5 @@ test("absolute_layout_column_reverse_margin_border", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });

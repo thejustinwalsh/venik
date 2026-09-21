@@ -5,5 +5,7 @@ export default defineConfig({
   define: { __EVENTS__: "true" },
   test: {
     include: ["tests/**/*.test.ts"],
+    // tests/GarbageCollectionTest.test.ts forces collections through `gc()`.
+    execArgv: ["--expose-gc"],
   },
 });

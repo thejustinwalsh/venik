@@ -38,7 +38,5 @@ test("zero_aspect_ratio_behaves_like_auto", () => {
   expect(root_child0.getComputedWidth()).toBe(50);
   expect(root_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });

@@ -52,9 +52,7 @@ test("flex_basis_flex_grow_column", () => {
   expect(root_child1.getComputedWidth()).toBe(100);
   expect(root_child1.getComputedHeight()).toBe(25);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_shrink_flex_grow_row", () => {
@@ -111,9 +109,7 @@ test("flex_shrink_flex_grow_row", () => {
   expect(root_child1.getComputedWidth()).toBe(250);
   expect(root_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_shrink_flex_grow_child_flex_shrink_other_child", () => {
@@ -171,9 +167,7 @@ test("flex_shrink_flex_grow_child_flex_shrink_other_child", () => {
   expect(root_child1.getComputedWidth()).toBe(250);
   expect(root_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_basis_flex_grow_row", () => {
@@ -227,9 +221,7 @@ test("flex_basis_flex_grow_row", () => {
   expect(root_child1.getComputedWidth()).toBe(25);
   expect(root_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_basis_flex_shrink_column", () => {
@@ -282,9 +274,7 @@ test("flex_basis_flex_shrink_column", () => {
   expect(root_child1.getComputedWidth()).toBe(100);
   expect(root_child1.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_basis_flex_shrink_row", () => {
@@ -338,9 +328,7 @@ test("flex_basis_flex_shrink_row", () => {
   expect(root_child1.getComputedWidth()).toBe(50);
   expect(root_child1.getComputedHeight()).toBe(100);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_shrink_to_zero", () => {
@@ -409,9 +397,7 @@ test("flex_shrink_to_zero", () => {
   expect(root_child2.getComputedWidth()).toBe(50);
   expect(root_child2.getComputedHeight()).toBe(50);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_basis_overrides_main_size", () => {
@@ -481,9 +467,7 @@ test("flex_basis_overrides_main_size", () => {
   expect(root_child2.getComputedWidth()).toBe(100);
   expect(root_child2.getComputedHeight()).toBe(20);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_shrink_at_most", () => {
@@ -535,9 +519,7 @@ test("flex_grow_shrink_at_most", () => {
   expect(root_child0_child0.getComputedWidth()).toBe(100);
   expect(root_child0_child0.getComputedHeight()).toBe(0);
 
-  root.freeRecursive();
 
-  config.free();
 });
 
 test("flex_grow_less_than_factor_one", () => {
@@ -604,7 +586,5 @@ test("flex_grow_less_than_factor_one", () => {
   expect(root_child2.getComputedWidth()).toBe(200);
   expect(root_child2.getComputedHeight()).toBe(184);
 
-  root.freeRecursive();
 
-  config.free();
 });
