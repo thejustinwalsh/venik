@@ -999,24 +999,21 @@ export class Node {
   }
 
   private updateDimension(axis: Dimension, value: StyleLength): void {
-    if (!this.style.dimensions[axis].equals(value)) {
-      this.style.dimensions[axis] = value;
+    if (this.style.setDimension(axis, value)) {
       this.processDimension(axis);
       this.markDirtyAndPropagate();
     }
   }
 
   private updateMinDimension(axis: Dimension, value: StyleLength): void {
-    if (!this.style.minDimensions[axis].equals(value)) {
-      this.style.minDimensions[axis] = value;
+    if (this.style.setMinDimension(axis, value)) {
       this.processDimension(axis);
       this.markDirtyAndPropagate();
     }
   }
 
   private updateMaxDimension(axis: Dimension, value: StyleLength): void {
-    if (!this.style.maxDimensions[axis].equals(value)) {
-      this.style.maxDimensions[axis] = value;
+    if (this.style.setMaxDimension(axis, value)) {
       this.processDimension(axis);
       this.markDirtyAndPropagate();
     }

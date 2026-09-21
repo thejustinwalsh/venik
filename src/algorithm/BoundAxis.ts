@@ -24,6 +24,9 @@ export function boundAxisWithinMinAndMax(
   widthSize: number,
 ): number {
   const style = node.style;
+  if (!style.hasSizeBounds) {
+    return value;
+  }
   const dim = isColumn(axis) ? Dimension.Height : Dimension.Width;
   const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
   const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
@@ -57,6 +60,9 @@ export function boundAxis(
   const dim = isColumn(axis) ? Dimension.Height : Dimension.Width;
   // Never NaN.
   const paddingAndBorder = paddingAndBorderForAxis(node, axis, direction, widthSize);
+  if (!style.hasSizeBounds) {
+    return value >= paddingAndBorder ? value : paddingAndBorder;
+  }
 
   const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
   if (max >= 0 && value > max) {
@@ -93,13 +99,15 @@ export function boundAxisInPlace(
   const value = boundAxisValue[0]!;
   let bounded = value;
 
-  const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
-  if (max >= 0 && value > max) {
-    bounded = max;
-  } else {
-    const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
-    if (min >= 0 && value < min) {
-      bounded = min;
+  if (style.hasSizeBounds) {
+    const max = style.resolvedMaxDimension(direction, dim, axisSize, widthSize);
+    if (max >= 0 && value > max) {
+      bounded = max;
+    } else {
+      const min = style.resolvedMinDimension(direction, dim, axisSize, widthSize);
+      if (min >= 0 && value < min) {
+        bounded = min;
+      }
     }
   }
 

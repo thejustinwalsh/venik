@@ -83,16 +83,29 @@ export class Style {
   private resolvedBorder: StyleLength[] = NO_EDGES;
   // `computeMarginForAxis` of both axes, valid while no margin is a percentage.
   private marginHasPercent = false;
+  private marginHasAuto = false;
   private marginForRow = 0;
   private marginForColumn = 0;
+  // Padding plus border of each physical edge, laid out like `resolvedPadding`
+  // and valid while no padding is a percentage.
+  private paddingHasPercent = false;
+  private paddingAndBorder: number[] = NO_INSETS;
   readonly gap: GutterLengths = [
     StyleLength.undefined(),
     StyleLength.undefined(),
     StyleLength.undefined(),
   ];
-  readonly dimensions: DimensionLengths = [StyleLength.ofAuto(), StyleLength.ofAuto()];
-  readonly minDimensions: DimensionLengths = [StyleLength.undefined(), StyleLength.undefined()];
-  readonly maxDimensions: DimensionLengths = [StyleLength.undefined(), StyleLength.undefined()];
+  readonly dimensions: Readonly<DimensionLengths> = [StyleLength.ofAuto(), StyleLength.ofAuto()];
+  readonly minDimensions: Readonly<DimensionLengths> = [
+    StyleLength.undefined(),
+    StyleLength.undefined(),
+  ];
+  readonly maxDimensions: Readonly<DimensionLengths> = [
+    StyleLength.undefined(),
+    StyleLength.undefined(),
+  ];
+  /** Whether any min or max size is set. Most nodes have none, and bounding a size is then a no-op. */
+  hasSizeBounds = false;
 
   /** Copies every property of `other`. `this` shares no mutable state with `other` afterwards. */
   assign(other: Style): void {
@@ -128,10 +141,12 @@ export class Style {
     copyInto(this.border as EdgeLengths, other.border);
     this.definedBorder = other.definedBorder;
     this.resolvedBorder = resolveEdges(this.border, this.definedBorder, this.resolvedBorder);
+    this.updatePaddingAndBorder();
     copyInto(this.gap, other.gap);
-    copyInto(this.dimensions, other.dimensions);
-    copyInto(this.minDimensions, other.minDimensions);
-    copyInto(this.maxDimensions, other.maxDimensions);
+    copyInto(this.dimensions as DimensionLengths, other.dimensions);
+    copyInto(this.minDimensions as DimensionLengths, other.minDimensions);
+    copyInto(this.maxDimensions as DimensionLengths, other.maxDimensions);
+    this.hasSizeBounds = other.hasSizeBounds;
     this.aspectRatio = other.aspectRatio;
   }
 
@@ -200,6 +215,7 @@ export class Style {
     (this.padding as EdgeLengths)[edge] = value;
     this.definedPadding = withEdge(this.definedPadding, edge, value);
     this.resolvedPadding = resolveEdges(this.padding, this.definedPadding, this.resolvedPadding);
+    this.updatePaddingAndBorder();
     return true;
   }
 
@@ -211,6 +227,36 @@ export class Style {
     (this.border as EdgeLengths)[edge] = value;
     this.definedBorder = withEdge(this.definedBorder, edge, value);
     this.resolvedBorder = resolveEdges(this.border, this.definedBorder, this.resolvedBorder);
+    this.updatePaddingAndBorder();
+    return true;
+  }
+
+  /** Returns whether the value changed. */
+  setDimension(dimension: Dimension, value: StyleLength): boolean {
+    if (this.dimensions[dimension].equals(value)) {
+      return false;
+    }
+    (this.dimensions as DimensionLengths)[dimension] = value;
+    return true;
+  }
+
+  /** Returns whether the value changed. */
+  setMinDimension(dimension: Dimension, value: StyleLength): boolean {
+    if (this.minDimensions[dimension].equals(value)) {
+      return false;
+    }
+    (this.minDimensions as DimensionLengths)[dimension] = value;
+    this.updateHasSizeBounds();
+    return true;
+  }
+
+  /** Returns whether the value changed. */
+  setMaxDimension(dimension: Dimension, value: StyleLength): boolean {
+    if (this.maxDimensions[dimension].equals(value)) {
+      return false;
+    }
+    (this.maxDimensions as DimensionLengths)[dimension] = value;
+    this.updateHasSizeBounds();
     return true;
   }
 
@@ -400,6 +446,9 @@ export class Style {
     if ((this.definedPadding | this.definedBorder) === 0) {
       return 0;
     }
+    if (!this.paddingHasPercent) {
+      return this.paddingAndBorder[edgeIndex(inlineStartEdge(axis, direction), direction)]!;
+    }
     return (
       this.computeInlineStartPadding(axis, direction, widthSize) +
       this.computeInlineStartBorder(axis, direction)
@@ -413,6 +462,9 @@ export class Style {
   ): number {
     if ((this.definedPadding | this.definedBorder) === 0) {
       return 0;
+    }
+    if (!this.paddingHasPercent) {
+      return this.paddingAndBorder[edgeIndex(flexStartEdge(axis), direction)]!;
     }
     return (
       this.computeFlexStartPadding(axis, direction, widthSize) +
@@ -428,6 +480,9 @@ export class Style {
     if ((this.definedPadding | this.definedBorder) === 0) {
       return 0;
     }
+    if (!this.paddingHasPercent) {
+      return this.paddingAndBorder[edgeIndex(inlineEndEdge(axis, direction), direction)]!;
+    }
     return (
       this.computeInlineEndPadding(axis, direction, widthSize) +
       this.computeInlineEndBorder(axis, direction)
@@ -441,6 +496,9 @@ export class Style {
   ): number {
     if ((this.definedPadding | this.definedBorder) === 0) {
       return 0;
+    }
+    if (!this.paddingHasPercent) {
+      return this.paddingAndBorder[edgeIndex(flexEndEdge(axis), direction)]!;
     }
     return (
       this.computeFlexEndPadding(axis, direction, widthSize) +
@@ -497,11 +555,15 @@ export class Style {
   }
 
   flexStartMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return edgeLength(this.resolvedMargin, flexStartEdge(axis), direction).isAuto();
+    return (
+      this.marginHasAuto && edgeLength(this.resolvedMargin, flexStartEdge(axis), direction).isAuto()
+    );
   }
 
   flexEndMarginIsAuto(axis: FlexDirection, direction: Direction): boolean {
-    return edgeLength(this.resolvedMargin, flexEndEdge(axis), direction).isAuto();
+    return (
+      this.marginHasAuto && edgeLength(this.resolvedMargin, flexEndEdge(axis), direction).isAuto()
+    );
   }
 
   /** Allocation-free `resolvedMinDimension` for the layout algorithm: NaN when undefined. */
@@ -562,14 +624,44 @@ export class Style {
 
   private updateMarginForAxes(): void {
     let hasPercent = false;
-    for (let i = 0; i < 4; i++) {
+    let hasAuto = false;
+    for (let i = 0; i < 8; i++) {
       hasPercent = hasPercent || this.resolvedMargin[i]!.isPercent();
+      hasAuto = hasAuto || this.resolvedMargin[i]!.isAuto();
     }
     this.marginHasPercent = hasPercent;
+    this.marginHasAuto = hasAuto;
     if (!hasPercent) {
       this.marginForRow = this.resolveMarginForAxis(FlexDirection.Row, NaN);
       this.marginForColumn = this.resolveMarginForAxis(FlexDirection.Column, NaN);
     }
+  }
+
+  private updatePaddingAndBorder(): void {
+    let hasPercent = false;
+    for (let i = 0; i < 8; i++) {
+      hasPercent = hasPercent || this.resolvedPadding[i]!.isPercent();
+    }
+    this.paddingHasPercent = hasPercent;
+    if (hasPercent || (this.definedPadding | this.definedBorder) === 0) {
+      return;
+    }
+    if (this.paddingAndBorder === NO_INSETS) {
+      this.paddingAndBorder = NO_INSETS.slice();
+    }
+    for (let i = 0; i < 8; i++) {
+      this.paddingAndBorder[i] =
+        maxOrDefined(this.resolvedPadding[i]!.resolve(NaN), 0) +
+        maxOrDefined(this.resolvedBorder[i]!.resolve(0), 0);
+    }
+  }
+
+  private updateHasSizeBounds(): void {
+    this.hasSizeBounds =
+      this.minDimensions[Dimension.Width].isDefined() ||
+      this.minDimensions[Dimension.Height].isDefined() ||
+      this.maxDimensions[Dimension.Width].isDefined() ||
+      this.maxDimensions[Dimension.Height].isDefined();
   }
 
   private computeColumnGap(): StyleLength {
@@ -632,13 +724,20 @@ for (let i = 0; i < 8; i++) {
   NO_EDGES.push(StyleLength.undefined());
 }
 
+const NO_INSETS: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+
+/** Where the caches keep a physical edge for a layout direction. */
+function edgeIndex(edge: PhysicalEdge, layoutDirection: Direction): number {
+  return layoutDirection === Direction.RTL ? edge + 4 : edge;
+}
+
 /** The cached `computeEdge` of a physical edge. */
 function edgeLength(
   resolved: readonly StyleLength[],
   edge: PhysicalEdge,
   layoutDirection: Direction,
 ): StyleLength {
-  return resolved[layoutDirection === Direction.RTL ? edge + 4 : edge]!;
+  return resolved[edgeIndex(edge, layoutDirection)]!;
 }
 
 /** Refills the cache behind `edgeLength`, reusing `resolved` once a style has its own. */
