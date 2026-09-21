@@ -72,9 +72,6 @@ export class Node {
   private processedDimensions_: StyleLength[] = [StyleLength.undefined(), StyleLength.undefined()];
 
   constructor(config: Config = Config.getDefault()) {
-    if (config == null) {
-      throw new Error("Tried to construct YGNode with null config");
-    }
     this.config_ = config;
     if (__EVENTS__) Event.publish(this, Event.NodeAllocation, { config });
   }
@@ -174,11 +171,7 @@ export class Node {
   }
 
   // Config, context and callbacks
-  setConfig(config: Config | null): void {
-    if (config === null) {
-      throw new Error("Attempting to set a null config on a Node");
-    }
-
+  setConfig(config: Config): void {
     if (configUpdateInvalidatesLayout(this.config_, config)) {
       this.markDirtyAndPropagate();
       this.layout.configVersion = 0;
