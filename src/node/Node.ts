@@ -392,7 +392,7 @@ export class Node {
   }
   getFlexGrow(): number {
     const flexGrow = this.style.flexGrow;
-    return Number.isNaN(flexGrow) ? Style.DefaultFlexGrow : flexGrow;
+    return flexGrow !== flexGrow ? Style.DefaultFlexGrow : flexGrow;
   }
   setFlexShrink(flexShrink: number | undefined): void {
     const value = flexShrink ?? NaN;
@@ -403,7 +403,7 @@ export class Node {
   }
   getFlexShrink(): number {
     const flexShrink = this.style.flexShrink;
-    return Number.isNaN(flexShrink) ? Style.DefaultFlexShrink : flexShrink;
+    return flexShrink !== flexShrink ? Style.DefaultFlexShrink : flexShrink;
   }
   setAspectRatio(aspectRatio: number | undefined): void {
     // Degenerate aspect ratios (0, infinite) act as auto.

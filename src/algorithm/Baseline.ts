@@ -16,7 +16,7 @@ export function calculateBaseline(node: Node): number {
 
     if (__EVENTS__) Event.publish(node, Event.NodeBaselineEnd);
 
-    if (Number.isNaN(baseline)) {
+    if (baseline !== baseline) {
       throw new Error("Expect custom baseline function to not return NaN");
     }
     return baseline;

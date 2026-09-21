@@ -50,9 +50,9 @@ export function roundValueToPixelGrid(
     scaledValue =
       scaledValue -
       fractial +
-      (!Number.isNaN(fractial) && (fractial > 0.5 || inexactEquals(fractial, 0.5)) ? 1.0 : 0.0);
+      (fractial === fractial && (fractial > 0.5 || inexactEquals(fractial, 0.5)) ? 1.0 : 0.0);
   }
-  return Number.isNaN(scaledValue) || Number.isNaN(pointScaleFactor)
+  return scaledValue !== scaledValue || pointScaleFactor !== pointScaleFactor
     ? NaN
     : scaledValue / pointScaleFactor;
 }

@@ -91,7 +91,7 @@ export class StyleLength {
   equals(rhs: StyleLength): boolean {
     return (
       this.unit_ === rhs.unit_ &&
-      (this.value_ === rhs.value_ || (Number.isNaN(this.value_) && Number.isNaN(rhs.value_)))
+      (this.value_ === rhs.value_ || (this.value_ !== this.value_ && rhs.value_ !== rhs.value_))
     );
   }
 

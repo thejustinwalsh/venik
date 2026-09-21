@@ -68,7 +68,7 @@ function isColumnStretchEdge(owner: Node | null, child: Node | null): boolean {
     isColumn(ownerStyle.flexDirection) &&
     ownerStyle.flexWrap === Wrap.NoWrap &&
     childStyle.positionType !== PositionType.Absolute &&
-    Number.isNaN(childStyle.aspectRatio) &&
+    childStyle.aspectRatio !== childStyle.aspectRatio &&
     (childWidth.isAuto() || childWidth.isUndefined()) &&
     !hasAutoHorizontalMargin(childStyle) &&
     resolveChildAlignment(owner, child) === Align.Stretch
@@ -192,7 +192,7 @@ function isHeightFitContentIndependent(node: Node): boolean {
     (flexBasis.isAuto() || flexBasis.isUndefined()) &&
     !hasNonZeroFlex(node) &&
     style.boxSizing === BoxSizing.BorderBox &&
-    Number.isNaN(style.aspectRatio) &&
+    style.aspectRatio !== style.aspectRatio &&
     style.positionType !== PositionType.Absolute &&
     style.overflow !== Overflow.Scroll &&
     style.display === Display.Flex &&
