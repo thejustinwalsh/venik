@@ -184,7 +184,6 @@ function isHeightFitContentIndependent(node: Node): boolean {
 
   return (
     !node.hasMeasureFunc() &&
-    !node.hasMinContentMeasureFunc() &&
     !node.hasBaselineFunc() &&
     !node.isReferenceBaseline() &&
     (height.isAuto() || height.isUndefined()) &&
@@ -851,251 +850,6 @@ function computeFlexBasisForChildren(
   return totalOuterFlexBasis;
 }
 
-// Returns the min-content size of `node` along `requestedAxis`, used by CSS
-// Flexbox §4.5 automatic minimum sizing.
-//
-// Mirrors RenderCore FlexLayout's `AlgorithmBase::computeMinContentSize` /
-// `measureMinContentMainSize` pair (see `xplat/flexlayout/flexlayout/
-// FlexboxAlgorithm.h`). Unlike FlexLayout, which crosses a JNI/bridge
-// boundary for nested flex containers via thread-local min-content markers,
-// Yoga's flex containers are native nodes — so this function recurses
-// directly into containers rather than going through a measure callback.
-//
-// Algorithm:
-//   * Leaf with measure function: invoke it with `AtMost 0` on the
-//     requested axis and `Undefined` on the other. Text measure-funcs
-//     respond with longest-word width; image/collection-like measures
-//     respond with 0 along their scroll axis.
-//   * Empty leaf: return 0.
-//   * Container: iterate in-flow children. For each, take its
-//     min-content along the container's own main axis (sum into
-//     `mainTotal`) and along its cross axis (max into `crossMax`),
-//     plus the child's margins. Add the container's own padding and
-//     border on both ends of each axis. Project onto `requestedAxis`.
-//
-// Container-level recursion does no layout writes (no positions, no
-// alignment, no flex distribution); only the descendant leaf measure
-// callbacks observe state changes (the same ones a normal layout pass
-// would invoke). Roughly equivalent to FlexLayout's dedicated
-// `computeMinContentSize` cost: one measure call per leaf + linear walk
-// per container.
-function computeMinContentMainSize(
-  node: Node,
-  requestedAxis: FlexDirection,
-  ownerDirection: Direction,
-  ownerWidth: number,
-  ownerHeight: number,
-): number {
-  const wantRow = isRow(requestedAxis);
-
-  // 1. Static value wins for any node (leaf or container). Short-circuits
-  // both the measure callback path AND any container recursion. The most
-  // common use is `YGNodeSetMinContentWidth(node, 0)` declaring no
-  // contribution per CSS-Images (Image) or CSS-Overflow (scroll
-  // containers along their scroll axis).
-  const staticMin = wantRow ? node.getMinContentWidth() : node.getMinContentHeight();
-  if (staticMin === staticMin) {
-    return staticMin;
-  }
-
-  if (node.hasMeasureFunc()) {
-    // 2. Dynamic min-content callback if set (for Primitives whose
-    // min-content depends on state). Otherwise fall back to the regular
-    // measure function with `AtMost 0`, which text measurers naturally
-    // answer with longest-word width.
-    const size = node.hasMinContentMeasureFunc()
-      ? node.measureMinContent(
-          wantRow ? 0.0 : NaN,
-          wantRow ? SizingMode.FitContent : SizingMode.MaxContent,
-          wantRow ? NaN : 0.0,
-          wantRow ? SizingMode.MaxContent : SizingMode.FitContent,
-        )
-      : node.measure(
-          wantRow ? 0.0 : NaN,
-          wantRow ? SizingMode.FitContent : SizingMode.MaxContent,
-          wantRow ? NaN : 0.0,
-          wantRow ? SizingMode.MaxContent : SizingMode.FitContent,
-        );
-    // Add the leaf's own padding and border, like the container branch below.
-    const leafDirection = node.resolveDirection(ownerDirection);
-    const paddingAndBorder =
-      node.style.computeFlexStartPaddingAndBorder(requestedAxis, leafDirection, ownerWidth) +
-      node.style.computeFlexEndPaddingAndBorder(requestedAxis, leafDirection, ownerWidth);
-    return (wantRow ? size.width : size.height) + paddingAndBorder;
-  }
-
-  if (node.getChildCount() === 0) {
-    return 0.0;
-  }
-
-  const direction = node.resolveDirection(ownerDirection);
-  const nodeMainAxis = resolveDirection(node.style.flexDirection, direction);
-  const nodeCrossAxis = resolveCrossDirection(nodeMainAxis, direction);
-
-  let mainTotal = 0.0;
-  let crossMax = 0.0;
-  const children = node.getChildren();
-  for (let i = 0, length = children.length; i < length; i++) {
-    const child = children[i]!;
-    if (
-      child.style.display === Display.None ||
-      child.style.positionType === PositionType.Absolute
-    ) {
-      continue;
-    }
-    let childMain = computeMinContentMainSize(
-      child,
-      nodeMainAxis,
-      direction,
-      ownerWidth,
-      ownerHeight,
-    );
-    childMain += child.style.computeMarginForAxis(nodeMainAxis, ownerWidth);
-
-    let childCross = computeMinContentMainSize(
-      child,
-      nodeCrossAxis,
-      direction,
-      ownerWidth,
-      ownerHeight,
-    );
-    childCross += child.style.computeMarginForAxis(nodeCrossAxis, ownerWidth);
-
-    mainTotal += childMain;
-    // std::max(crossMax, childCross): keeps crossMax when childCross is NaN.
-    crossMax = crossMax < childCross ? childCross : crossMax;
-  }
-
-  mainTotal +=
-    node.style.computeFlexStartPaddingAndBorder(nodeMainAxis, direction, ownerWidth) +
-    node.style.computeFlexEndPaddingAndBorder(nodeMainAxis, direction, ownerWidth);
-  crossMax +=
-    node.style.computeFlexStartPaddingAndBorder(nodeCrossAxis, direction, ownerWidth) +
-    node.style.computeFlexEndPaddingAndBorder(nodeCrossAxis, direction, ownerWidth);
-
-  const nodeMainIsRow = isRow(nodeMainAxis);
-  const widthMin = nodeMainIsRow ? mainTotal : crossMax;
-  const heightMin = nodeMainIsRow ? crossMax : mainTotal;
-  return wantRow ? widthMin : heightMin;
-}
-
-// Computes the CSS Flexbox §4.5 automatic minimum main-axis size for
-// `child`. Returns Undefined when no auto-min applies (explicit
-// `min-{w,h}` already set, or `display:none`); 0 when the item's own
-// `overflow != visible` (the spec's per-item escape hatch); or a concrete
-// floor otherwise.
-//
-// Floor = min(content-size, specified-size) capped by max-size, with the
-// transferred (aspect-ratio × cross-size) suggestion replacing the
-// specified-size leg when the item has an aspect ratio but no specified
-// main size. See https://www.w3.org/TR/css-flexbox-1/#min-size-auto.
-function computeAutoMinMainSize(
-  child: Node,
-  mainAxis: FlexDirection,
-  direction: Direction,
-  ownerMainAxisSize: number,
-  ownerWidth: number,
-  ownerHeight: number,
-): number {
-  if (child.style.display === Display.None) {
-    return NaN;
-  }
-  // Explicit `min-{w,h}` (including `0`) wins over auto. This is the
-  // CSS-spec opt-out (§4.5).
-  if (child.style.minDimensions[dimension(mainAxis)].isDefined()) {
-    return NaN;
-  }
-  // Per CSS §4.5: a flex item whose own `overflow` is not `visible` gets
-  // auto-min = 0 (let scroll/clip handle overflow rather than enforce a
-  // content-based minimum).
-  if (child.style.overflow !== Overflow.Visible) {
-    return 0.0;
-  }
-
-  const mainDim = dimension(mainAxis);
-  const crossDim = isRow(mainAxis) ? Dimension.Height : Dimension.Width;
-  const isMainAxisRow = isRow(mainAxis);
-
-  // Specified size suggestion: the resolved main-axis style dimension.
-  const specifiedMain = child.getResolvedDimension(
-    direction,
-    mainDim,
-    ownerMainAxisSize,
-    ownerWidth,
-  );
-
-  // Transferred size suggestion: cross × aspect-ratio, if both are definite.
-  let transferredMain = NaN;
-  const ratio = child.style.aspectRatio;
-  if (ratio === ratio) {
-    const crossOwner = isMainAxisRow ? ownerHeight : ownerWidth;
-    const crossValue = child.getResolvedDimension(direction, crossDim, crossOwner, ownerWidth);
-    if (crossValue === crossValue) {
-      transferredMain = isMainAxisRow ? crossValue * ratio : crossValue / ratio;
-    }
-  }
-
-  // Content size suggestion: probe via min-content recursion.
-  const contentMain = computeMinContentMainSize(
-    child,
-    mainAxis,
-    direction,
-    ownerWidth,
-    ownerHeight,
-  );
-
-  // Combine per §4.5: floor = min(content, specified) when specified is
-  // definite; otherwise floor = min(content, transferred) when transferred
-  // applies (item has aspect-ratio + definite cross + no specified main);
-  // else floor = content.
-  let floor = contentMain;
-  if (specifiedMain === specifiedMain) {
-    if (floor !== floor || specifiedMain < floor) {
-      floor = specifiedMain;
-    }
-  } else if (transferredMain === transferredMain) {
-    if (floor !== floor || transferredMain < floor) {
-      floor = transferredMain;
-    }
-  }
-
-  // §4.5: cap by the max main size.
-  const maxMain = child.style.resolvedMaxDimension(
-    direction,
-    mainDim,
-    ownerMainAxisSize,
-    ownerWidth,
-  );
-  if (floor > maxMain) {
-    floor = maxMain;
-  }
-
-  if (floor !== floor || floor < 0.0) {
-    floor = 0.0;
-  }
-  return floor;
-}
-
-// boundAxis with an additional lower bound from `child`'s cached
-// `computedAutoMinMainSize`, applied on the main axis only. Used inside
-// the flex-shrink distribution to honor CSS §4.5 auto-min while preserving
-// the existing min/max/padding-and-border clamping.
-function boundAxisWithAutoMin(
-  child: Node,
-  axis: FlexDirection,
-  direction: Direction,
-  value: number,
-  axisSize: number,
-  widthSize: number,
-): number {
-  let bounded = boundAxis(child, axis, direction, value, axisSize, widthSize);
-  const autoMin = child.layout.computedAutoMinMainSize;
-  if (bounded < autoMin) {
-    bounded = autoMin;
-  }
-  return bounded;
-}
-
 // It distributes the free space to the flexible items and ensures that the size
 // of the flex items abide the min and max constraints. At the end of this
 // function the child nodes would have proper size. Prior using this function
@@ -1159,7 +913,7 @@ function distributeFreeSpaceSecondPass(
               flexShrinkScaledFactor;
         }
 
-        updatedMainSize = boundAxisWithAutoMin(
+        updatedMainSize = boundAxis(
           currentLineChild,
           mainAxis,
           direction,
@@ -1173,7 +927,7 @@ function distributeFreeSpaceSecondPass(
 
       // Is this child able to grow?
       if (flexGrowFactor === flexGrowFactor && flexGrowFactor !== 0) {
-        updatedMainSize = boundAxisWithAutoMin(
+        updatedMainSize = boundAxis(
           currentLineChild,
           mainAxis,
           direction,
@@ -1340,7 +1094,7 @@ function distributeFreeSpaceFirstPass(
           childFlexBasis +
           (flexLine.layout.remainingFreeSpace / originalTotalFlexShrinkScaledFactors) *
             flexShrinkScaledFactor;
-        boundMainSize = boundAxisWithAutoMin(
+        boundMainSize = boundAxis(
           currentLineChild,
           mainAxis,
           direction,
@@ -1439,28 +1193,6 @@ function resolveFlexibleLength(
   generationCount: number,
 ): void {
   const originalFreeSpace = flexLine.layout.remainingFreeSpace;
-
-  // CSS Flexbox §4.5: compute each item's automatic minimum main-axis size
-  // up front so the bounding helpers below can floor shrunk values.
-  // computeAutoMinMainSize returns Undefined when an explicit `min-{w,h}`
-  // already pins the floor, in which case the cached value is also Undefined
-  // and `boundAxisWithAutoMin` reduces to `boundAxis`.
-  //
-  // The floor is only ever read for items that flex, and probing the content
-  // size can mean an extra measure call, so inflexible items skip it.
-  for (let i = 0, length = flexLine.itemsInFlow.length; i < length; i++) {
-    const currentLineChild = flexLine.itemsInFlow[i]!;
-    currentLineChild.layout.computedAutoMinMainSize = currentLineChild.isNodeFlexible()
-      ? computeAutoMinMainSize(
-          currentLineChild,
-          mainAxis,
-          direction,
-          mainAxisOwnerSize,
-          availableInnerWidth,
-          availableInnerHeight,
-        )
-      : NaN;
-  }
 
   // First pass: detect the flex items whose min/max constraints trigger
   distributeFreeSpaceFirstPass(
@@ -1712,8 +1444,6 @@ function justifyMainAxis(
 //    and assume a default minimum main size of 0.
 //  * Min/Max sizes in the main axis are not honored when resolving flexible
 //    lengths.
-//  * The spec indicates that the default value for 'flexDirection' is 'row',
-//    but the algorithm below assumes a default of 'column'.
 //
 // Input parameters:
 //    - node: current node to be sized and laid out

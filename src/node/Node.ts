@@ -61,9 +61,6 @@ export class Node {
   private isReferenceBaseline_: boolean = false;
   private isDirty_: boolean = true;
   private measureFunc_: MeasureFunction | null = null;
-  private minContentMeasureFunc_: MeasureFunction | null = null;
-  private minContentWidth_: number = NaN;
-  private minContentHeight_: number = NaN;
   private baselineFunc_: BaselineFunction | null = null;
   private dirtiedFunc_: DirtiedFunction | null = null;
   private contentsChildrenCount_: number = 0;
@@ -202,24 +199,6 @@ export class Node {
   }
   hasMeasureFunc(): boolean {
     return this.measureFunc_ !== null;
-  }
-  setMinContentMeasureFunc(measureFunc: MeasureFunction | null): void {
-    this.minContentMeasureFunc_ = measureFunc;
-  }
-  hasMinContentMeasureFunc(): boolean {
-    return this.minContentMeasureFunc_ !== null;
-  }
-  setMinContentWidth(minContentWidth: number | undefined): void {
-    this.minContentWidth_ = minContentWidth ?? NaN;
-  }
-  setMinContentHeight(minContentHeight: number | undefined): void {
-    this.minContentHeight_ = minContentHeight ?? NaN;
-  }
-  getMinContentWidth(): number {
-    return this.minContentWidth_;
-  }
-  getMinContentHeight(): number {
-    return this.minContentHeight_;
   }
   setBaselineFunc(baselineFunc: BaselineFunction | null): void {
     this.baselineFunc_ = baselineFunc;
@@ -647,19 +626,6 @@ export class Node {
   /** @internal Invokes the baseline func. */
   baseline(width: number, height: number): number {
     return this.baselineFunc_!(width, height, this);
-  }
-
-  /** @internal Invokes the min-content measure func. */
-  measureMinContent(
-    availableWidth: number,
-    widthMode: SizingMode,
-    availableHeight: number,
-    heightMode: SizingMode,
-  ): Size {
-    return this.sanitizeMeasuredSize(
-      this.minContentMeasureFunc_!(availableWidth, widthMode, availableHeight, heightMode, this),
-      "Min-content measure function",
-    );
   }
 
   private sanitizeMeasuredSize(size: Size, what: string): Size {

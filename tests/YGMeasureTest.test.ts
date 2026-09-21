@@ -56,9 +56,7 @@ describe("YogaTest", () => {
 
     root.calculateLayout(undefined, undefined, Direction.LTR);
 
-    // The layout itself still skips measuring, but CSS Flexbox §4.5 automatic
-    // minimum sizing probes the flexible item's min-content size once.
-    expect(measureCount.count).toBe(1);
+    expect(measureCount.count).toBe(0);
   });
 
   test("measure_absolute_child_with_no_constraints", () => {
@@ -474,11 +472,10 @@ describe("YogaTest", () => {
     expect(root_child0.getComputedLeft()).toBe(25);
     expect(root_child0.getComputedTop()).toBe(25);
     expect(root_child0.getComputedWidth()).toBe(0);
-    // `min-height: auto` keeps the text from shrinking below its content.
-    expect(root_child0.getComputedHeight()).toBe(16);
+    expect(root_child0.getComputedHeight()).toBe(0);
 
     expect(root_child1.getComputedLeft()).toBe(25);
-    expect(root_child1.getComputedTop()).toBe(41);
+    expect(root_child1.getComputedTop()).toBe(25);
     expect(root_child1.getComputedWidth()).toBe(5);
     expect(root_child1.getComputedHeight()).toBe(5);
 

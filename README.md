@@ -31,11 +31,15 @@ Yoga's instrumentation events (`src/event/event.ts`) are test-only: every use
 sits behind the build-time `__EVENTS__` flag, which vitest sets to `true` and
 the tsdown build to `false`, so none of it reaches `dist/`.
 
-Unlike Yoga, there is a single, standards-driven behaviour: Yoga's errata
-(`setErrata` and friends) and experimental feature flags are gone. The CSS
-Flexbox §4.5 automatic minimum size (`min-width/height: auto`), the
-spec-correct free-space distribution, and what Yoga gates behind
-`WebFlexBasis` / `FixFlexBasisFitContent` are always on. Code that calls
+Unlike Yoga, there is a single behaviour: Yoga's errata (`setErrata` and
+friends) and experimental feature flags are gone. The spec-correct free-space
+distribution, and what Yoga gates behind `WebFlexBasis` /
+`FixFlexBasisFitContent`, are always on.
+
+One deliberate deviation from CSS: there is no Flexbox §4.5 automatic minimum
+size. `min-width/height: auto` acts as `0`, as in every released Yoga, because
+finding an item's min-content size costs an extra measure pass. Set an explicit
+`min-width` / `min-height` to keep an item from shrinking below its content. Code that calls
 `config.setErrata(...)` or `config.setExperimentalFeatureEnabled(...)` has to
 drop those calls.
 

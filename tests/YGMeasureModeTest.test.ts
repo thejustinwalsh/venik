@@ -167,17 +167,13 @@ test("flex_child", () => {
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
-  expect(constraintList.length).toBe(3);
+  expect(constraintList.length).toBe(2);
 
   expect(constraintList[0]?.height).toBe(100);
   expect(constraintList[0]?.heightMode).toBe(SizingMode.FitContent);
 
-  // Min-content probe for the CSS Flexbox §4.5 automatic minimum size
-  expect(constraintList[1]?.height).toBe(0);
-  expect(constraintList[1]?.heightMode).toBe(SizingMode.FitContent);
-
-  expect(constraintList[2]?.height).toBe(100);
-  expect(constraintList[2]?.heightMode).toBe(SizingMode.StretchFit);
+  expect(constraintList[1]?.height).toBe(100);
+  expect(constraintList[1]?.heightMode).toBe(SizingMode.StretchFit);
 });
 
 test("flex_child_with_flex_basis", () => {
@@ -195,14 +191,10 @@ test("flex_child_with_flex_basis", () => {
 
   root.calculateLayout(undefined, undefined, Direction.LTR);
 
-  expect(constraintList.length).toBe(2);
+  expect(constraintList.length).toBe(1);
 
-  // Min-content probe for the CSS Flexbox §4.5 automatic minimum size
-  expect(constraintList[0]?.height).toBe(0);
-  expect(constraintList[0]?.heightMode).toBe(SizingMode.FitContent);
-
-  expect(constraintList[1]?.height).toBe(100);
-  expect(constraintList[1]?.heightMode).toBe(SizingMode.StretchFit);
+  expect(constraintList[0]?.height).toBe(100);
+  expect(constraintList[0]?.heightMode).toBe(SizingMode.StretchFit);
 });
 
 test("overflow_scroll_column", () => {
