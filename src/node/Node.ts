@@ -178,7 +178,7 @@ export class Node {
     } else {
       // If the config is functionally the same, then align the configVersion so
       // that we can reuse the layout cache
-      this.layout.configVersion = config.getVersion();
+      this.layout.configVersion = config.version;
     }
 
     this.config_ = config;

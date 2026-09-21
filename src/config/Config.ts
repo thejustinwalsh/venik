@@ -2,7 +2,8 @@
  * Layout configuration shared between nodes.
  */
 export class Config {
-  private version_: number = 0;
+  /** @internal Bumped whenever a change to the config invalidates existing layouts. */
+  version: number = 0;
   private pointScaleFactor_: number = 1.0;
   context: unknown = null;
 
@@ -20,16 +21,11 @@ export class Config {
 
     if (this.pointScaleFactor_ !== pixelsInPoint) {
       this.pointScaleFactor_ = pixelsInPoint;
-      this.version_++;
+      this.version++;
     }
   }
   getPointScaleFactor(): number {
     return this.pointScaleFactor_;
-  }
-
-  /** @internal Bumped whenever a change to the config invalidates existing layouts. */
-  getVersion(): number {
-    return this.version_;
   }
 }
 

@@ -2657,7 +2657,7 @@ export function calculateLayoutInternal(
 
   const needToVisitNode =
     (node.isDirty() && layout.generationCount !== generationCount) ||
-    layout.configVersion !== node.getConfig().getVersion() ||
+    layout.configVersion !== node.getConfig().version ||
     layout.lastOwnerDirection !== ownerDirection;
 
   if (needToVisitNode) {
@@ -2783,7 +2783,7 @@ export function calculateLayoutInternal(
     );
 
     layout.lastOwnerDirection = ownerDirection;
-    layout.configVersion = node.getConfig().getVersion();
+    layout.configVersion = node.getConfig().version;
 
     if (cachedResults === null) {
       if (__EVENTS__ && layoutMarkerData !== null) {

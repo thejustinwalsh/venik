@@ -20,15 +20,15 @@ describe("YogaTest", () => {
   test("config_version_increments_only_on_actual_changes", () => {
     const config = new Config();
 
-    const initialVersion = config.getVersion();
+    const initialVersion = config.version;
 
     // Changing point scale factor should increment version
     config.setPointScaleFactor(2.0);
-    expect(config.getVersion()).toBe(initialVersion + 1);
+    expect(config.version).toBe(initialVersion + 1);
 
     // Setting the same value again should NOT increment version
     config.setPointScaleFactor(2.0);
-    expect(config.getVersion()).toBe(initialVersion + 1);
+    expect(config.version).toBe(initialVersion + 1);
   });
 
   test("config_update_invalidates_layout_detects_each_property", () => {
