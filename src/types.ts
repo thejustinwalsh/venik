@@ -4,6 +4,20 @@ import type { Node } from "./node/Node.ts";
 /** Equivalent of `YGUndefined`. Setters also accept `undefined`. */
 export const Undefined: number = NaN;
 
+/**
+ * What `Node.getComputedLayout()` returns. There is a single instance, shared
+ * by all nodes and overwritten by every call: copy the numbers out rather than
+ * holding on to it.
+ */
+export type Layout = {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+  readonly width: number;
+  readonly height: number;
+};
+
 export type Size = {
   width: number;
   height: number;

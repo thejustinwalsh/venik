@@ -30,6 +30,7 @@ import { StyleLength } from "../style/StyleLength.ts";
 import type {
   BaselineFunction,
   DirtiedFunction,
+  Layout,
   MeasureFunction,
   Percent,
   Size,
@@ -240,6 +241,18 @@ export class Node {
   }
   getComputedRawHeight(): number {
     return this.layout.rawDimensions[Dimension.Height];
+  }
+  /** The same preallocated object on every call, for any node; valid until the next call. */
+  getComputedLayout(): Layout {
+    const layout = this.layout;
+    const result = computedLayout;
+    result.left = layout.position[PhysicalEdge.Left];
+    result.right = layout.position[PhysicalEdge.Right];
+    result.top = layout.position[PhysicalEdge.Top];
+    result.bottom = layout.position[PhysicalEdge.Bottom];
+    result.width = layout.dimensions[Dimension.Width];
+    result.height = layout.dimensions[Dimension.Height];
+    return result;
   }
   getComputedDirection(): Direction {
     return this.layout.direction;
@@ -1003,6 +1016,16 @@ export class Node {
     }
   }
 }
+
+// The result of every `getComputedLayout()` call. Read-only to callers.
+const computedLayout: { -readonly [K in keyof Layout]: Layout[K] } = {
+  left: 0,
+  right: 0,
+  top: 0,
+  bottom: 0,
+  width: 0,
+  height: 0,
+};
 
 const DIMENSIONS = [Dimension.Width, Dimension.Height] as const;
 

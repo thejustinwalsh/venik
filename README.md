@@ -32,8 +32,9 @@ The layout path is written to produce as little garbage as possible, so
 - A measure function may return the same `{ width, height }` object every time;
   it is read before the function can be called again.
 - Reading allocates nothing: results come from `getComputedLeft()` /
-  `getComputedWidth()` and friends (there is no `getComputedLayout()` object),
-  and style getters such as `getWidth()` return the node's own immutable
+  `getComputedWidth()` and friends, `getComputedLayout()` fills and returns one
+  preallocated read-only object (shared by all nodes, overwritten by the next
+  call), and style getters such as `getWidth()` return the node's own immutable
   `{ unit, value }` length, not a copy.
 - Inserting and removing children allocates nothing beyond array growth.
 
