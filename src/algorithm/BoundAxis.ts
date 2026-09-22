@@ -57,10 +57,32 @@ export function boundAxis(
   axisSize: number,
   widthSize: number,
 ): number {
+  // Never NaN.
+  return boundAxisAbovePaddingAndBorder(
+    node,
+    axis,
+    direction,
+    value,
+    axisSize,
+    widthSize,
+    paddingAndBorderForAxis(node, axis, direction, widthSize),
+  );
+}
+
+// `boundAxis` for a caller that already holds the padding and border of the
+// axis, which a node laying itself out does: working them out again is four
+// calls, and V8's inlining budget buys the hot functions far less than that.
+export function boundAxisAbovePaddingAndBorder(
+  node: Node,
+  axis: FlexDirection,
+  direction: Direction,
+  value: number,
+  axisSize: number,
+  widthSize: number,
+  paddingAndBorder: number,
+): number {
   const style = node.style;
   const dim = isColumn(axis) ? Dimension.Height : Dimension.Width;
-  // Never NaN.
-  const paddingAndBorder = paddingAndBorderForAxis(node, axis, direction, widthSize);
   if (!style.hasSizeBounds) {
     return value >= paddingAndBorder ? value : paddingAndBorder;
   }

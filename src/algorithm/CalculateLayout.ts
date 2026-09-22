@@ -25,6 +25,7 @@ import { fallbackAlignment, fallbackJustification, resolveChildAlignment } from 
 import { baselineOf, calculateBaseline, isBaselineLayout } from "./Baseline.ts";
 import {
   boundAxis,
+  boundAxisAbovePaddingAndBorder,
   boundAxisInPlace,
   boundAxisValue,
   boundAxisWithinMinAndMax,
@@ -1361,6 +1362,7 @@ function justifyMainAxis(
   availableInnerCrossDim: number,
   availableInnerWidth: number,
   performLayout: boolean,
+  isNodeBaselineLayout: boolean,
 ): void {
   const style = node.style;
 
@@ -1460,7 +1462,6 @@ function justifyMainAxis(
 
   let maxAscentForCurrentLine = 0;
   let maxDescentForCurrentLine = 0;
-  const isNodeBaselineLayout = isBaselineLayout(node);
   const lastChild = flexLine.itemsInFlow[itemCount - 1];
   for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const child = flexLine.itemsInFlow[i]!;
@@ -1594,6 +1595,363 @@ function justifyMainAxis(
 //    caller passes an available size of undefined then it must also pass a
 //    sizing mode of SizingMode.MaxContent in that dimension.
 //
+
+// STEP 8 of `calculateLayoutImpl`: places the lines of a wrapping node, and the
+// children within each line, across the cross axis. Everything it needs beyond
+// the arguments comes back out of the node, which the caller has just written.
+function alignContentLines(
+  node: Node,
+  layoutChildren: readonly Node[],
+  lineCount: number,
+  totalLineCrossDim: number,
+  availableInnerWidth: number,
+  availableInnerHeight: number,
+  availableInnerCrossDim: number,
+  crossAxisOwnerSize: number,
+  ownerWidth: number,
+  sizingModeCrossDim: SizingMode,
+  layoutMarkerData: LayoutData | null,
+  depth: number,
+  generationCount: number,
+): void {
+  const style = node.style;
+  const direction = node.layout.direction;
+  const mainAxis = resolveDirection(style.flexDirection, direction);
+  const crossAxis = resolveCrossDirection(mainAxis, direction);
+  const isMainAxisRow = isRow(mainAxis);
+  const crossDimension = dimension(crossAxis);
+  const paddingAndBorderAxisCross = paddingAndBorderForAxis(node, crossAxis, direction, ownerWidth);
+  const crossStartEdge = flexStartEdge(crossAxis);
+  const leadingPaddingAndBorderCross =
+    node.layout.padding[crossStartEdge] + node.layout.border[crossStartEdge];
+  const crossAxisGap = style.computeGapForAxis(crossAxis, availableInnerCrossDim);
+
+  let leadPerLine = 0;
+  let currentLead = leadingPaddingAndBorderCross;
+  let extraSpacePerLine = 0;
+
+  const unclampedCrossDim =
+    sizingModeCrossDim === SizingMode.StretchFit
+      ? availableInnerCrossDim + paddingAndBorderAxisCross
+      : node.hasDefiniteLength(crossDimension, crossAxisOwnerSize)
+        ? node.getResolvedDimension(direction, crossDimension, crossAxisOwnerSize, ownerWidth)
+        : totalLineCrossDim + paddingAndBorderAxisCross;
+
+  const innerCrossDim =
+    boundAxis(node, crossAxis, direction, unclampedCrossDim, crossAxisOwnerSize, ownerWidth) -
+    paddingAndBorderAxisCross;
+
+  const remainingAlignContentDim = innerCrossDim - totalLineCrossDim;
+
+  const alignContent =
+    remainingAlignContentDim >= 0 ? style.alignContent : fallbackAlignment(style.alignContent);
+
+  switch (alignContent) {
+    case Align.Start:
+    case Align.End:
+      // No-Op
+      break;
+    case Align.FlexEnd:
+      currentLead += remainingAlignContentDim;
+      break;
+    case Align.Center:
+      currentLead += remainingAlignContentDim / 2;
+      break;
+    case Align.Stretch:
+      extraSpacePerLine = remainingAlignContentDim / lineCount;
+      break;
+    case Align.SpaceAround:
+      currentLead += remainingAlignContentDim / (2 * lineCount);
+      leadPerLine = remainingAlignContentDim / lineCount;
+      break;
+    case Align.SpaceEvenly:
+      currentLead += remainingAlignContentDim / (lineCount + 1);
+      leadPerLine = remainingAlignContentDim / (lineCount + 1);
+      break;
+    case Align.SpaceBetween:
+      if (lineCount > 1) {
+        leadPerLine = remainingAlignContentDim / (lineCount - 1);
+      }
+      break;
+    case Align.Auto:
+    case Align.FlexStart:
+    case Align.Baseline:
+      break;
+  }
+  let endIndex = 0;
+  for (let i = 0; i < lineCount; i++) {
+    const startIndex = endIndex;
+    let index = startIndex;
+
+    // compute the line's height and find the endIndex
+    let lineHeight = 0;
+    let maxAscentForCurrentLine = 0;
+    let maxDescentForCurrentLine = 0;
+    for (; index < layoutChildren.length; index++) {
+      const child = layoutChildren[index]!;
+      const childStyle = child.style;
+      if (childStyle.display === Display.None) {
+        continue;
+      }
+      if (childStyle.positionType !== PositionType.Absolute) {
+        if (child.lineIndex !== i) {
+          break;
+        }
+        if (child.isLayoutDimensionDefined(crossAxis)) {
+          lineHeight = maxOrDefined(
+            lineHeight,
+            child.layout.measuredDimensions[crossDimension] +
+              childStyle.computeMarginForAxis(crossAxis, availableInnerWidth),
+          );
+        }
+        if (resolveChildAlignment(node, child) === Align.Baseline) {
+          const ascent =
+            baselineOf(child) +
+            childStyle.computeFlexStartMargin(FlexDirection.Column, direction, availableInnerWidth);
+          const descent =
+            child.layout.measuredDimensions[Dimension.Height] +
+            childStyle.computeMarginForAxis(FlexDirection.Column, availableInnerWidth) -
+            ascent;
+          maxAscentForCurrentLine = maxOrDefined(maxAscentForCurrentLine, ascent);
+          maxDescentForCurrentLine = maxOrDefined(maxDescentForCurrentLine, descent);
+          lineHeight = maxOrDefined(lineHeight, maxAscentForCurrentLine + maxDescentForCurrentLine);
+        }
+      }
+    }
+    endIndex = index;
+    currentLead += i !== 0 ? crossAxisGap : 0;
+    lineHeight += extraSpacePerLine;
+
+    for (index = startIndex; index < endIndex; index++) {
+      const child = layoutChildren[index]!;
+      const childStyle = child.style;
+      const childLayout = child.layout;
+      if (childStyle.display === Display.None) {
+        continue;
+      }
+      if (childStyle.positionType !== PositionType.Absolute) {
+        switch (resolveChildAlignment(node, child)) {
+          case Align.Start:
+          case Align.End:
+            // Not yet implemented
+            break;
+          case Align.FlexStart: {
+            childLayout.position[flexStartEdge(crossAxis)] =
+              currentLead +
+              childStyle.computeFlexStartPosition(crossAxis, direction, availableInnerWidth);
+            break;
+          }
+          case Align.FlexEnd: {
+            childLayout.position[flexStartEdge(crossAxis)] =
+              currentLead +
+              lineHeight -
+              childStyle.computeFlexEndMargin(crossAxis, direction, availableInnerWidth) -
+              childLayout.measuredDimensions[crossDimension];
+            break;
+          }
+          case Align.Center: {
+            const childHeight = childLayout.measuredDimensions[crossDimension];
+
+            childLayout.position[flexStartEdge(crossAxis)] =
+              currentLead + (lineHeight - childHeight) / 2;
+            break;
+          }
+          case Align.Stretch: {
+            childLayout.position[flexStartEdge(crossAxis)] =
+              currentLead +
+              childStyle.computeFlexStartMargin(crossAxis, direction, availableInnerWidth);
+
+            // Remeasure child with the line height as it as been only
+            // measured with the owners height yet.
+            if (!child.hasDefiniteLength(crossDimension, availableInnerCrossDim)) {
+              const childWidth = isMainAxisRow
+                ? childLayout.measuredDimensions[Dimension.Width] +
+                  childStyle.computeMarginForAxis(mainAxis, availableInnerWidth)
+                : leadPerLine + lineHeight;
+
+              const childHeight = !isMainAxisRow
+                ? childLayout.measuredDimensions[Dimension.Height] +
+                  childStyle.computeMarginForAxis(crossAxis, availableInnerWidth)
+                : leadPerLine + lineHeight;
+
+              if (!(
+                inexactEquals(childWidth, childLayout.measuredDimensions[Dimension.Width]) &&
+                inexactEquals(childHeight, childLayout.measuredDimensions[Dimension.Height])
+              )) {
+                calculateLayoutInternal(
+                  child,
+                  childWidth,
+                  childHeight,
+                  direction,
+                  SizingMode.StretchFit,
+                  SizingMode.StretchFit,
+                  availableInnerWidth,
+                  availableInnerHeight,
+                  true,
+                  LayoutPassReason.MultilineStretch,
+                  layoutMarkerData,
+                  depth,
+                  generationCount,
+                );
+              }
+            }
+            break;
+          }
+          case Align.Baseline: {
+            childLayout.position[PhysicalEdge.Top] =
+              currentLead +
+              maxAscentForCurrentLine -
+              baselineOf(child) +
+              childStyle.computeFlexStartPosition(
+                FlexDirection.Column,
+                direction,
+                availableInnerCrossDim,
+              );
+
+            break;
+          }
+          case Align.Auto:
+          case Align.SpaceBetween:
+          case Align.SpaceAround:
+          case Align.SpaceEvenly:
+            break;
+        }
+      }
+    }
+
+    currentLead = currentLead + leadPerLine + lineHeight;
+  }
+}
+
+// STEP 7 of `calculateLayoutImpl`: positions the children of one line across
+// the cross axis, stretching those that ask for it. What it does not take as an
+// argument it reads back off the node, which the caller has just written.
+function alignChildrenOnCrossAxis(
+  node: Node,
+  flexLine: FlexLine,
+  containerCrossAxis: number,
+  totalLineCrossDim: number,
+  availableInnerMainDim: number,
+  availableInnerCrossDim: number,
+  availableInnerWidth: number,
+  availableInnerHeight: number,
+  layoutMarkerData: LayoutData | null,
+  depth: number,
+  generationCount: number,
+): void {
+  const style = node.style;
+  const direction = node.layout.direction;
+  const mainAxis = resolveDirection(style.flexDirection, direction);
+  const crossAxis = resolveCrossDirection(mainAxis, direction);
+  const isMainAxisRow = isRow(mainAxis);
+  const mainDimension = dimension(mainAxis);
+  const crossDimension = dimension(crossAxis);
+  const isNodeFlexWrap = style.flexWrap !== Wrap.NoWrap;
+  const crossStartEdge = flexStartEdge(crossAxis);
+  const leadingPaddingAndBorderCross =
+    node.layout.padding[crossStartEdge] + node.layout.border[crossStartEdge];
+
+  for (let i = 0, length = flexLine.itemCount; i < length; i++) {
+    const child = flexLine.itemsInFlow[i]!;
+    const childStyle = child.style;
+    let leadingCrossDim = leadingPaddingAndBorderCross;
+
+    // For a relative children, we're either using alignItems (owner) or
+    // alignSelf (child) in order to determine the position in the cross
+    // axis
+    const alignItem = resolveChildAlignment(node, child);
+
+    // If the child uses align stretch, we need to lay it out one more
+    // time, this time forcing the cross-axis size to be the computed
+    // cross size for the current line.
+    if (
+      alignItem === Align.Stretch &&
+      !childStyle.flexStartMarginIsAuto(crossAxis, direction) &&
+      !childStyle.flexEndMarginIsAuto(crossAxis, direction)
+    ) {
+      // If the child defines a definite size for its cross axis, there's
+      // no need to stretch.
+      if (!child.hasDefiniteLength(crossDimension, availableInnerCrossDim)) {
+        let childMainSize = child.layout.measuredDimensions[mainDimension];
+        const aspectRatio = childStyle.aspectRatio;
+        let childCrossSize =
+          aspectRatio === aspectRatio
+            ? childStyle.computeMarginForAxis(crossAxis, availableInnerWidth) +
+              (isMainAxisRow ? childMainSize / aspectRatio : childMainSize * aspectRatio)
+            : flexLine.layout.crossDim;
+
+        childMainSize += childStyle.computeMarginForAxis(mainAxis, availableInnerWidth);
+
+        // Both sizing modes start as StretchFit, which
+        // constrainMaxSizeForMode never changes.
+        childMainSize = constrainMaxSizeForMode(
+          SizingMode.StretchFit,
+          childMainSize,
+          maxSizeForMode(child, direction, mainAxis, availableInnerMainDim, availableInnerWidth),
+        );
+        childCrossSize = constrainMaxSizeForMode(
+          SizingMode.StretchFit,
+          childCrossSize,
+          maxSizeForMode(child, direction, crossAxis, availableInnerCrossDim, availableInnerWidth),
+        );
+
+        const childWidth = isMainAxisRow ? childMainSize : childCrossSize;
+        const childHeight = !isMainAxisRow ? childMainSize : childCrossSize;
+
+        const alignContent = style.alignContent;
+        const crossAxisDoesNotGrow = alignContent !== Align.Stretch && isNodeFlexWrap;
+        const childWidthSizingMode =
+          childWidth !== childWidth || (!isMainAxisRow && crossAxisDoesNotGrow)
+            ? SizingMode.MaxContent
+            : SizingMode.StretchFit;
+        const childHeightSizingMode =
+          childHeight !== childHeight || (isMainAxisRow && crossAxisDoesNotGrow)
+            ? SizingMode.MaxContent
+            : SizingMode.StretchFit;
+
+        calculateLayoutInternal(
+          child,
+          childWidth,
+          childHeight,
+          direction,
+          childWidthSizingMode,
+          childHeightSizingMode,
+          availableInnerWidth,
+          availableInnerHeight,
+          true,
+          LayoutPassReason.Stretch,
+          layoutMarkerData,
+          depth,
+          generationCount,
+        );
+      }
+    } else {
+      const remainingCrossDim =
+        containerCrossAxis - child.dimensionWithMargin(crossAxis, availableInnerWidth);
+
+      if (
+        childStyle.flexStartMarginIsAuto(crossAxis, direction) &&
+        childStyle.flexEndMarginIsAuto(crossAxis, direction)
+      ) {
+        leadingCrossDim += maxOrDefined(0.0, remainingCrossDim / 2);
+      } else if (childStyle.flexEndMarginIsAuto(crossAxis, direction)) {
+        // No-Op
+      } else if (childStyle.flexStartMarginIsAuto(crossAxis, direction)) {
+        leadingCrossDim += maxOrDefined(0.0, remainingCrossDim);
+      } else if (alignItem === Align.FlexStart) {
+        // No-Op
+      } else if (alignItem === Align.Center) {
+        leadingCrossDim += remainingCrossDim / 2;
+      } else {
+        leadingCrossDim += remainingCrossDim;
+      }
+    }
+    // And we apply the position
+    child.layout.position[flexStartEdge(crossAxis)] =
+      child.layout.position[flexStartEdge(crossAxis)] + totalLineCrossDim + leadingCrossDim;
+  }
+}
+
 function calculateLayoutImpl(
   node: Node,
   availableWidth: number,
@@ -1734,7 +2092,7 @@ function calculateLayoutImpl(
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
-    cleanupContentsNodesRecursively(node, performLayout);
+    if (node.hasContentsChildren()) cleanupContentsNodesRecursively(node, performLayout);
     return false;
   }
 
@@ -1753,7 +2111,7 @@ function calculateLayoutImpl(
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
-    cleanupContentsNodesRecursively(node, performLayout);
+    if (node.hasContentsChildren()) cleanupContentsNodesRecursively(node, performLayout);
     return false;
   }
 
@@ -1774,40 +2132,56 @@ function calculateLayoutImpl(
   ) {
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
-    cleanupContentsNodesRecursively(node, /* didPerformLayout */ false);
+    if (node.hasContentsChildren())
+      cleanupContentsNodesRecursively(node, /* didPerformLayout */ false);
     return false;
   }
 
   // Clean and update all display: contents nodes with a direct path to the
   // current node as they will not be traversed
-  cleanupContentsNodesRecursively(node, performLayout);
+  if (node.hasContentsChildren()) cleanupContentsNodesRecursively(node, performLayout);
 
   // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
   const mainAxis = resolveDirection(style.flexDirection, direction);
   const crossAxis = resolveCrossDirection(mainAxis, direction);
   const isMainAxisRow = isRow(mainAxis);
+  // Hoisted: every copy of `dimension` inlined here costs the same budget as
+  // a helper V8 then leaves as a real call.
+  const mainDimension = dimension(mainAxis);
+  const crossDimension = dimension(crossAxis);
   const isNodeFlexWrap = style.flexWrap !== Wrap.NoWrap;
 
   const mainAxisOwnerSize = isMainAxisRow ? ownerWidth : ownerHeight;
   const crossAxisOwnerSize = isMainAxisRow ? ownerHeight : ownerWidth;
 
-  const paddingAndBorderAxisMain = paddingAndBorderForAxis(node, mainAxis, direction, ownerWidth);
-  const paddingAndBorderAxisCross = paddingAndBorderForAxis(node, crossAxis, direction, ownerWidth);
-  const leadingPaddingAndBorderCross = style.computeFlexStartPaddingAndBorder(
-    crossAxis,
-    direction,
-    ownerWidth,
-  );
+  // Straight out of the results written just above: the padding and border of
+  // an axis add up to the same total whichever way the direction runs, and
+  // asking the style again is four calls the inlining budget has to pay for.
+  const paddingAndBorderAxisRowEdges =
+    layout.padding[PhysicalEdge.Left] +
+    layout.padding[PhysicalEdge.Right] +
+    layout.border[PhysicalEdge.Left] +
+    layout.border[PhysicalEdge.Right];
+  const paddingAndBorderAxisColumnEdges =
+    layout.padding[PhysicalEdge.Top] +
+    layout.padding[PhysicalEdge.Bottom] +
+    layout.border[PhysicalEdge.Top] +
+    layout.border[PhysicalEdge.Bottom];
+  const paddingAndBorderAxisMain = isMainAxisRow
+    ? paddingAndBorderAxisRowEdges
+    : paddingAndBorderAxisColumnEdges;
+  const paddingAndBorderAxisCross = isMainAxisRow
+    ? paddingAndBorderAxisColumnEdges
+    : paddingAndBorderAxisRowEdges;
+  // Once per node: it walks the children, and both the per-line justification
+  // and STEP 8 below ask for it.
+  const isNodeBaselineLayout = isBaselineLayout(node);
 
   let sizingModeMainDim = isMainAxisRow ? widthSizingMode : heightSizingMode;
   const sizingModeCrossDim = isMainAxisRow ? heightSizingMode : widthSizingMode;
 
-  const paddingAndBorderAxisRow = isMainAxisRow
-    ? paddingAndBorderAxisMain
-    : paddingAndBorderAxisCross;
-  const paddingAndBorderAxisColumn = isMainAxisRow
-    ? paddingAndBorderAxisCross
-    : paddingAndBorderAxisMain;
+  const paddingAndBorderAxisRow = paddingAndBorderAxisRowEdges;
+  const paddingAndBorderAxisColumn = paddingAndBorderAxisColumnEdges;
 
   // STEP 2: DETERMINE AVAILABLE SIZE IN MAIN AND CROSS DIRECTIONS
 
@@ -1988,6 +2362,7 @@ function calculateLayoutImpl(
       availableInnerCrossDim,
       availableInnerWidth,
       performLayout,
+      isNodeBaselineLayout,
     );
 
     let containerCrossAxis = availableInnerCrossDim;
@@ -1997,13 +2372,14 @@ function calculateLayoutImpl(
     ) {
       // Compute the cross axis from the max cross dimension of the children.
       containerCrossAxis =
-        boundAxis(
+        boundAxisAbovePaddingAndBorder(
           node,
           crossAxis,
           direction,
           flexLine.layout.crossDim + paddingAndBorderAxisCross,
           crossAxisOwnerSize,
           ownerWidth,
+          paddingAndBorderAxisCross,
         ) - paddingAndBorderAxisCross;
     }
 
@@ -2018,130 +2394,36 @@ function calculateLayoutImpl(
     // container, affecting alignment between the lines.
     if (!isNodeFlexWrap) {
       flexLine.layout.crossDim =
-        boundAxis(
+        boundAxisAbovePaddingAndBorder(
           node,
           crossAxis,
           direction,
           flexLine.layout.crossDim + paddingAndBorderAxisCross,
           crossAxisOwnerSize,
           ownerWidth,
+          paddingAndBorderAxisCross,
         ) - paddingAndBorderAxisCross;
     }
 
     // STEP 7: CROSS-AXIS ALIGNMENT
     // We can skip child alignment if we're just measuring the container.
+    // In a function of its own for the V8 inlining budget: the helpers below
+    // are the priciest of the layout, and sharing one budget with the rest of
+    // `calculateLayoutImpl` leaves them as real calls.
     if (performLayout) {
-      for (let i = 0, length = flexLine.itemCount; i < length; i++) {
-        const child = flexLine.itemsInFlow[i]!;
-        const childStyle = child.style;
-        let leadingCrossDim = leadingPaddingAndBorderCross;
-
-        // For a relative children, we're either using alignItems (owner) or
-        // alignSelf (child) in order to determine the position in the cross
-        // axis
-        const alignItem = resolveChildAlignment(node, child);
-
-        // If the child uses align stretch, we need to lay it out one more
-        // time, this time forcing the cross-axis size to be the computed
-        // cross size for the current line.
-        if (
-          alignItem === Align.Stretch &&
-          !childStyle.flexStartMarginIsAuto(crossAxis, direction) &&
-          !childStyle.flexEndMarginIsAuto(crossAxis, direction)
-        ) {
-          // If the child defines a definite size for its cross axis, there's
-          // no need to stretch.
-          if (!child.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim)) {
-            let childMainSize = child.layout.measuredDimensions[dimension(mainAxis)];
-            const aspectRatio = childStyle.aspectRatio;
-            let childCrossSize =
-              aspectRatio === aspectRatio
-                ? childStyle.computeMarginForAxis(crossAxis, availableInnerWidth) +
-                  (isMainAxisRow ? childMainSize / aspectRatio : childMainSize * aspectRatio)
-                : flexLine.layout.crossDim;
-
-            childMainSize += childStyle.computeMarginForAxis(mainAxis, availableInnerWidth);
-
-            // Both sizing modes start as StretchFit, which
-            // constrainMaxSizeForMode never changes.
-            childMainSize = constrainMaxSizeForMode(
-              SizingMode.StretchFit,
-              childMainSize,
-              maxSizeForMode(
-                child,
-                direction,
-                mainAxis,
-                availableInnerMainDim,
-                availableInnerWidth,
-              ),
-            );
-            childCrossSize = constrainMaxSizeForMode(
-              SizingMode.StretchFit,
-              childCrossSize,
-              maxSizeForMode(
-                child,
-                direction,
-                crossAxis,
-                availableInnerCrossDim,
-                availableInnerWidth,
-              ),
-            );
-
-            const childWidth = isMainAxisRow ? childMainSize : childCrossSize;
-            const childHeight = !isMainAxisRow ? childMainSize : childCrossSize;
-
-            const alignContent = style.alignContent;
-            const crossAxisDoesNotGrow = alignContent !== Align.Stretch && isNodeFlexWrap;
-            const childWidthSizingMode =
-              childWidth !== childWidth || (!isMainAxisRow && crossAxisDoesNotGrow)
-                ? SizingMode.MaxContent
-                : SizingMode.StretchFit;
-            const childHeightSizingMode =
-              childHeight !== childHeight || (isMainAxisRow && crossAxisDoesNotGrow)
-                ? SizingMode.MaxContent
-                : SizingMode.StretchFit;
-
-            calculateLayoutInternal(
-              child,
-              childWidth,
-              childHeight,
-              direction,
-              childWidthSizingMode,
-              childHeightSizingMode,
-              availableInnerWidth,
-              availableInnerHeight,
-              true,
-              LayoutPassReason.Stretch,
-              layoutMarkerData,
-              depth,
-              generationCount,
-            );
-          }
-        } else {
-          const remainingCrossDim =
-            containerCrossAxis - child.dimensionWithMargin(crossAxis, availableInnerWidth);
-
-          if (
-            childStyle.flexStartMarginIsAuto(crossAxis, direction) &&
-            childStyle.flexEndMarginIsAuto(crossAxis, direction)
-          ) {
-            leadingCrossDim += maxOrDefined(0.0, remainingCrossDim / 2);
-          } else if (childStyle.flexEndMarginIsAuto(crossAxis, direction)) {
-            // No-Op
-          } else if (childStyle.flexStartMarginIsAuto(crossAxis, direction)) {
-            leadingCrossDim += maxOrDefined(0.0, remainingCrossDim);
-          } else if (alignItem === Align.FlexStart) {
-            // No-Op
-          } else if (alignItem === Align.Center) {
-            leadingCrossDim += remainingCrossDim / 2;
-          } else {
-            leadingCrossDim += remainingCrossDim;
-          }
-        }
-        // And we apply the position
-        child.layout.position[flexStartEdge(crossAxis)] =
-          child.layout.position[flexStartEdge(crossAxis)] + totalLineCrossDim + leadingCrossDim;
-      }
+      alignChildrenOnCrossAxis(
+        node,
+        flexLine,
+        containerCrossAxis,
+        totalLineCrossDim,
+        availableInnerMainDim,
+        availableInnerCrossDim,
+        availableInnerWidth,
+        availableInnerHeight,
+        layoutMarkerData,
+        depth,
+        generationCount,
+      );
     }
 
     const appliedCrossGap = lineCount !== 0 ? crossAxisGap : 0.0;
@@ -2151,235 +2433,47 @@ function calculateLayoutImpl(
   releaseFlexLine(flexLine);
 
   // STEP 8: MULTI-LINE CONTENT ALIGNMENT
-  // currentLead stores the size of the cross dim
-  if (performLayout && (isNodeFlexWrap || isBaselineLayout(node))) {
-    let leadPerLine = 0;
-    let currentLead = leadingPaddingAndBorderCross;
-    let extraSpacePerLine = 0;
-
-    const unclampedCrossDim =
-      sizingModeCrossDim === SizingMode.StretchFit
-        ? availableInnerCrossDim + paddingAndBorderAxisCross
-        : node.hasDefiniteLength(dimension(crossAxis), crossAxisOwnerSize)
-          ? node.getResolvedDimension(
-              direction,
-              dimension(crossAxis),
-              crossAxisOwnerSize,
-              ownerWidth,
-            )
-          : totalLineCrossDim + paddingAndBorderAxisCross;
-
-    const innerCrossDim =
-      boundAxis(node, crossAxis, direction, unclampedCrossDim, crossAxisOwnerSize, ownerWidth) -
-      paddingAndBorderAxisCross;
-
-    const remainingAlignContentDim = innerCrossDim - totalLineCrossDim;
-
-    const alignContent =
-      remainingAlignContentDim >= 0 ? style.alignContent : fallbackAlignment(style.alignContent);
-
-    switch (alignContent) {
-      case Align.Start:
-      case Align.End:
-        // No-Op
-        break;
-      case Align.FlexEnd:
-        currentLead += remainingAlignContentDim;
-        break;
-      case Align.Center:
-        currentLead += remainingAlignContentDim / 2;
-        break;
-      case Align.Stretch:
-        extraSpacePerLine = remainingAlignContentDim / lineCount;
-        break;
-      case Align.SpaceAround:
-        currentLead += remainingAlignContentDim / (2 * lineCount);
-        leadPerLine = remainingAlignContentDim / lineCount;
-        break;
-      case Align.SpaceEvenly:
-        currentLead += remainingAlignContentDim / (lineCount + 1);
-        leadPerLine = remainingAlignContentDim / (lineCount + 1);
-        break;
-      case Align.SpaceBetween:
-        if (lineCount > 1) {
-          leadPerLine = remainingAlignContentDim / (lineCount - 1);
-        }
-        break;
-      case Align.Auto:
-      case Align.FlexStart:
-      case Align.Baseline:
-        break;
-    }
-    let endIndex = 0;
-    for (let i = 0; i < lineCount; i++) {
-      const startIndex = endIndex;
-      let index = startIndex;
-
-      // compute the line's height and find the endIndex
-      let lineHeight = 0;
-      let maxAscentForCurrentLine = 0;
-      let maxDescentForCurrentLine = 0;
-      for (; index < layoutChildren.length; index++) {
-        const child = layoutChildren[index]!;
-        const childStyle = child.style;
-        if (childStyle.display === Display.None) {
-          continue;
-        }
-        if (childStyle.positionType !== PositionType.Absolute) {
-          if (child.lineIndex !== i) {
-            break;
-          }
-          if (child.isLayoutDimensionDefined(crossAxis)) {
-            lineHeight = maxOrDefined(
-              lineHeight,
-              child.layout.measuredDimensions[dimension(crossAxis)] +
-                childStyle.computeMarginForAxis(crossAxis, availableInnerWidth),
-            );
-          }
-          if (resolveChildAlignment(node, child) === Align.Baseline) {
-            const ascent =
-              baselineOf(child) +
-              childStyle.computeFlexStartMargin(
-                FlexDirection.Column,
-                direction,
-                availableInnerWidth,
-              );
-            const descent =
-              child.layout.measuredDimensions[Dimension.Height] +
-              childStyle.computeMarginForAxis(FlexDirection.Column, availableInnerWidth) -
-              ascent;
-            maxAscentForCurrentLine = maxOrDefined(maxAscentForCurrentLine, ascent);
-            maxDescentForCurrentLine = maxOrDefined(maxDescentForCurrentLine, descent);
-            lineHeight = maxOrDefined(
-              lineHeight,
-              maxAscentForCurrentLine + maxDescentForCurrentLine,
-            );
-          }
-        }
-      }
-      endIndex = index;
-      currentLead += i !== 0 ? crossAxisGap : 0;
-      lineHeight += extraSpacePerLine;
-
-      for (index = startIndex; index < endIndex; index++) {
-        const child = layoutChildren[index]!;
-        const childStyle = child.style;
-        const childLayout = child.layout;
-        if (childStyle.display === Display.None) {
-          continue;
-        }
-        if (childStyle.positionType !== PositionType.Absolute) {
-          switch (resolveChildAlignment(node, child)) {
-            case Align.Start:
-            case Align.End:
-              // Not yet implemented
-              break;
-            case Align.FlexStart: {
-              childLayout.position[flexStartEdge(crossAxis)] =
-                currentLead +
-                childStyle.computeFlexStartPosition(crossAxis, direction, availableInnerWidth);
-              break;
-            }
-            case Align.FlexEnd: {
-              childLayout.position[flexStartEdge(crossAxis)] =
-                currentLead +
-                lineHeight -
-                childStyle.computeFlexEndMargin(crossAxis, direction, availableInnerWidth) -
-                childLayout.measuredDimensions[dimension(crossAxis)];
-              break;
-            }
-            case Align.Center: {
-              const childHeight = childLayout.measuredDimensions[dimension(crossAxis)];
-
-              childLayout.position[flexStartEdge(crossAxis)] =
-                currentLead + (lineHeight - childHeight) / 2;
-              break;
-            }
-            case Align.Stretch: {
-              childLayout.position[flexStartEdge(crossAxis)] =
-                currentLead +
-                childStyle.computeFlexStartMargin(crossAxis, direction, availableInnerWidth);
-
-              // Remeasure child with the line height as it as been only
-              // measured with the owners height yet.
-              if (!child.hasDefiniteLength(dimension(crossAxis), availableInnerCrossDim)) {
-                const childWidth = isMainAxisRow
-                  ? childLayout.measuredDimensions[Dimension.Width] +
-                    childStyle.computeMarginForAxis(mainAxis, availableInnerWidth)
-                  : leadPerLine + lineHeight;
-
-                const childHeight = !isMainAxisRow
-                  ? childLayout.measuredDimensions[Dimension.Height] +
-                    childStyle.computeMarginForAxis(crossAxis, availableInnerWidth)
-                  : leadPerLine + lineHeight;
-
-                if (!(
-                  inexactEquals(childWidth, childLayout.measuredDimensions[Dimension.Width]) &&
-                  inexactEquals(childHeight, childLayout.measuredDimensions[Dimension.Height])
-                )) {
-                  calculateLayoutInternal(
-                    child,
-                    childWidth,
-                    childHeight,
-                    direction,
-                    SizingMode.StretchFit,
-                    SizingMode.StretchFit,
-                    availableInnerWidth,
-                    availableInnerHeight,
-                    true,
-                    LayoutPassReason.MultilineStretch,
-                    layoutMarkerData,
-                    depth,
-                    generationCount,
-                  );
-                }
-              }
-              break;
-            }
-            case Align.Baseline: {
-              childLayout.position[PhysicalEdge.Top] =
-                currentLead +
-                maxAscentForCurrentLine -
-                baselineOf(child) +
-                childStyle.computeFlexStartPosition(
-                  FlexDirection.Column,
-                  direction,
-                  availableInnerCrossDim,
-                );
-
-              break;
-            }
-            case Align.Auto:
-            case Align.SpaceBetween:
-            case Align.SpaceAround:
-            case Align.SpaceEvenly:
-              break;
-          }
-        }
-      }
-
-      currentLead = currentLead + leadPerLine + lineHeight;
-    }
+  // Kept in a function of its own so that it brings its own V8 inlining
+  // budget: `calculateLayoutImpl` spends all of a shared one long before the
+  // helpers of this step, which then stay real calls.
+  if (performLayout && (isNodeFlexWrap || isNodeBaselineLayout)) {
+    alignContentLines(
+      node,
+      layoutChildren,
+      lineCount,
+      totalLineCrossDim,
+      availableInnerWidth,
+      availableInnerHeight,
+      availableInnerCrossDim,
+      crossAxisOwnerSize,
+      ownerWidth,
+      sizingModeCrossDim,
+      layoutMarkerData,
+      depth,
+      generationCount,
+    );
   }
 
   // STEP 9: COMPUTING FINAL DIMENSIONS
 
-  layout.measuredDimensions[Dimension.Width] = boundAxis(
+  layout.measuredDimensions[Dimension.Width] = boundAxisAbovePaddingAndBorder(
     node,
     FlexDirection.Row,
     direction,
     availableWidth - marginAxisRow,
     ownerWidth,
     ownerWidth,
+    paddingAndBorderAxisRowEdges,
   );
 
-  layout.measuredDimensions[Dimension.Height] = boundAxis(
+  layout.measuredDimensions[Dimension.Height] = boundAxisAbovePaddingAndBorder(
     node,
     FlexDirection.Column,
     direction,
     availableHeight - marginAxisColumn,
     ownerHeight,
     ownerWidth,
+    paddingAndBorderAxisColumnEdges,
   );
 
   // If the user didn't specify a width or height for the node, set the
@@ -2390,16 +2484,17 @@ function calculateLayoutImpl(
   ) {
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
-    layout.measuredDimensions[dimension(mainAxis)] = boundAxis(
+    layout.measuredDimensions[mainDimension] = boundAxisAbovePaddingAndBorder(
       node,
       mainAxis,
       direction,
       maxLineMainDim,
       mainAxisOwnerSize,
       ownerWidth,
+      paddingAndBorderAxisMain,
     );
   } else if (sizingModeMainDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
-    layout.measuredDimensions[dimension(mainAxis)] = maxOrDefined(
+    layout.measuredDimensions[mainDimension] = maxOrDefined(
       minOrDefined(
         availableInnerMainDim + paddingAndBorderAxisMain,
         boundAxisWithinMinAndMax(
@@ -2421,16 +2516,17 @@ function calculateLayoutImpl(
   ) {
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
-    layout.measuredDimensions[dimension(crossAxis)] = boundAxis(
+    layout.measuredDimensions[crossDimension] = boundAxisAbovePaddingAndBorder(
       node,
       crossAxis,
       direction,
       totalLineCrossDim + paddingAndBorderAxisCross,
       crossAxisOwnerSize,
       ownerWidth,
+      paddingAndBorderAxisCross,
     );
   } else if (sizingModeCrossDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
-    layout.measuredDimensions[dimension(crossAxis)] = maxOrDefined(
+    layout.measuredDimensions[crossDimension] = maxOrDefined(
       minOrDefined(
         availableInnerCrossDim + paddingAndBorderAxisCross,
         boundAxisWithinMinAndMax(
@@ -2454,9 +2550,9 @@ function calculateLayoutImpl(
       if (child.style.positionType !== PositionType.Absolute) {
         const childLayout = child.layout;
         childLayout.position[flexStartEdge(crossAxis)] =
-          layout.measuredDimensions[dimension(crossAxis)] -
+          layout.measuredDimensions[crossDimension] -
           childLayout.position[flexStartEdge(crossAxis)] -
-          childLayout.measuredDimensions[dimension(crossAxis)];
+          childLayout.measuredDimensions[crossDimension];
       }
     }
   }
