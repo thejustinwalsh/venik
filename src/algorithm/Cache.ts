@@ -3,7 +3,7 @@ import { FlexDirection, Wrap } from "../enums.ts";
 import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
 import type { Node } from "../node/Node.ts";
 import type { LayoutResults } from "../node/LayoutResults.ts";
-import { PhysicalEdge } from "./FlexDirection.ts";
+import { isRow, PhysicalEdge, resolveDirection } from "./FlexDirection.ts";
 import { inexactEquals, sameAvailableSize } from "../math.ts";
 import { roundValueToPixelGrid } from "./PixelGrid.ts";
 import { SizingMode } from "../enums.ts";
@@ -396,12 +396,35 @@ export function findRelaxedMeasurement(
   return null;
 }
 
+/** What `relaxedLayoutFits` answers. */
+export const LAYOUT_MISS = 0;
+/** The cached layout holds as it is. */
+const LAYOUT_SAME = 1;
+/** The cached layout holds, with the node's main size set to the one asked for. */
+export const LAYOUT_STRETCHED = 2;
+
+// Whether an exact size along the main axis of a `mainSizeInvariant` entry
+// holds the entry's layout: it is at least the content the entry laid out.
+function stretchesInvariantMain(
+  cached: CachedMeasurement,
+  sizeMode: SizingMode,
+  size: number,
+  margin: number,
+): boolean {
+  return (
+    cached.mainSizeInvariant &&
+    sizeMode === SizingMode.StretchFit &&
+    size - margin >= cached.mainContentSize - 0.0001
+  );
+}
+
 /**
  * Whether the layout cache entry of a container that does not wrap holds the
  * layout it would compute in the given space. Without wrapping, the lines of
  * a container that fits its space are laid out the same in any space that
  * fits them, and a space of exactly the computed size leaves nothing to
- * distribute either way.
+ * distribute either way. An entry that is `mainSizeInvariant` holds in any
+ * larger exact main size as well (`LAYOUT_STRETCHED`).
  */
 export function relaxedLayoutFits(
   node: Node,
@@ -411,21 +434,61 @@ export function relaxedLayoutFits(
   availableHeight: number,
   ownerWidth: number,
   ownerHeight: number,
-): boolean {
-  const cachedLayout = node.layout.cachedLayout;
+): number {
+  const layout = node.layout;
+  const cachedLayout = layout.cachedLayout;
   const style = node.style;
   if (!cachedLayout.relaxable || style.flexWrap !== Wrap.NoWrap) {
-    return false;
+    return LAYOUT_MISS;
   }
   if (style.dependsOnOwnerSize && !hasSameOwnerSize(cachedLayout, ownerWidth, ownerHeight)) {
-    return false;
+    return LAYOUT_MISS;
   }
-  return relaxableEntryFits(
-    cachedLayout,
-    widthMode,
-    availableWidth,
-    heightMode,
-    availableHeight,
-    node.layout,
-  );
+  if (
+    relaxableEntryFits(cachedLayout, widthMode, availableWidth, heightMode, availableHeight, layout)
+  ) {
+    return LAYOUT_SAME;
+  }
+  if (!cachedLayout.mainSizeInvariant || cachedLayout.hadOverflow || cachedLayout.measureHadOverflow) {
+    return LAYOUT_MISS;
+  }
+  // The main axis stretched, the cross axis the same question.
+  const marginRow = layout.margin[PhysicalEdge.Left] + layout.margin[PhysicalEdge.Right];
+  const marginColumn = layout.margin[PhysicalEdge.Top] + layout.margin[PhysicalEdge.Bottom];
+  if (isRow(resolveDirection(style.flexDirection, layout.direction))) {
+    return stretchesInvariantMain(cachedLayout, widthMode, availableWidth, marginRow) &&
+      (relaxedAxisWithoutMargin(
+        heightMode,
+        availableHeight,
+        cachedLayout.heightSizingMode,
+        cachedLayout.availableHeight,
+      ) === AXIS_SAME ||
+        relaxedAxisFits(
+          heightMode,
+          availableHeight,
+          marginColumn,
+          cachedLayout.heightSizingMode,
+          cachedLayout.availableHeight,
+          cachedLayout.computedHeight,
+        ))
+      ? LAYOUT_STRETCHED
+      : LAYOUT_MISS;
+  }
+  return stretchesInvariantMain(cachedLayout, heightMode, availableHeight, marginColumn) &&
+    (relaxedAxisWithoutMargin(
+      widthMode,
+      availableWidth,
+      cachedLayout.widthSizingMode,
+      cachedLayout.availableWidth,
+    ) === AXIS_SAME ||
+      relaxedAxisFits(
+        widthMode,
+        availableWidth,
+        marginRow,
+        cachedLayout.widthSizingMode,
+        cachedLayout.availableWidth,
+        cachedLayout.computedWidth,
+      ))
+    ? LAYOUT_STRETCHED
+    : LAYOUT_MISS;
 }

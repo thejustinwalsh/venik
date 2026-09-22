@@ -26,6 +26,17 @@ export class CachedMeasurement {
   // a layout, which an owner aligning its children by their baselines cannot
   // take for the baseline of a measurement.
   fromLayout: boolean = false;
+  // Whether the layout the entry stands for stays as it is when the node is
+  // given more room along its main axis: the items sit at the start, none can
+  // grow or take the room through an auto margin, no line wraps, the axis is
+  // not reversed, and no absolute descendant is placed against the node. The
+  // node then takes a layout request in any larger exact main size, and only
+  // its own size changes.
+  mainSizeInvariant: boolean = false;
+  // The size of the content along the main axis, padding and border included,
+  // as of a `mainSizeInvariant` layout: what the node needs, whatever room it
+  // was given.
+  mainContentSize: number = NaN;
 
   reset(): void {
     this.availableWidth = -1;
@@ -41,5 +52,7 @@ export class CachedMeasurement {
     this.measureHadOverflow = false;
     this.relaxable = false;
     this.fromLayout = false;
+    this.mainSizeInvariant = false;
+    this.mainContentSize = NaN;
   }
 }

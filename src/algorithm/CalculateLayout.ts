@@ -35,6 +35,8 @@ import {
   findCachedMeasurement,
   findRelaxedMeasurement,
   hasSameOwnerSize,
+  LAYOUT_MISS,
+  LAYOUT_STRETCHED,
   relaxedLayoutFits,
 } from "./Cache.ts";
 import {
@@ -81,6 +83,10 @@ let gPassMeasureDiffers = false;
 // Set by `distributeFreeSpaceSecondPass`, for the line it laid out.
 let gLineItemSizeDiffers = false;
 let gLineItemMeasureDiffers = false;
+// Set by `calculateLayoutImpl`: whether the layout it computed is
+// `mainSizeInvariant`, and its `mainContentSize` (see `CachedMeasurement`).
+let gPassMainSizeInvariant = false;
+let gPassMainContentSize = NaN;
 // Whether the pass issuing the current request, or a pass above it, aligns
 // its children by their baselines. A measurement and a layout of the same
 // node report different baselines, as Yoga computes them, and a node's
@@ -2063,6 +2069,7 @@ function calculateLayoutImpl(
   // Only a result of the full algorithm below can be relaxable.
   gPassRelaxable = false;
   gPassMeasureDiffers = false;
+  gPassMainSizeInvariant = false;
 
   // Set the resolved resolution in the node's layout.
   const direction = node.resolveDirection(ownerDirection);
@@ -2293,6 +2300,9 @@ function calculateLayoutImpl(
 
   let availableInnerMainDim = isMainAxisRow ? availableInnerWidth : availableInnerHeight;
   const availableInnerCrossDim = isMainAxisRow ? availableInnerHeight : availableInnerWidth;
+  // Items measured in a space of nothing to fit report nothing (see
+  // `isFixedSize`): what they take here is not their content.
+  const mainSpaceIsNothing = availableInnerMainDim <= 0;
 
   // STEP 3: DETERMINE FLEX BASIS FOR EACH ITEM
 
@@ -2351,6 +2361,12 @@ function calculateLayoutImpl(
   // Whether a line has items that can grow. The node's own flex factor then
   // decides whether they fill a space that fits the content (see STEP 5).
   let linesCanGrow = false;
+  // Whether a line has an auto margin along the main axis, which takes free
+  // space the same way.
+  let linesHaveAutoMargins = false;
+  // The most a line's items take along the main axis before they flex: bases
+  // within their bounds, margins and gaps. What the node needs to hold them.
+  let maxLineSizeConsumed = 0;
   const flexLine = acquireFlexLine();
   for (; startOfLineIndex < layoutChildren.length; lineCount++) {
     calculateFlexLine(
@@ -2417,6 +2433,8 @@ function calculateLayoutImpl(
 
     preFlexOverflow = preFlexOverflow || flexLine.layout.remainingFreeSpace < -0.0001;
     linesCanGrow = linesCanGrow || flexLine.layout.totalFlexGrowFactors !== 0;
+    linesHaveAutoMargins = linesHaveAutoMargins || flexLine.numberOfAutoMargins !== 0;
+    maxLineSizeConsumed = Math.max(maxLineSizeConsumed, flexLine.sizeConsumed);
 
     if (!canSkipFlex) {
       resolveFlexibleLength(
@@ -2757,7 +2775,45 @@ function calculateLayoutImpl(
     !style.hasSizeBounds &&
     style.overflow !== Overflow.Scroll &&
     !measureDiffers;
+  // More room along the main axis changes nothing below when the items sit at
+  // its start and nothing takes free space, and the node places no absolute
+  // descendant against itself. A reversed axis positions from the far edge.
+  gPassMainSizeInvariant =
+    performLayout &&
+    !isNodeFlexWrap &&
+    !mainSpaceIsNothing &&
+    !preFlexOverflow &&
+    !linesCanGrow &&
+    !linesHaveAutoMargins &&
+    (style.justifyContent === Justify.FlexStart || style.justifyContent === Justify.Start) &&
+    (mainAxis === FlexDirection.Row || mainAxis === FlexDirection.Column) &&
+    style.positionType === PositionType.Static &&
+    depth !== 1;
+  gPassMainContentSize = maxLineSizeConsumed + paddingAndBorderAxisMain;
   return true;
+}
+
+// The main size of a `mainSizeInvariant` layout restored in a larger exact
+// main size: the room asked for, less the margin, as STEP 9 would compute it.
+function setStretchedMainSize(node: Node, availableWidth: number, availableHeight: number): void {
+  const layout = node.layout;
+  if (isRow(resolveDirection(node.style.flexDirection, layout.direction))) {
+    layout.measuredDimensions[Dimension.Width] = Math.max(
+      availableWidth - layout.margin[PhysicalEdge.Left] - layout.margin[PhysicalEdge.Right],
+      layout.padding[PhysicalEdge.Left] +
+        layout.padding[PhysicalEdge.Right] +
+        layout.border[PhysicalEdge.Left] +
+        layout.border[PhysicalEdge.Right],
+    );
+  } else {
+    layout.measuredDimensions[Dimension.Height] = Math.max(
+      availableHeight - layout.margin[PhysicalEdge.Top] - layout.margin[PhysicalEdge.Bottom],
+      layout.padding[PhysicalEdge.Top] +
+        layout.padding[PhysicalEdge.Bottom] +
+        layout.border[PhysicalEdge.Top] +
+        layout.border[PhysicalEdge.Bottom],
+    );
+  }
 }
 
 // Both helpers below are kept out of calculateLayoutInternal, which has to stay
@@ -2840,15 +2896,10 @@ export function calculateLayoutInternal(
     layout.lastOwnerDirection !== ownerDirection;
 
   if (needToVisitNode) {
-    // Invalidate the cached results.
+    // Invalidate the cached results, flags included.
     layout.nextCachedMeasurementsIndex = 0;
     layout.hasRelaxableMeasurements = false;
-    layout.cachedLayout.availableWidth = -1;
-    layout.cachedLayout.availableHeight = -1;
-    layout.cachedLayout.widthSizingMode = SizingMode.MaxContent;
-    layout.cachedLayout.heightSizingMode = SizingMode.MaxContent;
-    layout.cachedLayout.computedWidth = -1;
-    layout.cachedLayout.computedHeight = -1;
+    layout.cachedLayout.reset();
   }
 
   let cachedResults: CachedMeasurement | null = null;
@@ -2858,6 +2909,8 @@ export function calculateLayoutInternal(
   // do anyway as a layout.
   const promoted = performLayout && reason === LayoutPassReason.MeasureChild;
   const ownerIsBaselineLayout = gOwnerIsBaselineLayout;
+  // A layout restored with the node's main size set to the one asked for.
+  let stretched = false;
 
   // Determine whether the results are already cached. We maintain a separate
   // cache for layouts and measurements. A layout operation modifies the
@@ -2934,9 +2987,8 @@ export function calculateLayoutInternal(
           hasSameOwnerSize(layout.cachedLayout, ownerWidth, ownerHeight))
       ) {
         cachedResults = layout.cachedLayout;
-      } else if (
-        !ownerIsBaselineLayout &&
-        relaxedLayoutFits(
+      } else if (!ownerIsBaselineLayout) {
+        const fit = relaxedLayoutFits(
           node,
           widthSizingMode,
           availableWidth,
@@ -2944,9 +2996,11 @@ export function calculateLayoutInternal(
           availableHeight,
           ownerWidth,
           ownerHeight,
-        )
-      ) {
-        cachedResults = layout.cachedLayout;
+        );
+        if (fit !== LAYOUT_MISS) {
+          cachedResults = layout.cachedLayout;
+          stretched = fit === LAYOUT_STRETCHED;
+        }
       }
     }
   }
@@ -2959,6 +3013,9 @@ export function calculateLayoutInternal(
   if (!needToVisitNode && cachedResults !== null) {
     layout.measuredDimensions[Dimension.Width] = cachedResults.computedWidth;
     layout.measuredDimensions[Dimension.Height] = cachedResults.computedHeight;
+    if (stretched) {
+      setStretchedMainSize(node, availableWidth, availableHeight);
+    }
     restoreCachedResults(layout, cachedResults, performLayout);
 
     if (__EVENTS__ && layoutMarkerData !== null) {
@@ -2988,6 +3045,8 @@ export function calculateLayoutInternal(
       generationCount,
     );
     let relaxable = gPassRelaxable;
+    let mainSizeInvariant = gPassMainSizeInvariant;
+    const mainContentSize = gPassMainContentSize;
     gOwnerIsBaselineLayout = ownerIsBaselineLayout;
     // The subtree was laid out either way; see below.
     const promotedRan = promoted && performLayout;
@@ -3012,6 +3071,7 @@ export function calculateLayoutInternal(
         generationCount,
       );
       relaxable = gPassRelaxable;
+      mainSizeInvariant = false;
       gOwnerIsBaselineLayout = ownerIsBaselineLayout;
       layout.cachedLayout.reset();
       performLayout = false;
@@ -3066,6 +3126,8 @@ export function calculateLayoutInternal(
       newCacheEntry.hadOverflow = layout.hadOverflow;
       newCacheEntry.measureHadOverflow = layout.measureHadOverflow;
       newCacheEntry.relaxable = relaxable;
+      newCacheEntry.mainSizeInvariant = mainSizeInvariant;
+      newCacheEntry.mainContentSize = mainContentSize;
       if (relaxable && !performLayout) {
         layout.hasRelaxableMeasurements = true;
       }
