@@ -1,8 +1,10 @@
 import type { Config } from "../config/Config.ts";
-import { FlexDirection } from "../enums.ts";
+import { FlexDirection, Wrap } from "../enums.ts";
 import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
 import type { Node } from "../node/Node.ts";
-import { inexactEquals } from "../math.ts";
+import type { LayoutResults } from "../node/LayoutResults.ts";
+import { PhysicalEdge } from "./FlexDirection.ts";
+import { inexactEquals, sameAvailableSize } from "../math.ts";
 import { roundValueToPixelGrid } from "./PixelGrid.ts";
 import { SizingMode } from "../enums.ts";
 
@@ -211,4 +213,219 @@ export function findCachedMeasurement(
     }
     cached = layout.cachedMeasurements[i]!;
   }
+}
+
+// One axis of a relaxable entry against the question asked. The rules are
+// those of `canUseCachedMeasurement`, except that a space the same to within
+// a pixel is not the same question: a container given an exact size answers
+// with that size, where a measure function answers with its content. The
+// caller settles what it can without the margin first.
+function relaxedAxisFits(
+  sizeMode: SizingMode,
+  size: number,
+  margin: number,
+  lastSizeMode: SizingMode,
+  lastSize: number,
+  lastComputedSize: number,
+): boolean {
+  // Both spaces without the margin: the stricter-space rule compares them,
+  // and a wrapping container packs its lines by the space it is given.
+  return (
+    sizeIsExactAndMatchesOldMeasuredSize(sizeMode, size - margin, lastComputedSize) ||
+    oldSizeIsMaxContentAndStillFits(sizeMode, size - margin, lastSizeMode, lastComputedSize) ||
+    newSizeIsStricterAndStillValid(
+      sizeMode,
+      size - margin,
+      lastSizeMode,
+      lastSize - margin,
+      lastComputedSize,
+    )
+  );
+}
+
+// Whether an axis is settled without the margin: the same question, or two
+// exact sizes that differ, which no rule reconciles.
+const AXIS_SAME = 1;
+const AXIS_DIFFERENT = 2;
+const AXIS_UNDECIDED = 0;
+function relaxedAxisWithoutMargin(
+  sizeMode: SizingMode,
+  size: number,
+  lastSizeMode: SizingMode,
+  lastSize: number,
+): number {
+  if (lastSizeMode === sizeMode && sameAvailableSize(lastSize, size)) {
+    return AXIS_SAME;
+  }
+  if (sizeMode === SizingMode.StretchFit && lastSizeMode === SizingMode.StretchFit) {
+    return AXIS_DIFFERENT;
+  }
+  return AXIS_UNDECIDED;
+}
+
+// A relaxable entry stands in for the size of a container the way a
+// measurement stands in for a measure function's, as long as it did not
+// overflow: the flag is restored with the entry.
+//
+// The margins are those the pass that stored the entry resolved for its
+// direction, which is the direction of every entry the node still holds: a
+// `start` margin lands on another physical edge under RTL, which summing the
+// style's edges without a direction cannot tell.
+function relaxableEntryFits(
+  cached: CachedMeasurement,
+  widthMode: SizingMode,
+  availableWidth: number,
+  heightMode: SizingMode,
+  availableHeight: number,
+  layout: LayoutResults,
+): boolean {
+  if (
+    !cached.relaxable ||
+    cached.hadOverflow ||
+    cached.measureHadOverflow ||
+    cached.computedWidth < 0
+  ) {
+    return false;
+  }
+  const width = relaxedAxisWithoutMargin(
+    widthMode,
+    availableWidth,
+    cached.widthSizingMode,
+    cached.availableWidth,
+  );
+  if (width === AXIS_DIFFERENT) {
+    return false;
+  }
+  const height = relaxedAxisWithoutMargin(
+    heightMode,
+    availableHeight,
+    cached.heightSizingMode,
+    cached.availableHeight,
+  );
+  if (height === AXIS_DIFFERENT) {
+    return false;
+  }
+  if (
+    width === AXIS_UNDECIDED &&
+    !relaxedAxisFits(
+      widthMode,
+      availableWidth,
+      layout.margin[PhysicalEdge.Left] + layout.margin[PhysicalEdge.Right],
+      cached.widthSizingMode,
+      cached.availableWidth,
+      cached.computedWidth,
+    )
+  ) {
+    return false;
+  }
+  return (
+    height === AXIS_SAME ||
+    relaxedAxisFits(
+      heightMode,
+      availableHeight,
+      layout.margin[PhysicalEdge.Top] + layout.margin[PhysicalEdge.Bottom],
+      cached.heightSizingMode,
+      cached.availableHeight,
+      cached.computedHeight,
+    )
+  );
+}
+
+/**
+ * The cached result a container can reuse for a measurement after its exact
+ * probes missed: a relaxable measurement or layout entry that fits the given
+ * space, else null. A layout is as good a measurement as any.
+ */
+export function findRelaxedMeasurement(
+  node: Node,
+  widthMode: SizingMode,
+  availableWidth: number,
+  heightMode: SizingMode,
+  availableHeight: number,
+  ownerWidth: number,
+  ownerHeight: number,
+): CachedMeasurement | null {
+  const layout = node.layout;
+  const style = node.style;
+  const keyedOnOwnerSize = style.dependsOnOwnerSize;
+
+  for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
+    const cached = layout.cachedMeasurements[i]!;
+    if (
+      (!keyedOnOwnerSize || hasSameOwnerSize(cached, ownerWidth, ownerHeight)) &&
+      relaxableEntryFits(
+        cached,
+        widthMode,
+        availableWidth,
+        heightMode,
+        availableHeight,
+        layout,
+      )
+    ) {
+      if (i > 0) {
+        layout.promoteCachedMeasurement(i);
+      }
+      return cached;
+    }
+  }
+
+  // A layout answers for a measurement only where the two agree on the size,
+  // which is what makes an entry relaxable: a layout shrinks content that
+  // overflows, where a measurement reports it as it is, and a percentage
+  // below resolves against another reference in each.
+  const cachedLayout = layout.cachedLayout;
+  if (
+    cachedLayout.relaxable &&
+    cachedLayout.computedWidth >= 0 &&
+    (!keyedOnOwnerSize || hasSameOwnerSize(cachedLayout, ownerWidth, ownerHeight)) &&
+    ((cachedLayout.widthSizingMode === widthMode &&
+      cachedLayout.heightSizingMode === heightMode &&
+      inexactEquals(cachedLayout.availableWidth, availableWidth) &&
+      inexactEquals(cachedLayout.availableHeight, availableHeight)) ||
+      relaxableEntryFits(
+        cachedLayout,
+        widthMode,
+        availableWidth,
+        heightMode,
+        availableHeight,
+        layout,
+      ))
+  ) {
+    return cachedLayout;
+  }
+  return null;
+}
+
+/**
+ * Whether the layout cache entry of a container that does not wrap holds the
+ * layout it would compute in the given space. Without wrapping, the lines of
+ * a container that fits its space are laid out the same in any space that
+ * fits them, and a space of exactly the computed size leaves nothing to
+ * distribute either way.
+ */
+export function relaxedLayoutFits(
+  node: Node,
+  widthMode: SizingMode,
+  availableWidth: number,
+  heightMode: SizingMode,
+  availableHeight: number,
+  ownerWidth: number,
+  ownerHeight: number,
+): boolean {
+  const cachedLayout = node.layout.cachedLayout;
+  const style = node.style;
+  if (!cachedLayout.relaxable || style.flexWrap !== Wrap.NoWrap) {
+    return false;
+  }
+  if (style.dependsOnOwnerSize && !hasSameOwnerSize(cachedLayout, ownerWidth, ownerHeight)) {
+    return false;
+  }
+  return relaxableEntryFits(
+    cachedLayout,
+    widthMode,
+    availableWidth,
+    heightMode,
+    availableHeight,
+    node.layout,
+  );
 }

@@ -358,6 +358,7 @@ export class Node {
   setOverflow(overflow: Overflow): void {
     if (this.style.overflow !== overflow) {
       this.style.overflow = overflow;
+      this.style.updateDependsOnOwnerSpace();
       this.markDirtyAndPropagate();
     }
   }
@@ -423,6 +424,7 @@ export class Node {
     const value = ratio === 0 || ratio === Infinity || ratio === -Infinity ? NaN : ratio;
     if (!Object.is(this.style.aspectRatio, value)) {
       this.style.aspectRatio = value;
+      this.style.updateDependsOnOwnerSpace();
       this.markDirtyAndPropagate();
     }
   }
@@ -1013,6 +1015,7 @@ export class Node {
   private updateFlexBasis(value: StyleLength): void {
     if (!this.style.flexBasis.equals(value)) {
       this.style.flexBasis = value;
+      this.style.updateDependsOnOwnerSpace();
       this.markDirtyAndPropagate();
     }
   }

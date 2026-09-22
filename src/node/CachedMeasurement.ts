@@ -15,6 +15,17 @@ export class CachedMeasurement {
   computedHeight: number = -1;
   baseline: number = NaN;
   hadOverflow: boolean = false;
+  measureHadOverflow: boolean = false;
+  // Whether the result stands for every space that fits it the way a measure
+  // function's does: the node has no size bounds, does not scroll, did not
+  // overflow, and no child depends on the space the node offers. Such an
+  // entry answers questions asked in another space through the same rules as
+  // a measurement of a measure function.
+  relaxable: boolean = false;
+  // Whether a layout pass produced the entry. Its baseline is then the one of
+  // a layout, which an owner aligning its children by their baselines cannot
+  // take for the baseline of a measurement.
+  fromLayout: boolean = false;
 
   reset(): void {
     this.availableWidth = -1;
@@ -27,5 +38,8 @@ export class CachedMeasurement {
     this.computedHeight = -1;
     this.baseline = NaN;
     this.hadOverflow = false;
+    this.measureHadOverflow = false;
+    this.relaxable = false;
+    this.fromLayout = false;
   }
 }

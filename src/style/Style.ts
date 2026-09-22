@@ -117,6 +117,8 @@ export class Style {
   paddingPoints: readonly number[] = NO_INSETS;
   /** Whether a margin or padding is a percentage, so that the edges depend on the owner's width. */
   edgesNeedOwnerWidth = false;
+  private positionHasPercent = false;
+  private gapHasPercent = false;
   // These four groups stay on shared, read-only defaults until their first
   // change. Most nodes never set gaps or bounds, and many never set an
   // explicit size, so allocating four arrays per Style is otherwise wasted.
@@ -180,6 +182,8 @@ export class Style {
     );
     this.updateHasSizeBounds();
     this.aspectRatio = other.aspectRatio;
+    this.updatePositionHasPercent();
+    this.updateGapHasPercent();
   }
 
   /** C++ `operator==`. */
@@ -248,6 +252,7 @@ export class Style {
       this.definedPosition,
       this.resolvedPosition,
     );
+    this.updatePositionHasPercent();
     return true;
   }
 
@@ -296,6 +301,7 @@ export class Style {
       this.gap = [...DEFAULT_GAP];
     }
     (this.gap as GutterLengths)[gutter] = value;
+    this.updateGapHasPercent();
     return true;
   }
 
@@ -723,12 +729,49 @@ export class Style {
    */
   dependsOnOwnerSize = false;
 
+  /**
+   * Whether the node's layout depends on the space its owner offers beyond
+   * the size it ends up with: a percentage anywhere, a percentage flex basis,
+   * or an aspect ratio, which derives one axis from the space of the other.
+   * The layout cache of the owner reuses a result computed in a different
+   * space only when no child depends on that space.
+   */
+  dependsOnOwnerSpace = false;
+
   private updateDependsOnOwnerSize(): void {
     this.dependsOnOwnerSize =
       this.edgesNeedOwnerWidth ||
       !this.sizeBoundsArePoints ||
       this.dimensions[Dimension.Width].isPercent() ||
       this.dimensions[Dimension.Height].isPercent();
+    this.updateDependsOnOwnerSpace();
+  }
+
+  updateDependsOnOwnerSpace(): void {
+    this.dependsOnOwnerSpace =
+      this.dependsOnOwnerSize ||
+      this.positionHasPercent ||
+      this.gapHasPercent ||
+      this.flexBasis.isPercent() ||
+      this.aspectRatio === this.aspectRatio ||
+      this.overflow === Overflow.Scroll;
+  }
+
+  private updatePositionHasPercent(): void {
+    let hasPercent = false;
+    for (let i = 0; i < 8; i++) {
+      hasPercent = hasPercent || this.resolvedPosition[i]!.isPercent();
+    }
+    this.positionHasPercent = hasPercent;
+    this.updateDependsOnOwnerSpace();
+  }
+
+  private updateGapHasPercent(): void {
+    this.gapHasPercent =
+      this.gap[Gutter.Column]!.isPercent() ||
+      this.gap[Gutter.Row]!.isPercent() ||
+      this.gap[Gutter.All]!.isPercent();
+    this.updateDependsOnOwnerSpace();
   }
 
   private updateMarginForAxes(): void {

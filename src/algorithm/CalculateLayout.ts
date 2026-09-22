@@ -31,7 +31,12 @@ import {
   boundAxisWithinMinAndMax,
   paddingAndBorderForAxis,
 } from "./BoundAxis.ts";
-import { findCachedMeasurement, hasSameOwnerSize } from "./Cache.ts";
+import {
+  findCachedMeasurement,
+  findRelaxedMeasurement,
+  hasSameOwnerSize,
+  relaxedLayoutFits,
+} from "./Cache.ts";
 import {
   dimension,
   flexStartEdge,
@@ -61,6 +66,27 @@ let gActiveLayoutPasses = 0;
 // the subtree it went through, in place of those of the node's last layout:
 // margins or paddings that are percentages, or the overflow flag.
 let gMeasurementLeftResults = false;
+// Set by `calculateLayoutImpl`: whether the result it computed is `relaxable`
+// (see `CachedMeasurement`).
+let gPassRelaxable = false;
+// Set by `calculateLayoutImpl` for a layout pass: whether a measurement in
+// the same space would have found another size. A measurement given an
+// exact cross size skips the flex step and sums the items' flex bases, where
+// a layout sums the sizes the items' own passes report: those differ when
+// the content overflows and shrinks, and in the corners where an item's pass
+// resolves its size otherwise than its basis was. A measurement that runs
+// the flex step asks its items for measurements, which differ from their
+// layouts by the same token, one level down.
+let gPassMeasureDiffers = false;
+// Set by `distributeFreeSpaceSecondPass`, for the line it laid out.
+let gLineItemSizeDiffers = false;
+let gLineItemMeasureDiffers = false;
+// Whether the pass issuing the current request, or a pass above it, aligns
+// its children by their baselines. A measurement and a layout of the same
+// node report different baselines, as Yoga computes them, and a node's
+// baseline is computed from a child's: below such a pass, every result comes
+// from a pass of the kind asked for.
+let gOwnerIsBaselineLayout = false;
 
 const DIRECTIONS = [Direction.LTR, Direction.RTL] as const;
 
@@ -477,7 +503,34 @@ function computeFlexBasisForChild(
     childHeight = constrainMaxSizeForMode(childHeightSizingMode, childHeight, maxHeight);
     childHeightSizingMode = constrainMaxSizeModeForMode(childHeightSizingMode, maxHeight);
 
-    // Measure the child
+    // Measure the child. A container that cannot grow ends up at the main
+    // size it is measured to, and, unless it is stretched in a space that is
+    // not yet known, at the cross size it is measured in. Measuring it in
+    // that space is then the layout it needs: done as one, the layout pass
+    // finds it in the cache instead of computing it a second time.
+    // Cheapest and most often false first: most children measured here are
+    // leaves.
+    const promote =
+      child.getLayoutChildCount() !== 0 &&
+      // A measurement and a layout agree on the size only of a node whose
+      // size follows its content: a percentage below resolves against another
+      // reference in each. The flag is that of the last full pass, so a dirty
+      // node waits for one.
+      child.layout.contentSized &&
+      !child.isDirty() &&
+      !gOwnerIsBaselineLayout &&
+      // Nor do they agree on the cross size of a node aligning its children
+      // by their baselines, which each pass takes from passes of its own kind.
+      !child.layout.baselineLayout &&
+      !child.style.dependsOnOwnerSpace &&
+      !child.hasMeasureFunc() &&
+      child.resolveFlexGrow() === 0 &&
+      // A measurement takes a space of nothing to fit for a size of nothing,
+      // where a layout in it reports the content (see `isFixedSize`).
+      !(childWidthSizingMode === SizingMode.FitContent && childWidth <= 0) &&
+      !(childHeightSizingMode === SizingMode.FitContent && childHeight <= 0) &&
+      (!isStretched ||
+        (isMainAxisRow ? childHeightSizingMode : childWidthSizingMode) === SizingMode.StretchFit);
     calculateLayoutInternal(
       child,
       childWidth,
@@ -487,7 +540,7 @@ function computeFlexBasisForChild(
       childHeightSizingMode,
       ownerWidth,
       ownerHeight,
-      false,
+      promote,
       LayoutPassReason.MeasureChild,
       layoutMarkerData,
       depth,
@@ -966,8 +1019,11 @@ function distributeFreeSpaceSecondPass(
   let flexGrowFactor = 0;
   let deltaFreeSpace = 0;
   const isMainAxisRow = isRow(mainAxis);
+  const mainDim = dimension(mainAxis);
   const crossDim = dimension(crossAxis);
   const isNodeFlexWrap = node.style.flexWrap !== Wrap.NoWrap;
+  let itemSizeDiffers = false;
+  let itemMeasureDiffers = false;
 
   for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const currentLineChild = flexLine.itemsInFlow[i]!;
@@ -1139,7 +1195,16 @@ function distributeFreeSpaceSecondPass(
       generationCount,
     );
     node.layout.hadOverflow = node.layout.hadOverflow || currentLineChild.layout.hadOverflow;
+    node.layout.measureHadOverflow =
+      node.layout.measureHadOverflow || currentLineChild.layout.measureHadOverflow;
+    const childLayout = currentLineChild.layout;
+    itemSizeDiffers =
+      itemSizeDiffers || Math.abs(childLayout.measuredDimensions[mainDim] - updatedMainSize) > 0.0001;
+    itemMeasureDiffers = itemMeasureDiffers || childLayout.measureDiffers;
   }
+  // After the items' passes, which set the same globals for their own lines.
+  gLineItemSizeDiffers = itemSizeDiffers;
+  gLineItemMeasureDiffers = itemMeasureDiffers;
   return deltaFreeSpace;
 }
 
@@ -1991,6 +2056,13 @@ function calculateLayoutImpl(
 
   const style = node.style;
   const layout = node.layout;
+  // A baseline is computed from the baseline of a child, and that from its
+  // child's: what holds for the children of a node aligning by baselines
+  // holds for everything below them.
+  const underBaselineLayout = gOwnerIsBaselineLayout;
+  // Only a result of the full algorithm below can be relaxable.
+  gPassRelaxable = false;
+  gPassMeasureDiffers = false;
 
   // Set the resolved resolution in the node's layout.
   const direction = node.resolveDirection(ownerDirection);
@@ -1999,6 +2071,7 @@ function calculateLayoutImpl(
   // Also when only measuring, and whichever way the size is found: the flag of
   // an earlier pass says nothing about this one.
   layout.hadOverflow = false;
+  layout.measureHadOverflow = false;
 
   let marginAxisRow: number;
   let marginAxisColumn: number;
@@ -2092,6 +2165,9 @@ function calculateLayoutImpl(
       layoutMarkerData,
       reason,
     );
+    // A measure function answers for its content, as far as the cache can tell.
+    layout.contentSized = true;
+    layout.measureDiffers = false;
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
@@ -2111,6 +2187,8 @@ function calculateLayoutImpl(
       ownerWidth,
       ownerHeight,
     );
+    layout.contentSized = true;
+    layout.measureDiffers = false;
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
@@ -2133,6 +2211,9 @@ function calculateLayoutImpl(
       ownerHeight,
     )
   ) {
+    // The children are not visited: what the last full pass found out about
+    // them holds while nothing below changed.
+    layout.contentSized = layout.contentSized && !node.isDirty();
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
     if (node.hasContentsChildren())
@@ -2179,9 +2260,12 @@ function calculateLayoutImpl(
   // Once per node: it walks the children, and both the per-line justification
   // and STEP 8 below ask for it.
   const isNodeBaselineLayout = isBaselineLayout(node);
+  gOwnerIsBaselineLayout = isNodeBaselineLayout || underBaselineLayout;
+  layout.baselineLayout = isNodeBaselineLayout;
 
   let sizingModeMainDim = isMainAxisRow ? widthSizingMode : heightSizingMode;
   const sizingModeCrossDim = isMainAxisRow ? heightSizingMode : widthSizingMode;
+  const mainSpaceWasToFit = sizingModeMainDim !== SizingMode.StretchFit;
 
   const paddingAndBorderAxisRow = paddingAndBorderAxisRowEdges;
   const paddingAndBorderAxisColumn = paddingAndBorderAxisColumnEdges;
@@ -2256,6 +2340,17 @@ function calculateLayoutImpl(
 
   // Max main dimension of all the lines.
   let maxLineMainDim = 0;
+  // What a measurement that skips the flex step reports as overflow: the
+  // lines' free space before flexible lengths are resolved.
+  let preFlexOverflow = false;
+  // The lines' overflow after the flex step, without what the children report.
+  let ownOverflow = false;
+  // See `gPassMeasureDiffers`: what the items' passes reported.
+  let itemSizeDiffers = false;
+  let itemMeasureDiffers = false;
+  // Whether a line has items that can grow. The node's own flex factor then
+  // decides whether they fill a space that fits the content (see STEP 5).
+  let linesCanGrow = false;
   const flexLine = acquireFlexLine();
   for (; startOfLineIndex < layoutChildren.length; lineCount++) {
     calculateFlexLine(
@@ -2320,6 +2415,9 @@ function calculateLayoutImpl(
       flexLine.layout.remainingFreeSpace = -flexLine.sizeConsumed;
     }
 
+    preFlexOverflow = preFlexOverflow || flexLine.layout.remainingFreeSpace < -0.0001;
+    linesCanGrow = linesCanGrow || flexLine.layout.totalFlexGrowFactors !== 0;
+
     if (!canSkipFlex) {
       resolveFlexibleLength(
         node,
@@ -2338,10 +2436,13 @@ function calculateLayoutImpl(
         depth,
         generationCount,
       );
+      itemSizeDiffers = itemSizeDiffers || gLineItemSizeDiffers;
+      itemMeasureDiffers = itemMeasureDiffers || gLineItemMeasureDiffers;
     }
 
     // Less than the layout cache tells available sizes apart by is a rounding
     // error, not an overflow.
+    ownOverflow = ownOverflow || flexLine.layout.remainingFreeSpace < -0.0001;
     layout.hadOverflow = layout.hadOverflow || flexLine.layout.remainingFreeSpace < -0.0001;
 
     // STEP 6: MAIN-AXIS JUSTIFICATION & CROSS-AXIS SIZE DETERMINATION
@@ -2605,6 +2706,57 @@ function calculateLayoutImpl(
     }
   }
 
+  // What the pass found out for the cache. A node whose size follows its
+  // content in any space that fits it: no child depends on the space, none
+  // is dirty yet unvisited, and the items cannot fill the space, which they
+  // do when both the node and an item can grow.
+  let contentSized = !(linesCanGrow && node.resolveFlexGrow() !== 0);
+  for (let i = 0, length = layoutChildren.length; contentSized && i < length; i++) {
+    const child = layoutChildren[i]!;
+    if (child.style.display === Display.None) {
+      continue;
+    }
+    contentSized =
+      !child.style.dependsOnOwnerSpace &&
+      child.layout.contentSized &&
+      !(child.isDirty() && child.layout.generationCount !== generationCount);
+  }
+  layout.contentSized = contentSized;
+  if (performLayout) {
+    // The flag a measurement in this space would have reported: none where it
+    // would have taken the node's size for granted, the lines' overflow before
+    // the flex step where it would have skipped that step, and otherwise what
+    // this pass found, including what its children report for a measurement.
+    layout.measureHadOverflow =
+      widthSizingMode === SizingMode.StretchFit && heightSizingMode === SizingMode.StretchFit
+        ? false
+        : sizingModeCrossDim === SizingMode.StretchFit
+          ? preFlexOverflow
+          : ownOverflow || layout.measureHadOverflow;
+  } else {
+    layout.measureHadOverflow = layout.hadOverflow;
+  }
+  // A measurement in a space it takes for fixed (see `measureNodeWithFixedSize`)
+  // reports that space, which for a space of nothing to fit is nothing, where
+  // this algorithm reports the content.
+  const measurementShortcutDiffers =
+    isFixedSize(availableWidth - marginAxisRow, widthSizingMode) &&
+    isFixedSize(availableHeight - marginAxisColumn, heightSizingMode) &&
+    (widthSizingMode === SizingMode.FitContent || heightSizingMode === SizingMode.FitContent);
+  const measureDiffers =
+    performLayout &&
+    (measurementShortcutDiffers ||
+      (sizingModeCrossDim === SizingMode.StretchFit
+        ? mainSpaceWasToFit && (preFlexOverflow || itemSizeDiffers)
+        : itemMeasureDiffers));
+  layout.measureDiffers = measureDiffers;
+  gPassMeasureDiffers = measureDiffers;
+  gPassRelaxable =
+    contentSized &&
+    !isNodeBaselineLayout &&
+    !style.hasSizeBounds &&
+    style.overflow !== Overflow.Scroll &&
+    !measureDiffers;
   return true;
 }
 
@@ -2618,13 +2770,16 @@ function restoreCachedResults(
   performLayout: boolean,
 ): void {
   layout.baseline = cachedResults.baseline;
-  // A measurement that brings back another overflow flag than the one of the
-  // node's last layout leaves a result of its own, like one that is computed.
-  if (!performLayout && layout.hadOverflow !== cachedResults.hadOverflow) {
+  // A measurement reports the flag of a measurement, also from a layout's
+  // entry. One that brings back another flag than the one of the node's last
+  // layout leaves a result of its own, like one that is computed.
+  const hadOverflow = performLayout ? cachedResults.hadOverflow : cachedResults.measureHadOverflow;
+  if (!performLayout && layout.hadOverflow !== hadOverflow) {
     layout.measuredSinceLayout = true;
     gMeasurementLeftResults = true;
   }
-  layout.hadOverflow = cachedResults.hadOverflow;
+  layout.hadOverflow = hadOverflow;
+  layout.measureHadOverflow = cachedResults.measureHadOverflow;
 }
 
 // After a node is computed: tells the layout cache of the node and of its
@@ -2687,6 +2842,7 @@ export function calculateLayoutInternal(
   if (needToVisitNode) {
     // Invalidate the cached results.
     layout.nextCachedMeasurementsIndex = 0;
+    layout.hasRelaxableMeasurements = false;
     layout.cachedLayout.availableWidth = -1;
     layout.cachedLayout.availableHeight = -1;
     layout.cachedLayout.widthSizingMode = SizingMode.MaxContent;
@@ -2696,6 +2852,12 @@ export function calculateLayoutInternal(
   }
 
   let cachedResults: CachedMeasurement | null = null;
+  // A flex basis measurement promoted to a layout, because the space it is
+  // asked in is the one the node ends up with. It takes a measurement it
+  // finds cached like a measurement would, and only does the work it has to
+  // do anyway as a layout.
+  const promoted = performLayout && reason === LayoutPassReason.MeasureChild;
+  const ownerIsBaselineLayout = gOwnerIsBaselineLayout;
 
   // Determine whether the results are already cached. We maintain a separate
   // cache for layouts and measurements. A layout operation modifies the
@@ -2715,35 +2877,76 @@ export function calculateLayoutInternal(
       ownerWidth,
       ownerHeight,
     );
-  } else if (performLayout) {
-    if (
-      layout.cachedLayout.widthSizingMode === widthSizingMode &&
-      layout.cachedLayout.heightSizingMode === heightSizingMode &&
-      sameAvailableSize(layout.cachedLayout.availableWidth, availableWidth) &&
-      sameAvailableSize(layout.cachedLayout.availableHeight, availableHeight) &&
-      (!node.style.dependsOnOwnerSize ||
-        hasSameOwnerSize(layout.cachedLayout, ownerWidth, ownerHeight))
-    ) {
-      cachedResults = layout.cachedLayout;
-    }
   } else {
-    const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
-    for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
-      const cachedMeasurement = layout.cachedMeasurements[i]!;
-      // The sizing modes settle about half the entries between them, and cost
-      // two integer compares against the two calls a size takes. They go first.
-      if (
-        cachedMeasurement.widthSizingMode === widthSizingMode &&
-        cachedMeasurement.heightSizingMode === heightSizingMode &&
-        sameAvailableSize(cachedMeasurement.availableWidth, availableWidth) &&
-        sameAvailableSize(cachedMeasurement.availableHeight, availableHeight) &&
-        (!keyedOnOwnerSize || hasSameOwnerSize(cachedMeasurement, ownerWidth, ownerHeight))
-      ) {
-        cachedResults = cachedMeasurement;
-        if (i > 0) {
-          layout.promoteCachedMeasurement(i);
+    // A measurement, and a promoted one, look for a measurement first: the
+    // exact probe is the cheapest, and it is what a promoted request finds on
+    // a node that is laid out already. A layout looks for its layout.
+    if (!performLayout || promoted) {
+      const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
+      const relaxed = !ownerIsBaselineLayout;
+      for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
+        const cachedMeasurement = layout.cachedMeasurements[i]!;
+        // The sizing modes settle about half the entries between them, and
+        // cost two integer compares against the two calls a size takes. They
+        // go first.
+        if (
+          cachedMeasurement.widthSizingMode === widthSizingMode &&
+          cachedMeasurement.heightSizingMode === heightSizingMode &&
+          sameAvailableSize(cachedMeasurement.availableWidth, availableWidth) &&
+          sameAvailableSize(cachedMeasurement.availableHeight, availableHeight) &&
+          (!keyedOnOwnerSize || hasSameOwnerSize(cachedMeasurement, ownerWidth, ownerHeight)) &&
+          (relaxed || !cachedMeasurement.fromLayout)
+        ) {
+          cachedResults = cachedMeasurement;
+          if (i > 0) {
+            layout.promoteCachedMeasurement(i);
+          }
+          break;
         }
-        break;
+      }
+      if (
+        cachedResults === null &&
+        relaxed &&
+        (layout.hasRelaxableMeasurements || layout.cachedLayout.relaxable)
+      ) {
+        cachedResults = findRelaxedMeasurement(
+          node,
+          widthSizingMode,
+          availableWidth,
+          heightSizingMode,
+          availableHeight,
+          ownerWidth,
+          ownerHeight,
+        );
+      }
+      if (cachedResults !== null) {
+        // A promoted pass that finds a measurement takes it as one.
+        performLayout = false;
+      }
+    }
+    if (cachedResults === null && performLayout) {
+      if (
+        layout.cachedLayout.widthSizingMode === widthSizingMode &&
+        layout.cachedLayout.heightSizingMode === heightSizingMode &&
+        sameAvailableSize(layout.cachedLayout.availableWidth, availableWidth) &&
+        sameAvailableSize(layout.cachedLayout.availableHeight, availableHeight) &&
+        (!node.style.dependsOnOwnerSize ||
+          hasSameOwnerSize(layout.cachedLayout, ownerWidth, ownerHeight))
+      ) {
+        cachedResults = layout.cachedLayout;
+      } else if (
+        !ownerIsBaselineLayout &&
+        relaxedLayoutFits(
+          node,
+          widthSizingMode,
+          availableWidth,
+          heightSizingMode,
+          availableHeight,
+          ownerWidth,
+          ownerHeight,
+        )
+      ) {
+        cachedResults = layout.cachedLayout;
       }
     }
   }
@@ -2784,6 +2987,35 @@ export function calculateLayoutInternal(
       depth,
       generationCount,
     );
+    let relaxable = gPassRelaxable;
+    gOwnerIsBaselineLayout = ownerIsBaselineLayout;
+    // The subtree was laid out either way; see below.
+    const promotedRan = promoted && performLayout;
+    if (promotedRan && gPassMeasureDiffers) {
+      // The owner asked for a measurement, and a layout in this space found
+      // another size than a measurement would have reported. Measure after
+      // all, and forget the layout: the subtree holds one that no request of
+      // the owner can restore.
+      calculateLayoutImpl(
+        node,
+        availableWidth,
+        availableHeight,
+        ownerDirection,
+        widthSizingMode,
+        heightSizingMode,
+        ownerWidth,
+        ownerHeight,
+        false,
+        reason,
+        layoutMarkerData,
+        depth,
+        generationCount,
+      );
+      relaxable = gPassRelaxable;
+      gOwnerIsBaselineLayout = ownerIsBaselineLayout;
+      layout.cachedLayout.reset();
+      performLayout = false;
+    }
 
     // A node without children of its own to go by has its bottom edge for a
     // baseline. So has one measured with a definite cross size: that skips the
@@ -2796,6 +3028,13 @@ export function calculateLayoutInternal(
         ? calculateBaseline(node, performLayout)
         : layout.measuredDimensions[Dimension.Height];
     noteResultsLeftByMeasurement(node, performLayout, hadOverflow, outerMeasurementLeftResults);
+    // A promoted measurement lays the subtree out in the space it is asked in,
+    // which its owner may yet lay it out in another. Until then, the owner and
+    // the passes above it cannot restore a layout over the subtree, no more
+    // than over what a measurement leaves behind.
+    if (promotedRan) {
+      gMeasurementLeftResults = true;
+    }
     layout.lastOwnerDirection = ownerDirection;
     layout.configVersion = node.getConfig().version;
 
@@ -2825,6 +3064,33 @@ export function calculateLayoutInternal(
       newCacheEntry.computedHeight = layout.measuredDimensions[Dimension.Height];
       newCacheEntry.baseline = layout.baseline;
       newCacheEntry.hadOverflow = layout.hadOverflow;
+      newCacheEntry.measureHadOverflow = layout.measureHadOverflow;
+      newCacheEntry.relaxable = relaxable;
+      if (relaxable && !performLayout) {
+        layout.hasRelaxableMeasurements = true;
+      }
+      // The layout cache entry stands for the layout the subtree holds, which
+      // the next layout pass replaces. What a promoted measurement found out
+      // about the node's size outlives that: keep it with the measurements.
+      if (promoted && performLayout) {
+        const measurement = layout.takeCachedMeasurement();
+        measurement.availableWidth = availableWidth;
+        measurement.availableHeight = availableHeight;
+        measurement.widthSizingMode = widthSizingMode;
+        measurement.heightSizingMode = heightSizingMode;
+        measurement.ownerWidth = ownerWidth;
+        measurement.ownerHeight = ownerHeight;
+        measurement.computedWidth = newCacheEntry.computedWidth;
+        measurement.computedHeight = newCacheEntry.computedHeight;
+        measurement.baseline = layout.baseline;
+        measurement.hadOverflow = layout.measureHadOverflow;
+        measurement.measureHadOverflow = layout.measureHadOverflow;
+        measurement.relaxable = relaxable;
+        measurement.fromLayout = true;
+        if (relaxable) {
+          layout.hasRelaxableMeasurements = true;
+        }
+      }
     }
   }
 

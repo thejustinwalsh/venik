@@ -17,11 +17,30 @@ export class LayoutResults {
 
   nextCachedMeasurementsIndex: number = 0;
   cachedMeasurements: CachedMeasurement[] = [];
+  // Whether a measurement cache entry may be `relaxable`: set when one is
+  // stored, cleared with the entries. Saves the relaxed probe on most misses.
+  hasRelaxableMeasurements: boolean = false;
 
   cachedLayout: CachedMeasurement = new CachedMeasurement();
 
   direction: Direction = Direction.Inherit;
   hadOverflow: boolean = false;
+  // The overflow flag a measurement in the same space would report. Yoga
+  // computes it before flexible lengths are resolved when the measurement
+  // skips that step, and a layout computes it after: the flag a node reports
+  // depends on the kind of pass that last visited it.
+  measureHadOverflow: boolean = false;
+  // Whether the node's size in a space that fits its content is that of its
+  // content alone: no node below depends on the space it is offered. Set by
+  // every full pass; a dirty node never visited in full is not trusted.
+  contentSized: boolean = false;
+  // Whether the last layout pass found a size a measurement in the same
+  // space would not: see `gPassMeasureDiffers` in the layout algorithm. A
+  // measurement pass leaves it false.
+  measureDiffers: boolean = false;
+  // Whether the node aligns its children by their baselines, as of its last
+  // full pass. Like `contentSized`, only current while the node is clean.
+  baselineLayout: boolean = false;
 
   // The pass that last walked through this node looking for absolute
   // descendants of a containing block further up, and what it came with.
