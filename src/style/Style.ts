@@ -64,10 +64,29 @@ export class Style {
   aspectRatio: number = NaN;
 
   // Indexed by `Edge`, `Gutter` and `Dimension`.
-  readonly margin: Readonly<EdgeLengths> = undefinedEdges();
-  readonly position: Readonly<EdgeLengths> = undefinedEdges();
-  readonly padding: Readonly<EdgeLengths> = undefinedEdges();
-  readonly border: Readonly<EdgeLengths> = undefinedEdges();
+  // Empty edge groups share one immutable array. The first setter that gives
+  // a group a value replaces it with an owned copy, and resetting its last
+  // value returns it to the shared array.
+  private margin_: Readonly<EdgeLengths> = UNDEFINED_EDGE_LENGTHS;
+  private position_: Readonly<EdgeLengths> = UNDEFINED_EDGE_LENGTHS;
+  private padding_: Readonly<EdgeLengths> = UNDEFINED_EDGE_LENGTHS;
+  private border_: Readonly<EdgeLengths> = UNDEFINED_EDGE_LENGTHS;
+
+  get margin(): Readonly<EdgeLengths> {
+    return this.margin_;
+  }
+
+  get position(): Readonly<EdgeLengths> {
+    return this.position_;
+  }
+
+  get padding(): Readonly<EdgeLengths> {
+    return this.padding_;
+  }
+
+  get border(): Readonly<EdgeLengths> {
+    return this.border_;
+  }
   // One bit per `Edge` that holds a defined length. Resolving a physical edge
   // consults these instead of probing up to five lengths, and most nodes leave
   // most groups empty. Kept in sync by the setters below.
@@ -136,21 +155,21 @@ export class Style {
     this.flexGrow = other.flexGrow;
     this.flexShrink = other.flexShrink;
     this.flexBasis = other.flexBasis;
-    copyInto(this.margin as EdgeLengths, other.margin);
+    this.margin_ = assignEdgeLengths(this.margin_, other.margin_);
     this.definedMargin = other.definedMargin;
     this.resolvedMargin = resolveEdges(this.margin, this.definedMargin, this.resolvedMargin);
     this.updateMarginForAxes();
-    copyInto(this.position as EdgeLengths, other.position);
+    this.position_ = assignEdgeLengths(this.position_, other.position_);
     this.definedPosition = other.definedPosition;
     this.resolvedPosition = resolveEdges(
       this.position,
       this.definedPosition,
       this.resolvedPosition,
     );
-    copyInto(this.padding as EdgeLengths, other.padding);
+    this.padding_ = assignEdgeLengths(this.padding_, other.padding_);
     this.definedPadding = other.definedPadding;
     this.resolvedPadding = resolveEdges(this.padding, this.definedPadding, this.resolvedPadding);
-    copyInto(this.border as EdgeLengths, other.border);
+    this.border_ = assignEdgeLengths(this.border_, other.border_);
     this.definedBorder = other.definedBorder;
     this.resolvedBorder = resolveEdges(this.border, this.definedBorder, this.resolvedBorder);
     this.updatePaddingAndBorder();
@@ -197,8 +216,14 @@ export class Style {
     if (this.margin[edge].equals(value)) {
       return false;
     }
-    (this.margin as EdgeLengths)[edge] = value;
     this.definedMargin = withEdge(this.definedMargin, edge, value);
+    if (this.definedMargin === 0) {
+      this.margin_ = UNDEFINED_EDGE_LENGTHS;
+    } else {
+      const margin = writableEdgeLengths(this.margin_);
+      margin[edge] = value;
+      this.margin_ = margin;
+    }
     this.resolvedMargin = resolveEdges(this.margin, this.definedMargin, this.resolvedMargin);
     this.updateMarginForAxes();
     return true;
@@ -209,8 +234,14 @@ export class Style {
     if (this.position[edge].equals(value)) {
       return false;
     }
-    (this.position as EdgeLengths)[edge] = value;
     this.definedPosition = withEdge(this.definedPosition, edge, value);
+    if (this.definedPosition === 0) {
+      this.position_ = UNDEFINED_EDGE_LENGTHS;
+    } else {
+      const position = writableEdgeLengths(this.position_);
+      position[edge] = value;
+      this.position_ = position;
+    }
     this.resolvedPosition = resolveEdges(
       this.position,
       this.definedPosition,
@@ -224,8 +255,14 @@ export class Style {
     if (this.padding[edge].equals(value)) {
       return false;
     }
-    (this.padding as EdgeLengths)[edge] = value;
     this.definedPadding = withEdge(this.definedPadding, edge, value);
+    if (this.definedPadding === 0) {
+      this.padding_ = UNDEFINED_EDGE_LENGTHS;
+    } else {
+      const padding = writableEdgeLengths(this.padding_);
+      padding[edge] = value;
+      this.padding_ = padding;
+    }
     this.resolvedPadding = resolveEdges(this.padding, this.definedPadding, this.resolvedPadding);
     this.updatePaddingAndBorder();
     return true;
@@ -236,8 +273,14 @@ export class Style {
     if (this.border[edge].equals(value)) {
       return false;
     }
-    (this.border as EdgeLengths)[edge] = value;
     this.definedBorder = withEdge(this.definedBorder, edge, value);
+    if (this.definedBorder === 0) {
+      this.border_ = UNDEFINED_EDGE_LENGTHS;
+    } else {
+      const border = writableEdgeLengths(this.border_);
+      border[edge] = value;
+      this.border_ = border;
+    }
     this.resolvedBorder = resolveEdges(this.border, this.definedBorder, this.resolvedBorder);
     this.updatePaddingAndBorder();
     return true;
@@ -761,6 +804,26 @@ function undefinedEdges(): EdgeLengths {
     undefinedLength,
     undefinedLength,
   ];
+}
+
+const UNDEFINED_EDGE_LENGTHS: Readonly<EdgeLengths> = Object.freeze(undefinedEdges());
+
+/** Returns a style-owned edge array, copying the shared default on first write. */
+function writableEdgeLengths(edges: Readonly<EdgeLengths>): EdgeLengths {
+  return edges === UNDEFINED_EDGE_LENGTHS ? ([...edges] as EdgeLengths) : (edges as EdgeLengths);
+}
+
+/** Copies an edge group without allocating when the source is empty. */
+function assignEdgeLengths(
+  current: Readonly<EdgeLengths>,
+  source: Readonly<EdgeLengths>,
+): Readonly<EdgeLengths> {
+  if (source === UNDEFINED_EDGE_LENGTHS) {
+    return UNDEFINED_EDGE_LENGTHS;
+  }
+  const target = writableEdgeLengths(current);
+  copyInto(target, source);
+  return target;
 }
 
 function copyInto<T>(to: T[], from: readonly T[]): void {
