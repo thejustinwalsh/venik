@@ -53,6 +53,9 @@ import { roundLayoutResultsToPixelGrid } from "./PixelGrid.ts";
 import { needsTrailingPosition, setChildTrailingPosition } from "./TrailingPosition.ts";
 
 let gCurrentGenerationCount = 0;
+// Public layout calls currently executing. Clean-root fast exits are disabled
+// inside callbacks so reentrant layouts retain the normal pass bookkeeping.
+let gActiveLayoutPasses = 0;
 
 // Whether the measurement under way has left results of its own somewhere in
 // the subtree it went through, in place of those of the node's last layout:
@@ -2859,6 +2862,40 @@ export function calculateLayout(
   ownerHeight: number,
   ownerDirection: Direction,
 ): void {
+  // A public layout call normally reaches the root's internal layout cache only
+  // after resolving its constraints and setting up a generation. Remember the
+  // raw public constraints in the layout cache's owner-size fields as well, so
+  // the overwhelmingly common clean call can stop before doing any of that.
+  //
+  // Keep nested calls on the regular path. Besides preserving the global
+  // generation/measurement bookkeeping during callbacks, this means a layout
+  // invoked reentrantly cannot observe a half-finished outer pass as final.
+  const cachedLayout = node.layout.cachedLayout;
+  if (
+    gActiveLayoutPasses === 0 &&
+    node.owner === null &&
+    !node.isDirty() &&
+    node.hasNewLayout &&
+    !node.layout.measuredSinceLayout &&
+    cachedLayout.computedWidth >= 0 &&
+    cachedLayout.computedHeight >= 0 &&
+    sameLayoutConstraint(cachedLayout.ownerWidth, ownerWidth) &&
+    sameLayoutConstraint(cachedLayout.ownerHeight, ownerHeight) &&
+    node.layout.lastOwnerDirection === ownerDirection &&
+    node.layout.configVersion === node.getConfig().version
+  ) {
+    if (__EVENTS__) {
+      Event.publish(node, Event.LayoutPassStart);
+      const markerData = new LayoutData();
+      markerData.cachedLayouts = 1;
+      if (Event.hasSubscribers()) {
+        Event.publish(node, Event.NodeLayout, { layoutType: LayoutType.CachedLayout });
+      }
+      Event.publish(node, Event.LayoutPassEnd, { layoutData: markerData });
+    }
+    return;
+  }
+
   if (__EVENTS__) Event.publish(node, Event.LayoutPassStart);
   // Pass statistics are only gathered for `Event.LayoutPassEnd`.
   const markerData = __EVENTS__ ? new LayoutData() : null;
@@ -2915,6 +2952,7 @@ export function calculateLayout(
   const generationCount = currentGenerationCount;
   // Non-zero when this pass runs inside a measure function of another one.
   const poolDepth = flexLinePoolDepth();
+  gActiveLayoutPasses++;
   try {
     if (
       calculateLayoutInternal(
@@ -2939,7 +2977,20 @@ export function calculateLayout(
   } finally {
     // Only does anything when a measure or baseline function threw.
     restoreFlexLinePool(poolDepth);
+    gActiveLayoutPasses--;
   }
 
+  // These fields are already the owner-size part of the root layout-cache key.
+  // Updating them after a successful public call also makes them the raw-input
+  // fingerprint. A throw never records a pass as complete.
+  cachedLayout.ownerWidth = ownerWidth;
+  cachedLayout.ownerHeight = ownerHeight;
+
   if (__EVENTS__) Event.publish(node, Event.LayoutPassEnd, { layoutData: markerData });
+}
+
+// `undefined` reaches here as NaN. Treat every NaN as the same unconstrained
+// input, while retaining normal numeric equality (including +0/-0).
+function sameLayoutConstraint(left: number, right: number): boolean {
+  return left === right || (left !== left && right !== right);
 }
