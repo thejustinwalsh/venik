@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Direction, Edge, FlexDirection, Gutter, Node } from "../src/index.ts";
+import { Dimension, Direction, Edge, FlexDirection, Gutter, Node } from "../src/index.ts";
 import { Style } from "../src/style/Style.ts";
 import { StyleLength } from "../src/style/StyleLength.ts";
 
@@ -25,9 +25,70 @@ test("computed_border_is_floored", () => {
 
 test("computed_gap_is_floored", () => {
   const style = new Style();
-  style.gap[Gutter.Column] = StyleLength.points(-1.0);
+  style.setGap(Gutter.Column, StyleLength.points(-1.0));
   const gapBetweenColumns = style.computeGapForAxis(FlexDirection.Row, 0.0);
   expect(gapBetweenColumns).toBe(0);
+});
+
+test("size and gap defaults detach independently on first change", () => {
+  const first = new Style();
+  const second = new Style();
+
+  expect(first.gap).toBe(second.gap);
+  expect(first.dimensions).toBe(second.dimensions);
+  expect(first.minDimensions).toBe(second.minDimensions);
+  expect(first.maxDimensions).toBe(second.maxDimensions);
+
+  first.setGap(Gutter.Row, StyleLength.points(3));
+  first.setDimension(Dimension.Width, StyleLength.points(10));
+  first.setMinDimension(Dimension.Height, StyleLength.points(4));
+  first.setMaxDimension(Dimension.Width, StyleLength.percent(80));
+
+  expect(first.gap).not.toBe(second.gap);
+  expect(first.dimensions).not.toBe(second.dimensions);
+  expect(first.minDimensions).not.toBe(second.minDimensions);
+  expect(first.maxDimensions).not.toBe(second.maxDimensions);
+  expect(second.gap[Gutter.Row].isUndefined()).toBe(true);
+  expect(second.dimensions[Dimension.Width].isAuto()).toBe(true);
+  expect(second.minDimensions[Dimension.Height].isUndefined()).toBe(true);
+  expect(second.maxDimensions[Dimension.Width].isUndefined()).toBe(true);
+});
+
+test("assign shares defaults but clones changed size and gap arrays", () => {
+  const source = new Style();
+  const target = new Style();
+  target.setGap(Gutter.All, StyleLength.points(1));
+  target.setDimension(Dimension.Width, StyleLength.points(1));
+  target.setMinDimension(Dimension.Width, StyleLength.points(1));
+  target.setMaxDimension(Dimension.Width, StyleLength.points(1));
+
+  target.assign(source);
+  expect(target.equals(source)).toBe(true);
+  expect(target.gap).toBe(source.gap);
+  expect(target.dimensions).toBe(source.dimensions);
+  expect(target.minDimensions).toBe(source.minDimensions);
+  expect(target.maxDimensions).toBe(source.maxDimensions);
+
+  source.setGap(Gutter.Column, StyleLength.points(2));
+  source.setDimension(Dimension.Height, StyleLength.points(20));
+  source.setMinDimension(Dimension.Width, StyleLength.points(5));
+  source.setMaxDimension(Dimension.Height, StyleLength.points(30));
+  target.assign(source);
+
+  expect(target.equals(source)).toBe(true);
+  expect(target.gap).not.toBe(source.gap);
+  expect(target.dimensions).not.toBe(source.dimensions);
+  expect(target.minDimensions).not.toBe(source.minDimensions);
+  expect(target.maxDimensions).not.toBe(source.maxDimensions);
+
+  source.setGap(Gutter.Column, StyleLength.points(7));
+  source.setDimension(Dimension.Height, StyleLength.points(21));
+  source.setMinDimension(Dimension.Width, StyleLength.points(6));
+  source.setMaxDimension(Dimension.Height, StyleLength.points(31));
+  expect(target.gap[Gutter.Column].value).toBe(2);
+  expect(target.dimensions[Dimension.Height].value).toBe(20);
+  expect(target.minDimensions[Dimension.Width].value).toBe(5);
+  expect(target.maxDimensions[Dimension.Height].value).toBe(30);
 });
 
 test("computed_margin_is_not_floored", () => {

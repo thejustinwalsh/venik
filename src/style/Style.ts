@@ -117,20 +117,13 @@ export class Style {
   paddingPoints: readonly number[] = NO_INSETS;
   /** Whether a margin or padding is a percentage, so that the edges depend on the owner's width. */
   edgesNeedOwnerWidth = false;
-  readonly gap: GutterLengths = [
-    StyleLength.undefined(),
-    StyleLength.undefined(),
-    StyleLength.undefined(),
-  ];
-  readonly dimensions: Readonly<DimensionLengths> = [StyleLength.ofAuto(), StyleLength.ofAuto()];
-  readonly minDimensions: Readonly<DimensionLengths> = [
-    StyleLength.undefined(),
-    StyleLength.undefined(),
-  ];
-  readonly maxDimensions: Readonly<DimensionLengths> = [
-    StyleLength.undefined(),
-    StyleLength.undefined(),
-  ];
+  // These four groups stay on shared, read-only defaults until their first
+  // change. Most nodes never set gaps or bounds, and many never set an
+  // explicit size, so allocating four arrays per Style is otherwise wasted.
+  gap: Readonly<GutterLengths> = DEFAULT_GAP;
+  dimensions: Readonly<DimensionLengths> = DEFAULT_DIMENSIONS;
+  minDimensions: Readonly<DimensionLengths> = DEFAULT_SIZE_BOUNDS;
+  maxDimensions: Readonly<DimensionLengths> = DEFAULT_SIZE_BOUNDS;
   /** Whether any min or max size is set. Most nodes have none, and bounding a size is then a no-op. */
   hasSizeBounds = false;
   // The min and max sizes in points (NaN when unset), valid while neither is a percentage.
@@ -173,10 +166,18 @@ export class Style {
     this.definedBorder = other.definedBorder;
     this.resolvedBorder = resolveEdges(this.border, this.definedBorder, this.resolvedBorder);
     this.updatePaddingAndBorder();
-    copyInto(this.gap, other.gap);
-    copyInto(this.dimensions as DimensionLengths, other.dimensions);
-    copyInto(this.minDimensions as DimensionLengths, other.minDimensions);
-    copyInto(this.maxDimensions as DimensionLengths, other.maxDimensions);
+    this.gap = assignLengths(this.gap, other.gap, DEFAULT_GAP);
+    this.dimensions = assignLengths(this.dimensions, other.dimensions, DEFAULT_DIMENSIONS);
+    this.minDimensions = assignLengths(
+      this.minDimensions,
+      other.minDimensions,
+      DEFAULT_SIZE_BOUNDS,
+    );
+    this.maxDimensions = assignLengths(
+      this.maxDimensions,
+      other.maxDimensions,
+      DEFAULT_SIZE_BOUNDS,
+    );
     this.updateHasSizeBounds();
     this.aspectRatio = other.aspectRatio;
   }
@@ -287,9 +288,24 @@ export class Style {
   }
 
   /** Returns whether the value changed. */
+  setGap(gutter: Gutter, value: StyleLength): boolean {
+    if (this.gap[gutter].equals(value)) {
+      return false;
+    }
+    if (this.gap === DEFAULT_GAP) {
+      this.gap = [...DEFAULT_GAP];
+    }
+    (this.gap as GutterLengths)[gutter] = value;
+    return true;
+  }
+
+  /** Returns whether the value changed. */
   setDimension(dimension: Dimension, value: StyleLength): boolean {
     if (this.dimensions[dimension].equals(value)) {
       return false;
+    }
+    if (this.dimensions === DEFAULT_DIMENSIONS) {
+      this.dimensions = [...DEFAULT_DIMENSIONS];
     }
     (this.dimensions as DimensionLengths)[dimension] = value;
     this.updateDependsOnOwnerSize();
@@ -301,6 +317,9 @@ export class Style {
     if (this.minDimensions[dimension].equals(value)) {
       return false;
     }
+    if (this.minDimensions === DEFAULT_SIZE_BOUNDS) {
+      this.minDimensions = [...DEFAULT_SIZE_BOUNDS];
+    }
     (this.minDimensions as DimensionLengths)[dimension] = value;
     this.updateHasSizeBounds();
     return true;
@@ -310,6 +329,9 @@ export class Style {
   setMaxDimension(dimension: Dimension, value: StyleLength): boolean {
     if (this.maxDimensions[dimension].equals(value)) {
       return false;
+    }
+    if (this.maxDimensions === DEFAULT_SIZE_BOUNDS) {
+      this.maxDimensions = [...DEFAULT_SIZE_BOUNDS];
     }
     (this.maxDimensions as DimensionLengths)[dimension] = value;
     this.updateHasSizeBounds();
@@ -791,6 +813,20 @@ type EdgeLengths = [
 type GutterLengths = [StyleLength, StyleLength, StyleLength];
 type DimensionLengths = [StyleLength, StyleLength];
 
+const DEFAULT_GAP: Readonly<GutterLengths> = [
+  StyleLength.undefined(),
+  StyleLength.undefined(),
+  StyleLength.undefined(),
+];
+const DEFAULT_DIMENSIONS: Readonly<DimensionLengths> = [
+  StyleLength.ofAuto(),
+  StyleLength.ofAuto(),
+];
+const DEFAULT_SIZE_BOUNDS: Readonly<DimensionLengths> = [
+  StyleLength.undefined(),
+  StyleLength.undefined(),
+];
+
 function undefinedEdges(): EdgeLengths {
   const undefinedLength = StyleLength.undefined();
   return [
@@ -830,6 +866,21 @@ function copyInto<T>(to: T[], from: readonly T[]): void {
   for (let i = 0, length = from.length; i < length; i++) {
     to[i] = from[i]!;
   }
+}
+
+function assignLengths<T extends readonly StyleLength[]>(
+  current: T,
+  source: T,
+  defaults: T,
+): T {
+  if (source === defaults) {
+    return defaults;
+  }
+  if (current === defaults) {
+    return [...source] as unknown as T;
+  }
+  copyInto(current as unknown as StyleLength[], source);
+  return current;
 }
 
 function lengthsEqual(lhs: readonly StyleLength[], rhs: readonly StyleLength[]): boolean {

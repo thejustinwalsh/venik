@@ -608,14 +608,19 @@ export class Node {
     return border.value;
   }
   setGap(gutter: Gutter, gapLength: number | Percent | undefined): void {
-    this.updateEdge(this.style.gap, gutter, parseLength(gapLength, this.style.gap[gutter]));
+    if (this.style.setGap(gutter, parseLength(gapLength, this.style.gap[gutter]))) {
+      this.markDirtyAndPropagate();
+    }
   }
   setGapPercent(gutter: Gutter, gapLength: number | undefined): void {
-    this.updateEdge(
-      this.style.gap,
-      gutter,
-      StyleLength.percent(gapLength ?? NaN, this.style.gap[gutter]),
-    );
+    if (
+      this.style.setGap(
+        gutter,
+        StyleLength.percent(gapLength ?? NaN, this.style.gap[gutter]),
+      )
+    ) {
+      this.markDirtyAndPropagate();
+    }
   }
   getGap(gutter: Gutter): Value {
     return this.style.gap[gutter];
@@ -1029,13 +1034,6 @@ export class Node {
   private updateMaxDimension(axis: Dimension, value: StyleLength): void {
     if (this.style.setMaxDimension(axis, value)) {
       this.processDimension(axis);
-      this.markDirtyAndPropagate();
-    }
-  }
-
-  private updateEdge(edges: StyleLength[], index: Edge | Gutter, value: StyleLength): void {
-    if (!edges[index]!.equals(value)) {
-      edges[index] = value;
       this.markDirtyAndPropagate();
     }
   }
