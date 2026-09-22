@@ -2714,10 +2714,10 @@ export function calculateLayoutInternal(
     );
   } else if (performLayout) {
     if (
-      sameAvailableSize(layout.cachedLayout.availableWidth, availableWidth) &&
-      sameAvailableSize(layout.cachedLayout.availableHeight, availableHeight) &&
       layout.cachedLayout.widthSizingMode === widthSizingMode &&
       layout.cachedLayout.heightSizingMode === heightSizingMode &&
+      sameAvailableSize(layout.cachedLayout.availableWidth, availableWidth) &&
+      sameAvailableSize(layout.cachedLayout.availableHeight, availableHeight) &&
       (!node.style.dependsOnOwnerSize ||
         hasSameOwnerSize(layout.cachedLayout, ownerWidth, ownerHeight))
     ) {
@@ -2727,11 +2727,13 @@ export function calculateLayoutInternal(
     const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
     for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
       const cachedMeasurement = layout.cachedMeasurements[i]!;
+      // The sizing modes settle about half the entries between them, and cost
+      // two integer compares against the two calls a size takes. They go first.
       if (
-        sameAvailableSize(cachedMeasurement.availableWidth, availableWidth) &&
-        sameAvailableSize(cachedMeasurement.availableHeight, availableHeight) &&
         cachedMeasurement.widthSizingMode === widthSizingMode &&
         cachedMeasurement.heightSizingMode === heightSizingMode &&
+        sameAvailableSize(cachedMeasurement.availableWidth, availableWidth) &&
+        sameAvailableSize(cachedMeasurement.availableHeight, availableHeight) &&
         (!keyedOnOwnerSize || hasSameOwnerSize(cachedMeasurement, ownerWidth, ownerHeight))
       ) {
         cachedResults = cachedMeasurement;
