@@ -1,0 +1,14 @@
+{
+  "name": "baba-yaga-bench",
+  "private": true,
+  "type": "module",
+  "description": "Compares baba-yaga against flexily and yoga-layout; prints the README tables",
+  "scripts": {
+    "bench": "node index.mjs"
+  },
+  "dependencies": {
+    "flexily": "0.7.3",
+    "rolldown": "1.2.9",
+    "yoga-layout": "3.2.1"
+  }
+}
