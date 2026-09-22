@@ -16,7 +16,7 @@ export class LayoutResults {
   lastOwnerDirection: Direction = Direction.Inherit;
 
   nextCachedMeasurementsIndex: number = 0;
-  cachedMeasurements: CachedMeasurement[] = newCachedMeasurements();
+  cachedMeasurements: CachedMeasurement[] = [];
 
   cachedLayout: CachedMeasurement = new CachedMeasurement();
 
@@ -74,6 +74,25 @@ export class LayoutResults {
     measurements[0] = promoted;
   }
 
+  /**
+   * Takes an unused measurement cache entry, or recycles the least recently
+   * used one once the cache is full, and puts it first for the next probe.
+   * Entries are allocated only when a node actually needs them.
+   */
+  takeCachedMeasurement(): CachedMeasurement {
+    if (this.nextCachedMeasurementsIndex < LayoutResults.MaxCachedMeasurements) {
+      if (this.nextCachedMeasurementsIndex === this.cachedMeasurements.length) {
+        this.cachedMeasurements.push(new CachedMeasurement());
+      }
+      this.nextCachedMeasurementsIndex++;
+    }
+
+    const last = this.nextCachedMeasurementsIndex - 1;
+    const measurement = this.cachedMeasurements[last]!;
+    this.promoteCachedMeasurement(last);
+    return measurement;
+  }
+
   /** Back to the state of a new `LayoutResults`, without allocating. */
   reset(): void {
     this.computedFlexBasisGeneration = 0;
@@ -82,7 +101,7 @@ export class LayoutResults {
     this.configVersion = 0;
     this.lastOwnerDirection = Direction.Inherit;
     this.nextCachedMeasurementsIndex = 0;
-    for (let i = 0; i < LayoutResults.MaxCachedMeasurements; i++) {
+    for (let i = 0; i < this.cachedMeasurements.length; i++) {
       this.cachedMeasurements[i]!.reset();
     }
     this.cachedLayout.reset();
@@ -106,11 +125,3 @@ export class LayoutResults {
 }
 
 type PhysicalEdges = [number, number, number, number];
-
-function newCachedMeasurements(): CachedMeasurement[] {
-  const measurements: CachedMeasurement[] = [];
-  for (let i = 0; i < LayoutResults.MaxCachedMeasurements; i++) {
-    measurements.push(new CachedMeasurement());
-  }
-  return measurements;
-}

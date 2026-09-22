@@ -2809,14 +2809,7 @@ export function calculateLayoutInternal(
         // Use the single layout cache entry.
         newCacheEntry = layout.cachedLayout;
       } else {
-        // Take an unused measurement cache entry, or the one that went unused
-        // the longest, and put it first.
-        if (layout.nextCachedMeasurementsIndex < LayoutResults.MaxCachedMeasurements) {
-          layout.nextCachedMeasurementsIndex++;
-        }
-        const last = layout.nextCachedMeasurementsIndex - 1;
-        newCacheEntry = layout.cachedMeasurements[last]!;
-        layout.promoteCachedMeasurement(last);
+        newCacheEntry = layout.takeCachedMeasurement();
       }
 
       newCacheEntry.availableWidth = availableWidth;
