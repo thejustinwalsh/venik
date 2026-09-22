@@ -24,3 +24,15 @@ export function inexactEquals(a: number, b: number): boolean {
   }
   return a !== a && b !== b;
 }
+
+/**
+ * Whether two available sizes are the same question to put to the algorithm.
+ * Sizes within the epsilon are, with one exception: a node measured under a
+ * fit-content mode takes the size it is given when that size is zero or less,
+ * and works its content out when it is more (`isFixedSize`). Two sizes on
+ * either side of that step have different answers however close they are, so a
+ * result found for one must not be handed to the other.
+ */
+export function sameAvailableSize(a: number, b: number): boolean {
+  return inexactEquals(a, b) && a <= 0 === b <= 0;
+}

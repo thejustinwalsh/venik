@@ -17,7 +17,7 @@ import { Event, LayoutData, LayoutPassReason, LayoutType } from "../event/event.
 import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
 import { LayoutResults } from "../node/LayoutResults.ts";
 import type { Node } from "../node/Node.ts";
-import { inexactEquals, maxOrDefined, minOrDefined } from "../math.ts";
+import { inexactEquals, maxOrDefined, minOrDefined, sameAvailableSize } from "../math.ts";
 import type { Style } from "../style/Style.ts";
 import type { StyleLength } from "../style/StyleLength.ts";
 import { layoutAbsoluteDescendants } from "./AbsoluteLayout.ts";
@@ -2714,8 +2714,8 @@ export function calculateLayoutInternal(
     );
   } else if (performLayout) {
     if (
-      inexactEquals(layout.cachedLayout.availableWidth, availableWidth) &&
-      inexactEquals(layout.cachedLayout.availableHeight, availableHeight) &&
+      sameAvailableSize(layout.cachedLayout.availableWidth, availableWidth) &&
+      sameAvailableSize(layout.cachedLayout.availableHeight, availableHeight) &&
       layout.cachedLayout.widthSizingMode === widthSizingMode &&
       layout.cachedLayout.heightSizingMode === heightSizingMode &&
       (!node.style.dependsOnOwnerSize ||
@@ -2728,8 +2728,8 @@ export function calculateLayoutInternal(
     for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
       const cachedMeasurement = layout.cachedMeasurements[i]!;
       if (
-        inexactEquals(cachedMeasurement.availableWidth, availableWidth) &&
-        inexactEquals(cachedMeasurement.availableHeight, availableHeight) &&
+        sameAvailableSize(cachedMeasurement.availableWidth, availableWidth) &&
+        sameAvailableSize(cachedMeasurement.availableHeight, availableHeight) &&
         cachedMeasurement.widthSizingMode === widthSizingMode &&
         cachedMeasurement.heightSizingMode === heightSizingMode &&
         (!keyedOnOwnerSize || hasSameOwnerSize(cachedMeasurement, ownerWidth, ownerHeight))

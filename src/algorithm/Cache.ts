@@ -50,6 +50,11 @@ function newSizeIsStricterAndStillValid(
  * already equal skip the rounding, which is most cache probes.
  */
 function isSameAvailableSize(lastSize: number, size: number, pointScaleFactor: number): boolean {
+  // A size of zero or less and a positive one are never the same question,
+  // however close: `isFixedSize` answers them differently.
+  if (lastSize <= 0 !== size <= 0) {
+    return false;
+  }
   if (inexactEquals(lastSize, size)) {
     return true;
   }
