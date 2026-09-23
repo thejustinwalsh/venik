@@ -20,15 +20,27 @@ Some properties depend on a node other than the one they are applied to. A perce
 
 In the example, the middle node is static, so the absolute node inside it is positioned against the root: its width is half the root's padding box and it sits 10 points above the root's bottom padding edge. Change the middle node to `position: "relative"` to see it become the containing block.
 
-<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
-  <Node style={{height: 100, width: 100, position: "static"}}>
+<Demo code={`<Node
+    style={{
+        width: 200,
+        height: 200,
+        padding: 10,
+    }}
+>
     <Node
-      style={{
-        height: 25,
-        width: "50%",
-        bottom: 10,
-        position: "absolute",
-      }}
-    />
-  </Node>
+        style={{
+            height: 100,
+            width: 100,
+            position: "static",
+        }}
+    >
+        <Node
+            style={{
+                height: 25,
+                width: "50%",
+                bottom: 10,
+                position: "absolute",
+            }}
+        />
+    </Node>
 </Node>`} />

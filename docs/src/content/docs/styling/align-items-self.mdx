@@ -30,14 +30,27 @@ child.setAlignSelf(Align.FlexEnd);
 ```
 
 <Demo code={`<Node
-  style={{
-    width: 200,
-    height: 250,
-    padding: 10,
-    flexDirection: "column",
-    alignItems: "flex-start",
-  }}
+    style={{
+        width: 200,
+        height: 250,
+        padding: 10,
+        flexDirection: "column",
+        alignItems: "flex-start",
+    }}
 >
-  <Node style={{margin: 5, height: 50, width: 50, alignSelf: "center"}} />
-  <Node style={{margin: 5, height: 50, width: 50}} />
+    <Node
+        style={{
+            margin: 5,
+            height: 50,
+            width: 50,
+            alignSelf: "center",
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            height: 50,
+            width: 50,
+        }}
+    />
 </Node>`} />

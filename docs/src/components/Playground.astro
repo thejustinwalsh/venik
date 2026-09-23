@@ -100,7 +100,7 @@ import { examples } from "../lib/examples.ts";
     font: inherit;
     white-space: pre;
     overflow-wrap: normal;
-    tab-size: 2;
+    tab-size: 4;
     overflow: auto;
   }
   .editor pre {
@@ -661,7 +661,7 @@ import { examples } from "../lib/examples.ts";
     if (event.key !== "Tab") return;
     event.preventDefault();
     const { selectionStart, selectionEnd } = editor;
-    editor.setRangeText("  ", selectionStart, selectionEnd, "end");
+    editor.setRangeText("    ", selectionStart, selectionEnd, "end");
     update();
   });
   editor.addEventListener("mousemove", (event) => {

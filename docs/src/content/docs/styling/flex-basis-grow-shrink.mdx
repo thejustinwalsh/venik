@@ -15,8 +15,19 @@ node.setFlexBasis("25%");
 node.setFlexBasis("auto");
 ```
 
-<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
-  <Node style={{margin: 5, flexBasis: 50}} />
+<Demo code={`<Node
+    style={{
+        width: 200,
+        height: 200,
+        padding: 10,
+    }}
+>
+    <Node
+        style={{
+            margin: 5,
+            flexBasis: 50,
+        }}
+    />
 </Node>`} />
 
 ## Flex grow
@@ -29,9 +40,25 @@ Flex grow accepts any number greater than or equal to `0`. The default is `0`.
 node.setFlexGrow(1);
 ```
 
-<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
-  <Node style={{margin: 5, flexGrow: 0.25}} />
-  <Node style={{margin: 5, flexGrow: 0.75}} />
+<Demo code={`<Node
+    style={{
+        width: 200,
+        height: 200,
+        padding: 10,
+    }}
+>
+    <Node
+        style={{
+            margin: 5,
+            flexGrow: 0.25,
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            flexGrow: 0.75,
+        }}
+    />
 </Node>`} />
 
 ## Flex shrink
@@ -44,9 +71,27 @@ Flex shrink accepts any number greater than or equal to `0`. As in CSS, the defa
 node.setFlexShrink(0);
 ```
 
-<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
-  <Node style={{margin: 5, flexShrink: 5, width: 150}} />
-  <Node style={{margin: 5, flexShrink: 10, width: 150}} />
+<Demo code={`<Node
+    style={{
+        width: 200,
+        height: 200,
+        padding: 10,
+    }}
+>
+    <Node
+        style={{
+            margin: 5,
+            flexShrink: 5,
+            width: 150,
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            flexShrink: 10,
+            width: 150,
+        }}
+    />
 </Node>`} />
 
 ## Flex

@@ -20,14 +20,19 @@ How an inset moves the node depends on its [position type](../position/):
 
 When a node has a fixed size and opposite insets are both set, for example left and right, the left and top edges win.
 
-<Demo code={`<Node style={{width: 200, height: 200}}>
-  <Node
+<Demo code={`<Node
     style={{
-      height: 50,
-      width: 50,
-      top: 50,
-      left: 50,
-      position: "relative",
+        width: 200,
+        height: 200,
     }}
-  />
+>
+    <Node
+        style={{
+            height: 50,
+            width: 50,
+            top: 50,
+            left: 50,
+            position: "relative",
+        }}
+    />
 </Node>`} />

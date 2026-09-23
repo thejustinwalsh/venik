@@ -16,7 +16,25 @@ Aspect ratio is the ratio between a node's [width and height](../width-height/):
 node.setAspectRatio(16 / 9);
 ```
 
-<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
-  <Node style={{margin: 5, height: 50, aspectRatio: 1}} />
-  <Node style={{margin: 5, height: 50, aspectRatio: 1.5}} />
+<Demo code={`<Node
+    style={{
+        width: 200,
+        height: 200,
+        padding: 10,
+    }}
+>
+    <Node
+        style={{
+            margin: 5,
+            height: 50,
+            aspectRatio: 1,
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            height: 50,
+            aspectRatio: 1.5,
+        }}
+    />
 </Node>`} />

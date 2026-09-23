@@ -18,13 +18,25 @@ node.setDisplay(Display.None);
 ```
 
 <Demo code={`<Node
-  style={{
-    width: 200,
-    height: 200,
-    padding: 10,
-    flexDirection: "column",
-  }}
+    style={{
+        width: 200,
+        height: 200,
+        padding: 10,
+        flexDirection: "column",
+    }}
 >
-  <Node style={{margin: 5, height: 50, display: "none"}} />
-  <Node style={{margin: 5, height: 50, display: "flex"}} />
+    <Node
+        style={{
+            margin: 5,
+            height: 50,
+            display: "none",
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            height: 50,
+            display: "flex",
+        }}
+    />
 </Node>`} />

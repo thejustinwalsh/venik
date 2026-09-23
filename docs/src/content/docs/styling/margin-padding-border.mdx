@@ -19,20 +19,24 @@ node.setBorder(Edge.Bottom, 2);
 ```
 
 <Demo code={`<Node
-  style={{
-    width: 200,
-    height: 200,
-    padding: 10,
-    flexDirection: "column",
-  }}
->
-  <Node
     style={{
-      margin: 5,
-      padding: 20,
-      borderWidth: 20,
-      height: 50,
+        width: 200,
+        height: 200,
+        padding: 10,
+        flexDirection: "column",
     }}
-  />
-  <Node style={{height: 50}} />
+>
+    <Node
+        style={{
+            margin: 5,
+            padding: 20,
+            borderWidth: 20,
+            height: 50,
+        }}
+    />
+    <Node
+        style={{
+            height: 50,
+        }}
+    />
 </Node>`} />

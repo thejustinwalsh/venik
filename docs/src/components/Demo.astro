@@ -6,16 +6,27 @@
  */
 interface Props {
   code: string;
-  /** Height of the panes in pixels. */
-  height?: number;
+  /** Minimum height of the panes in pixels; the editor grows to fit its code. */
+  minHeight?: number;
 }
-const { code, height = 260 } = Astro.props;
+const { code, minHeight = 220 } = Astro.props;
 ---
 
-<div class="demo" style={`--demo-height: ${height}px`}>
+<div class="demo" style={`--demo-min-height: ${minHeight}px`}>
   <div class="editor">
     <pre class="hl" aria-hidden="true"><code></code></pre>
     <textarea spellcheck="false" wrap="off" autocomplete="off" autocapitalize="off" aria-label="Layout source" set:text={code.trim()} />
+    <div class="tweak" hidden>
+      <span class="key"></span>
+      <select class="unit" aria-label="Unit">
+        <option value="px">px</option>
+        <option value="%">%</option>
+        <option value="auto">auto</option>
+      </select>
+      <input type="range" aria-label="Value" />
+      <input type="number" aria-label="Value" />
+      <select class="options" aria-label="Value"></select>
+    </div>
   </div>
   <div class="preview"><canvas></canvas></div>
   <div class="status"></div>
@@ -25,7 +36,7 @@ const { code, height = 260 } = Astro.props;
   .demo {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: var(--demo-height) auto;
+    grid-template-rows: auto auto;
     margin: 0 0 20px;
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -35,12 +46,12 @@ const { code, height = 260 } = Astro.props;
   @media (max-width: 700px) {
     .demo {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: var(--demo-height) var(--demo-height) auto;
+      grid-template-rows: auto auto auto;
     }
   }
   .editor {
     position: relative;
-    min-height: 0;
+    min-height: var(--demo-min-height);
     border-right: 1px solid var(--border);
     font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
@@ -50,16 +61,16 @@ const { code, height = 260 } = Astro.props;
       border-bottom: 1px solid var(--border);
     }
   }
+  /* The highlighted copy sits in normal flow and sizes the pane to the code;
+     the textarea is laid over it, so the whole example is always visible. */
   .editor pre,
   .editor textarea {
-    position: absolute;
-    inset: 0;
     margin: 0;
     padding: 12px 14px;
     font: inherit;
     white-space: pre;
     overflow-wrap: normal;
-    tab-size: 2;
+    tab-size: 4;
     overflow: auto;
     border: 0;
     border-radius: 0;
@@ -68,8 +79,11 @@ const { code, height = 260 } = Astro.props;
   .editor pre {
     pointer-events: none;
     overflow: hidden;
+    min-height: var(--demo-min-height);
   }
   .editor textarea {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
@@ -97,8 +111,47 @@ const { code, height = 260 } = Astro.props;
   .editor :global(.tk-string) { color: var(--tk-string); }
   .editor :global(.tk-comment) { color: var(--tk-comment); font-style: italic; }
   .editor :global(.tk-punct) { color: var(--tk-punct); }
+  .tweak {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: nowrap;
+  }
+  .tweak[hidden] {
+    display: none;
+  }
+  .tweak .key {
+    color: var(--tk-key);
+  }
+  .tweak input[type="range"] {
+    width: 160px;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+  .tweak input[type="number"] {
+    width: 64px;
+  }
+  .tweak input,
+  .tweak select {
+    font: inherit;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 4px;
+  }
   .preview {
-    min-height: 0;
+    min-height: var(--demo-min-height);
     overflow: auto;
     padding: 16px;
     background-image: radial-gradient(var(--border) 1px, transparent 1px);
@@ -123,8 +176,8 @@ const { code, height = 260 } = Astro.props;
 
 <script>
   import { Direction, Node } from "baba-yaga";
-  import { highlight, LineIndex, parse, ParseError, type Element as SourceElement } from "../lib/jsx.ts";
-  import { applyStyle, StyleError } from "../lib/style.ts";
+  import { highlight, LineIndex, parse, ParseError, type Element as SourceElement, type StyleEntry } from "../lib/jsx.ts";
+  import { applyStyle, StyleError, styleSpec, type StyleSpec } from "../lib/style.ts";
 
   type Box = { node: Node; depth: number; lines: number[]; x: number; y: number; width: number; height: number };
 
@@ -135,8 +188,17 @@ const { code, height = 260 } = Astro.props;
     const stage = demo.querySelector<HTMLCanvasElement>("canvas")!;
     const status = demo.querySelector<HTMLElement>(".status")!;
     const ctx = stage.getContext("2d")!;
+    const tweak = demo.querySelector<HTMLElement>(".tweak")!;
+    const tweakKey = tweak.querySelector<HTMLElement>(".key")!;
+    const tweakUnit = tweak.querySelector<HTMLSelectElement>(".unit")!;
+    const tweakRange = tweak.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const tweakNumber = tweak.querySelector<HTMLInputElement>('input[type="number"]')!;
+    const tweakOptions = tweak.querySelector<HTMLSelectElement>(".options")!;
 
     let boxes: Box[] = [];
+    /** The last successful parse, for the caret-driven controls. */
+    let parsedRoot: SourceElement | null = null;
+    let lineIndex = new LineIndex("");
     let boxOf = new Map<Node, Box>();
     let hot: Box | null = null;
     let rootSize = { width: 0, height: 0 };
@@ -249,6 +311,8 @@ const { code, height = 260 } = Astro.props;
         root = build(parsed.root, 0, built, lines);
       } catch (error) {
         if (!(error instanceof ParseError)) throw error;
+        parsedRoot = null;
+        hideTweak();
         code.innerHTML = highlight(source, error.tokens);
         status.textContent = `Line ${lines.lineOf(error.offset) + 1}: ${error.message}`;
         status.classList.add("error");
@@ -256,6 +320,8 @@ const { code, height = 260 } = Astro.props;
         draw();
         return;
       }
+      parsedRoot = parsed.root;
+      lineIndex = lines;
       code.innerHTML = highlight(source, parsed.tokens);
       root.calculateLayout(undefined, undefined, Direction.LTR);
       boxes = built;
@@ -269,15 +335,172 @@ const { code, height = 260 } = Astro.props;
       status.classList.remove("error");
     }
 
-    editor.addEventListener("input", update);
+    // Caret-driven controls, as on the examples page: a slider for numbers and
+    // lengths, a select for enums, editing the value under the caret in place.
+    type Tweaking = { entry: StyleEntry; spec: StyleSpec };
+    let tweaking: Tweaking | null = null;
+    let charWidth = 0;
+
+    function entryAt(offset: number): StyleEntry | null {
+      const visit = (element: SourceElement): StyleEntry | null => {
+        for (const entry of element.style) {
+          if (entry.span.start <= offset && offset <= entry.span.end) return entry;
+        }
+        for (const child of element.children) {
+          const found = visit(child);
+          if (found !== null) return found;
+        }
+        return null;
+      };
+      return parsedRoot === null ? null : visit(parsedRoot);
+    }
+    function hideTweak(): void {
+      tweak.hidden = true;
+      tweaking = null;
+    }
+    const unitOf = (value: string | number): "px" | "%" | "auto" =>
+      typeof value === "number" ? "px" : value === "auto" ? "auto" : "%";
+    function configureRange(min: number, max: number, step: number, value: number, grow = true): void {
+      tweakRange.min = String(Math.min(min, value));
+      tweakRange.max = String(Math.max(max, grow ? Math.ceil(value * 2) : value));
+      tweakRange.step = String(step);
+      tweakRange.value = String(value);
+      tweakNumber.min = tweakRange.min;
+      tweakNumber.step = tweakRange.step;
+      tweakNumber.value = String(value);
+    }
+    function showTweak(entry: StyleEntry): void {
+      const spec = styleSpec(entry.key);
+      if (spec === undefined) return hideTweak();
+      const same =
+        tweaking !== null && tweaking.entry.key === entry.key && tweaking.entry.valueSpan.start === entry.valueSpan.start;
+      tweaking = { entry, spec };
+      tweakKey.textContent = entry.key;
+      const { value } = entry;
+      if (spec.kind === "enum") {
+        if (!same) tweakOptions.replaceChildren(...Object.keys(spec.options).map((name) => new Option(name, name)));
+        tweakOptions.value = String(value);
+        tweakOptions.hidden = false;
+        tweakUnit.hidden = tweakRange.hidden = tweakNumber.hidden = true;
+      } else if (spec.kind === "number") {
+        const n = typeof value === "number" ? value : 0;
+        if (!same) configureRange(spec.min, spec.max, spec.step, n);
+        else tweakRange.value = tweakNumber.value = String(n);
+        tweakRange.hidden = tweakNumber.hidden = false;
+        tweakUnit.hidden = tweakOptions.hidden = true;
+      } else {
+        const unit = unitOf(value);
+        tweakUnit.value = unit;
+        (tweakUnit.options[2] as HTMLOptionElement).hidden = !spec.auto;
+        tweakUnit.hidden = false;
+        tweakOptions.hidden = true;
+        if (unit === "auto") {
+          tweakRange.hidden = tweakNumber.hidden = true;
+        } else {
+          const n = typeof value === "number" ? value : parseFloat(value);
+          const percent = unit === "%";
+          if (!same || tweakRange.dataset.unit !== unit) {
+            configureRange(spec.negative ? (percent ? -100 : -200) : 0, percent ? 100 : 500, 1, n, !percent);
+            tweakRange.dataset.unit = unit;
+          } else {
+            tweakRange.value = tweakNumber.value = String(n);
+          }
+          tweakRange.hidden = tweakNumber.hidden = false;
+        }
+      }
+      tweak.hidden = false;
+      placeTweak();
+    }
+    function placeTweak(): void {
+      if (tweaking === null) return;
+      if (charWidth === 0) {
+        const probe = document.createElement("span");
+        probe.textContent = "0".repeat(100);
+        code.appendChild(probe);
+        charWidth = probe.getBoundingClientRect().width / 100;
+        probe.remove();
+      }
+      const style = getComputedStyle(editor);
+      const lineHeight = parseFloat(style.lineHeight);
+      const { start } = tweaking.entry.span;
+      const line = lineIndex.lineOf(start);
+      const column = start - editor.value.lastIndexOf("\n", start - 1) - 1;
+      let top = parseFloat(style.paddingTop) + (line + 1) * lineHeight - editor.scrollTop + 4;
+      // The pane clips at its bottom edge, so flip above the line when needed.
+      if (top + tweak.offsetHeight > editor.clientHeight) {
+        top = parseFloat(style.paddingTop) + line * lineHeight - editor.scrollTop - tweak.offsetHeight - 4;
+      }
+      const left = parseFloat(style.paddingLeft) + column * charWidth - editor.scrollLeft;
+      const maxLeft = Math.max(0, editor.clientWidth - tweak.offsetWidth - 8);
+      tweak.style.top = `${Math.max(4, top)}px`;
+      tweak.style.left = `${Math.min(Math.max(8, left), maxLeft)}px`;
+    }
+    function writeValue(text: string): void {
+      if (tweaking === null) return;
+      const { start, end } = tweaking.entry.valueSpan;
+      editor.value = editor.value.slice(0, start) + text + editor.value.slice(end);
+      editor.setSelectionRange(start, start + text.length);
+      update();
+      const entry = entryAt(start);
+      if (entry === null) hideTweak();
+      else showTweak(entry);
+    }
+    const quoteOf = (entry: StyleEntry) => (editor.value[entry.valueSpan.start] === "'" ? "'" : '"');
+    function writeNumber(text: string): void {
+      if (tweaking === null || text === "" || Number.isNaN(Number(text))) return;
+      const n = String(Number(text));
+      if (tweaking.spec.kind === "length" && tweakUnit.value === "%") {
+        const q = quoteOf(tweaking.entry);
+        writeValue(`${q}${n}%${q}`);
+      } else {
+        writeValue(n);
+      }
+    }
+    function onCaret(): void {
+      if (document.activeElement !== editor) return;
+      const entry = entryAt(editor.selectionStart);
+      if (entry === null) hideTweak();
+      else showTweak(entry);
+    }
+    tweakRange.addEventListener("input", () => writeNumber(tweakRange.value));
+    tweakNumber.addEventListener("input", () => writeNumber(tweakNumber.value));
+    tweakOptions.addEventListener("change", () => {
+      if (tweaking === null) return;
+      const q = quoteOf(tweaking.entry);
+      writeValue(`${q}${tweakOptions.value}${q}`);
+    });
+    tweakUnit.addEventListener("change", () => {
+      if (tweaking === null) return;
+      const { value } = tweaking.entry;
+      const n = typeof value === "number" ? value : parseFloat(value) || 0;
+      const q = quoteOf(tweaking.entry);
+      if (tweakUnit.value === "auto") writeValue(`${q}auto${q}`);
+      else if (tweakUnit.value === "%") writeValue(`${q}${Math.min(100, Math.max(-100, n))}%${q}`);
+      else writeValue(String(n));
+    });
+    document.addEventListener("selectionchange", onCaret);
+    editor.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") hideTweak();
+    });
+    // Clicking elsewhere hides the controls; clicking the controls themselves keeps them.
+    editor.addEventListener("blur", (event) => {
+      const next = event.relatedTarget;
+      if (!(next instanceof Element && tweak.contains(next))) hideTweak();
+    });
+
+    editor.addEventListener("input", () => {
+      update();
+      onCaret();
+    });
     editor.addEventListener("scroll", () => {
       code.parentElement!.scrollTop = editor.scrollTop;
       code.parentElement!.scrollLeft = editor.scrollLeft;
+      placeTweak();
     });
     editor.addEventListener("keydown", (event) => {
       if (event.key !== "Tab") return;
       event.preventDefault();
-      editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
+      editor.setRangeText("    ", editor.selectionStart, editor.selectionEnd, "end");
       update();
     });
     stage.addEventListener("mousemove", (event) => {

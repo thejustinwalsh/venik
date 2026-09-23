@@ -15,16 +15,46 @@ node.setMaxHeight("50%");
 Note that baba-yaga, like Yoga, has no automatic minimum size: an unset `min-width` or `min-height` behaves as `0`, so a flex item can shrink below its content. Set an explicit minimum to prevent that.
 
 <Demo code={`<Node
-  style={{
-    width: 200,
-    height: 250,
-    padding: 10,
-    flexDirection: "column",
-  }}
+    style={{
+        width: 200,
+        height: 250,
+        padding: 10,
+        flexDirection: "column",
+    }}
 >
-  <Node style={{margin: 5, height: 25}} />
-  <Node style={{margin: 5, height: 100, maxHeight: 25}} />
-  <Node style={{margin: 5, height: 25, minHeight: 50}} />
-  <Node style={{margin: 5, height: 25, maxWidth: 25}} />
-  <Node style={{margin: 5, height: 25, width: 25, minWidth: 50}} />
+    <Node
+        style={{
+            margin: 5,
+            height: 25,
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            height: 100,
+            maxHeight: 25,
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            height: 25,
+            minHeight: 50,
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            height: 25,
+            maxWidth: 25,
+        }}
+    />
+    <Node
+        style={{
+            margin: 5,
+            height: 25,
+            width: 25,
+            minWidth: 50,
+        }}
+    />
 </Node>`} />
