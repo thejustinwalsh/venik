@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Base title="Home">
+  <section class="home">
+    <h1>baba-yaga</h1>
+    <p>Layout engine built for JavaScript games.</p>
+    <p><a href={`${base}/examples/`}>Try the interactive examples →</a></p>
+  </section>
+</Base>
+
+<style>
+  .home {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 20px;
+  }
+</style>

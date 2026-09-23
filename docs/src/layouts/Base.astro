@@ -1,0 +1,110 @@
+---
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · baba-yaga</title>
+    <style is:global>
+      :root {
+        color-scheme: light dark;
+        --bg: #fafafa;
+        --fg: #1f2328;
+        --muted: #6b7280;
+        --border: #d0d7de;
+        --panel: #ffffff;
+        --accent: #0969da;
+        --hot: rgba(9, 105, 218, 0.14);
+        --error: #cf222e;
+        --tk-tag: #116329;
+        --tk-attr: #953800;
+        --tk-key: #0550ae;
+        --tk-number: #8250df;
+        --tk-string: #0a3069;
+        --tk-comment: #6e7781;
+        --tk-punct: #57606a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --fg: #e6edf3;
+          --muted: #8b949e;
+          --border: #30363d;
+          --panel: #161b22;
+          --accent: #58a6ff;
+          --hot: rgba(88, 166, 255, 0.18);
+          --error: #ff7b72;
+          --tk-tag: #7ee787;
+          --tk-attr: #ffa657;
+          --tk-key: #79c0ff;
+          --tk-number: #d2a8ff;
+          --tk-string: #a5d6ff;
+          --tk-comment: #8b949e;
+          --tk-punct: #c9d1d9;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+      a {
+        color: var(--accent);
+      }
+      header.top {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+      }
+      header.top .brand {
+        font-weight: 600;
+        color: var(--fg);
+        text-decoration: none;
+      }
+      header.top nav a {
+        margin-right: 14px;
+        text-decoration: none;
+      }
+      header.top nav a[aria-current="page"] {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      main {
+        flex: 1;
+        min-height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href={`${base}/`}>baba-yaga</a>
+      <nav>
+        <a href={`${base}/examples/`} aria-current={Astro.url.pathname.startsWith(`${base}/examples`) ? "page" : undefined}>Examples</a>
+        <a href="https://github.com/koteelok/baba-yaga">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

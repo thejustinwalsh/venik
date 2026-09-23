@@ -1,0 +1,692 @@
+---
+import { examples } from "../lib/examples.ts";
+---
+
+<div class="playground">
+  <aside class="examples">
+    {examples.map((e) => <button type="button" data-id={e.id}>{e.title}</button>)}
+  </aside>
+  <section class="editor-pane">
+    <div class="editor">
+      <pre class="hl" aria-hidden="true"><code></code></pre>
+      <textarea spellcheck="false" wrap="off" autocomplete="off" autocapitalize="off"></textarea>
+      <div class="tweak" hidden>
+        <span class="key"></span>
+        <select class="unit" aria-label="Unit">
+          <option value="px">px</option>
+          <option value="%">%</option>
+          <option value="auto">auto</option>
+        </select>
+        <input type="range" aria-label="Value" />
+        <input type="number" aria-label="Value" />
+        <select class="options" aria-label="Value"></select>
+      </div>
+    </div>
+    <div class="status"></div>
+  </section>
+  <section class="preview-pane">
+    <div class="preview"><canvas class="stage"></canvas></div>
+    <div class="info"></div>
+  </section>
+</div>
+
+<style>
+  .playground {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr) minmax(0, 1fr);
+    height: 100%;
+  }
+  @media (max-width: 900px) {
+    .playground {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto minmax(320px, 1fr) minmax(320px, 1fr);
+      height: auto;
+      min-height: 100%;
+    }
+    .examples {
+      flex-direction: row;
+      flex-wrap: wrap;
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+  }
+  .examples {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .examples button {
+    text-align: left;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--fg);
+    font: inherit;
+    cursor: pointer;
+  }
+  .examples button:hover {
+    background: var(--hot);
+  }
+  .examples button[aria-current="true"] {
+    background: var(--accent);
+    color: #fff;
+  }
+  .editor-pane,
+  .preview-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .editor-pane {
+    border-right: 1px solid var(--border);
+  }
+  .editor {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--panel);
+  }
+  .editor pre,
+  .editor textarea {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 12px 16px;
+    font: inherit;
+    white-space: pre;
+    overflow-wrap: normal;
+    tab-size: 2;
+    overflow: auto;
+  }
+  .editor pre {
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .editor textarea {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    color: transparent;
+    caret-color: var(--fg);
+    border: 0;
+    outline: 0;
+    resize: none;
+  }
+  .editor textarea::selection {
+    background: rgba(128, 128, 128, 0.35);
+  }
+  .editor :global(.line) {
+    display: block;
+    min-height: 1lh;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+  .editor :global(.line.hot) {
+    background: var(--hot);
+  }
+  .editor :global(.tk-tag) {
+    color: var(--tk-tag);
+  }
+  .editor :global(.tk-attr) {
+    color: var(--tk-attr);
+  }
+  .editor :global(.tk-key) {
+    color: var(--tk-key);
+  }
+  .editor :global(.tk-number) {
+    color: var(--tk-number);
+  }
+  .editor :global(.tk-string) {
+    color: var(--tk-string);
+  }
+  .editor :global(.tk-comment) {
+    color: var(--tk-comment);
+    font-style: italic;
+  }
+  .editor :global(.tk-punct) {
+    color: var(--tk-punct);
+  }
+  .tweak {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: nowrap;
+  }
+  .tweak[hidden] {
+    /* The `display: flex` above would otherwise win over the UA `[hidden]` rule. */
+    display: none;
+  }
+  .tweak .key {
+    color: var(--tk-key);
+  }
+  .tweak input[type="range"] {
+    width: 180px;
+    margin: 0;
+  }
+  .tweak input[type="number"] {
+    width: 64px;
+  }
+  .tweak input,
+  .tweak select {
+    font: inherit;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 4px;
+  }
+  .tweak input[type="range"] {
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+  .status,
+  .info {
+    padding: 6px 16px;
+    border-top: 1px solid var(--border);
+    font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--muted);
+    min-height: 32px;
+    white-space: pre-wrap;
+  }
+  .status.error {
+    color: var(--error);
+  }
+  .preview {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 20px;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .stage {
+    display: block;
+  }
+</style>
+
+<script>
+  import { Direction, Node } from "baba-yaga";
+  import { examples } from "../lib/examples.ts";
+  import {
+    highlight,
+    LineIndex,
+    parse,
+    ParseError,
+    type Element as SourceElement,
+    type StyleEntry,
+  } from "../lib/jsx.ts";
+  import { applyStyle, StyleError, styleSpec, type StyleSpec } from "../lib/style.ts";
+
+  const $ = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
+  const editor = $<HTMLTextAreaElement>(".editor textarea");
+  const code = $<HTMLElement>(".editor pre code");
+  const status = $<HTMLElement>(".status");
+  const preview = $<HTMLElement>(".preview");
+  const stage = $<HTMLCanvasElement>(".stage");
+  const ctx = stage.getContext("2d")!;
+  const info = $<HTMLElement>(".info");
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>(".examples button"));
+  const tweak = $<HTMLElement>(".tweak");
+  const tweakKey = $<HTMLElement>(".tweak .key");
+  const tweakUnit = $<HTMLSelectElement>(".tweak .unit");
+  const tweakRange = $<HTMLInputElement>('.tweak input[type="range"]');
+  const tweakNumber = $<HTMLInputElement>('.tweak input[type="number"]');
+  const tweakOptions = $<HTMLSelectElement>(".tweak .options");
+
+  /** A laid out node with its rectangle in root coordinates. */
+  type Box = {
+    source: SourceElement;
+    node: Node;
+    depth: number;
+    lines: number[];
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+
+  let boxes: Box[] = [];
+  let boxOf = new Map<Node, Box>();
+  let lineToBox: (Box | undefined)[] = [];
+  let hot: Box | null = null;
+  let rootSize = { width: 0, height: 0 };
+  /** The preview is drawn at half opacity while the source does not parse. */
+  let stale = false;
+  let scale = 1;
+  /** The last successful parse, for the caret-driven controls. */
+  let parsedRoot: SourceElement | null = null;
+  let lineIndex = new LineIndex("");
+
+  /** A bare node tree for `source`, with no boxes attached. */
+  function nodesOnly(source: SourceElement): Node {
+    const node = new Node();
+    for (const entry of source.style) applyStyle(node, entry.key, entry.value);
+    source.children.forEach((child, index) => node.insertChild(nodesOnly(child), index));
+    return node;
+  }
+
+  /**
+   * Microseconds one run of `sample` takes, where `sample` does the work and
+   * returns the milliseconds it measured. `performance.now()` is coarsened to
+   * 100 µs in browsers, so work under a millisecond is repeated for about
+   * 10 ms and averaged; slower work is measured once.
+   */
+  function timeAverage(sample: () => number): number {
+    let total = 0;
+    let runs = 0;
+    const started = performance.now();
+    do {
+      total += sample();
+      runs++;
+    } while (total < 1 && performance.now() - started < 10 && runs < 5000);
+    return Math.max(0, (total / runs) * 1000);
+  }
+
+  /** Microseconds one from-scratch layout of `source` takes, excluding building the tree. */
+  function timeLayout(source: SourceElement): number {
+    return timeAverage(() => {
+      const root = nodesOnly(source);
+      const t0 = performance.now();
+      root.calculateLayout(undefined, undefined, Direction.LTR);
+      return performance.now() - t0;
+    });
+  }
+
+  const formatTime = (us: number) =>
+    us >= 1000 ? `${(us / 1000).toFixed(2)} ms` : us < 10 ? `${us.toFixed(1)} µs` : `${us.toFixed(0)} µs`;
+
+  function buildNodes(source: SourceElement, depth: number, out: Box[], lines: LineIndex): Node {
+    const node = new Node();
+    for (const entry of source.style) {
+      try {
+        applyStyle(node, entry.key, entry.value);
+      } catch (error) {
+        if (error instanceof StyleError) {
+          throw new ParseError(error.message, entry.span.start, []);
+        }
+        throw error;
+      }
+    }
+    const ownLines = lines.linesOf(source.open);
+    if (source.close !== null) ownLines.push(...lines.linesOf(source.close));
+    out.push({ source, node, depth, lines: ownLines, x: 0, y: 0, width: 0, height: 0 });
+    source.children.forEach((child, index) => {
+      node.insertChild(buildNodes(child, depth + 1, out, lines), index);
+    });
+    return node;
+  }
+
+  /** Resolves the engine's parent-relative positions into root coordinates. */
+  function place(box: Box, originX: number, originY: number): void {
+    const { node } = box;
+    box.x = originX + node.getComputedLeft();
+    box.y = originY + node.getComputedTop();
+    box.width = node.getComputedWidth();
+    box.height = node.getComputedHeight();
+    for (const child of node.getChildren()) {
+      const childBox = boxOf.get(child);
+      if (childBox !== undefined) place(childBox, box.x, box.y);
+    }
+  }
+
+  /** Sizes the canvas so the root fits the pane, then draws every box. */
+  function draw(): void {
+    const style = getComputedStyle(preview);
+    const availableWidth = preview.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const availableHeight = preview.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    scale = Math.min(1, availableWidth / Math.max(1, rootSize.width), availableHeight / Math.max(1, rootSize.height));
+    const cssWidth = Math.ceil(rootSize.width * scale);
+    const cssHeight = Math.ceil(rootSize.height * scale);
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.round(cssWidth * dpr));
+    const height = Math.max(1, Math.round(cssHeight * dpr));
+    // Resizing reallocates the backing store, so only do it when needed.
+    if (stage.width !== width || stage.height !== height) {
+      stage.style.width = `${cssWidth}px`;
+      stage.style.height = `${cssHeight}px`;
+      stage.width = width;
+      stage.height = height;
+    }
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+    ctx.clearRect(0, 0, rootSize.width, rootSize.height);
+    ctx.globalAlpha = stale ? 0.5 : 1;
+    // Boxes are in preorder, so parents are drawn under their children.
+    for (const box of boxes) {
+      const hue = (200 + box.depth * 47) % 360;
+      ctx.fillStyle = `hsl(${hue} 70% 55% / 0.25)`;
+      ctx.fillRect(box.x, box.y, box.width, box.height);
+      // A one CSS pixel inset stroke, like an inset box shadow.
+      ctx.strokeStyle = `hsl(${hue} 70% 45%)`;
+      ctx.lineWidth = 1 / scale;
+      const inset = 0.5 / scale;
+      ctx.strokeRect(box.x + inset, box.y + inset, Math.max(0, box.width - 2 * inset), Math.max(0, box.height - 2 * inset));
+    }
+    if (hot !== null) {
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#0969da";
+      ctx.lineWidth = 2 / scale;
+      const gap = 2 / scale;
+      ctx.strokeRect(hot.x - gap, hot.y - gap, hot.width + 2 * gap, hot.height + 2 * gap);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /** The deepest box under a point in canvas CSS pixels, if any. */
+  function boxAt(cssX: number, cssY: number): Box | null {
+    const x = cssX / scale;
+    const y = cssY / scale;
+    let found: Box | null = null;
+    for (const box of boxes) {
+      if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) found = box;
+    }
+    return found;
+  }
+
+  function setHot(box: Box | null): void {
+    if (hot === box) return;
+    if (hot !== null) {
+      for (const line of hot.lines) code.children[line]?.classList.remove("hot");
+    }
+    hot = box;
+    draw();
+    if (box === null) {
+      info.textContent = "";
+      return;
+    }
+    for (const line of box.lines) code.children[line]?.classList.add("hot");
+    const n = box.node;
+    const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(2));
+    info.textContent =
+      `left ${fmt(n.getComputedLeft())}  top ${fmt(n.getComputedTop())}  ` +
+      `width ${fmt(n.getComputedWidth())}  height ${fmt(n.getComputedHeight())}` +
+      (n.getComputedHadOverflow() ? "  (overflows)" : "");
+  }
+
+  function update(): void {
+    const source = editor.value;
+    const lines = new LineIndex(source);
+    setHot(null);
+    let parsed;
+    let built: Box[] = [];
+    let root: Node;
+    try {
+      parsed = parse(source);
+      root = buildNodes(parsed.root, 0, built, lines);
+    } catch (error) {
+      if (!(error instanceof ParseError)) throw error;
+      parsedRoot = null;
+      hideTweak();
+      code.innerHTML = highlight(source, error.tokens);
+      status.textContent = `Line ${lines.lineOf(error.offset) + 1}: ${error.message}`;
+      status.classList.add("error");
+      stale = true;
+      draw();
+      return;
+    }
+    parsedRoot = parsed.root;
+    lineIndex = lines;
+    code.innerHTML = highlight(source, parsed.tokens);
+    root.calculateLayout(undefined, undefined, Direction.LTR);
+    const us = timeLayout(parsed.root);
+
+    boxes = built;
+    boxOf = new Map(built.map((b) => [b.node, b]));
+    place(built[0]!, 0, 0);
+    rootSize = { width: root.getComputedWidth(), height: root.getComputedHeight() };
+    stale = false;
+    draw();
+
+    lineToBox = new Array(lines.count);
+    const boxOfSource = new Map(built.map((b) => [b.source, b]));
+    const assign = (box: Box) => {
+      for (const line of lines.linesOf(box.source.open)) lineToBox[line] = box;
+      for (const child of box.source.children) {
+        const childBox = boxOfSource.get(child);
+        if (childBox !== undefined) assign(childBox);
+      }
+      if (box.source.close !== null) {
+        for (const line of lines.linesOf(box.source.close)) lineToBox[line] ??= box;
+      }
+    };
+    assign(built[0]!);
+
+    status.textContent = `${built.length} node${built.length === 1 ? "" : "s"} · done in ${formatTime(us)}`;
+    status.classList.remove("error");
+  }
+
+  function load(id: string): void {
+    const example = examples.find((e) => e.id === id) ?? examples[0]!;
+    editor.value = example.source;
+    for (const button of buttons) {
+      if (button.dataset.id === example.id) button.setAttribute("aria-current", "true");
+      else button.removeAttribute("aria-current");
+    }
+    editor.scrollTop = 0;
+    editor.scrollLeft = 0;
+    hideTweak();
+    update();
+  }
+
+  // Caret-driven controls: a slider for numbers and lengths, a select for
+  // enums, editing the value under the caret in place.
+  type Tweaking = { entry: StyleEntry; spec: StyleSpec };
+  let tweaking: Tweaking | null = null;
+  let charWidth = 0;
+
+  /** The style entry whose `key: value` text contains the caret. */
+  function entryAt(offset: number): StyleEntry | null {
+    const visit = (element: SourceElement): StyleEntry | null => {
+      for (const entry of element.style) {
+        if (entry.span.start <= offset && offset <= entry.span.end) return entry;
+      }
+      for (const child of element.children) {
+        const found = visit(child);
+        if (found !== null) return found;
+      }
+      return null;
+    };
+    return parsedRoot === null ? null : visit(parsedRoot);
+  }
+
+  function hideTweak(): void {
+    tweak.hidden = true;
+    tweaking = null;
+  }
+
+  const unitOf = (value: string | number): "px" | "%" | "auto" =>
+    typeof value === "number" ? "px" : value === "auto" ? "auto" : "%";
+
+  function configureRange(min: number, max: number, step: number, value: number, grow = true): void {
+    tweakRange.min = String(Math.min(min, value));
+    tweakRange.max = String(Math.max(max, grow ? Math.ceil(value * 2) : value));
+    tweakRange.step = String(step);
+    tweakRange.value = String(value);
+    tweakNumber.min = tweakRange.min;
+    tweakNumber.step = tweakRange.step;
+    tweakNumber.value = String(value);
+  }
+
+  /** Shows the controls for `entry`, keeping them as they are when it is the same value as before. */
+  function showTweak(entry: StyleEntry): void {
+    const spec = styleSpec(entry.key);
+    if (spec === undefined) return hideTweak();
+    const same = tweaking !== null && tweaking.entry.key === entry.key && tweaking.entry.valueSpan.start === entry.valueSpan.start;
+    tweaking = { entry, spec };
+    tweakKey.textContent = entry.key;
+    const { value } = entry;
+    if (spec.kind === "enum") {
+      if (!same) {
+        tweakOptions.replaceChildren(
+          ...Object.keys(spec.options).map((name) => new Option(name, name)),
+        );
+      }
+      tweakOptions.value = String(value);
+      tweakOptions.hidden = false;
+      tweakUnit.hidden = tweakRange.hidden = tweakNumber.hidden = true;
+    } else if (spec.kind === "number") {
+      const n = typeof value === "number" ? value : 0;
+      if (!same) configureRange(spec.min, spec.max, spec.step, n);
+      else tweakRange.value = tweakNumber.value = String(n);
+      tweakRange.hidden = tweakNumber.hidden = false;
+      tweakUnit.hidden = tweakOptions.hidden = true;
+    } else {
+      const unit = unitOf(value);
+      tweakUnit.value = unit;
+      (tweakUnit.options[2] as HTMLOptionElement).hidden = !spec.auto;
+      tweakUnit.hidden = false;
+      tweakOptions.hidden = true;
+      if (unit === "auto") {
+        tweakRange.hidden = tweakNumber.hidden = true;
+      } else {
+        const n = typeof value === "number" ? value : parseFloat(value);
+        const percent = unit === "%";
+        if (!same || tweakRange.dataset.unit !== unit) {
+          configureRange(spec.negative ? (percent ? -100 : -200) : 0, percent ? 100 : 500, 1, n, !percent);
+          tweakRange.dataset.unit = unit;
+        } else {
+          tweakRange.value = tweakNumber.value = String(n);
+        }
+        tweakRange.hidden = tweakNumber.hidden = false;
+      }
+    }
+    tweak.hidden = false;
+    placeTweak();
+  }
+
+  function placeTweak(): void {
+    if (tweaking === null) return;
+    if (charWidth === 0) {
+      const probe = document.createElement("span");
+      probe.textContent = "0".repeat(100);
+      code.appendChild(probe);
+      charWidth = probe.getBoundingClientRect().width / 100;
+      probe.remove();
+    }
+    const style = getComputedStyle(editor);
+    const lineHeight = parseFloat(style.lineHeight);
+    const { start } = tweaking.entry.span;
+    const line = lineIndex.lineOf(start);
+    const column = start - editor.value.lastIndexOf("\n", start - 1) - 1;
+    const top = parseFloat(style.paddingTop) + (line + 1) * lineHeight - editor.scrollTop + 4;
+    const left = parseFloat(style.paddingLeft) + column * charWidth - editor.scrollLeft;
+    const maxLeft = Math.max(0, editor.clientWidth - tweak.offsetWidth - 8);
+    tweak.style.top = `${top}px`;
+    tweak.style.left = `${Math.min(Math.max(8, left), maxLeft)}px`;
+  }
+
+  /** Replaces the value under the caret with `text` and lays out again. */
+  function writeValue(text: string): void {
+    if (tweaking === null) return;
+    const { start, end } = tweaking.entry.valueSpan;
+    editor.value = editor.value.slice(0, start) + text + editor.value.slice(end);
+    editor.setSelectionRange(start, start + text.length);
+    update();
+    const entry = entryAt(start);
+    if (entry === null) hideTweak();
+    else showTweak(entry);
+  }
+
+  const quoteOf = (entry: StyleEntry) => editor.value[entry.valueSpan.start] === "'" ? "'" : '"';
+  const formatNumber = (text: string) => String(Number(text));
+
+  function writeNumber(text: string): void {
+    if (tweaking === null || text === "" || Number.isNaN(Number(text))) return;
+    const n = formatNumber(text);
+    if (tweaking.spec.kind === "length" && tweakUnit.value === "%") {
+      const q = quoteOf(tweaking.entry);
+      writeValue(`${q}${n}%${q}`);
+    } else {
+      writeValue(n);
+    }
+  }
+
+  function onCaret(): void {
+    if (document.activeElement !== editor) return;
+    const entry = entryAt(editor.selectionStart);
+    if (entry === null) hideTweak();
+    else showTweak(entry);
+  }
+
+  tweakRange.addEventListener("input", () => writeNumber(tweakRange.value));
+  tweakNumber.addEventListener("input", () => writeNumber(tweakNumber.value));
+  tweakOptions.addEventListener("change", () => {
+    if (tweaking === null) return;
+    const q = quoteOf(tweaking.entry);
+    writeValue(`${q}${tweakOptions.value}${q}`);
+  });
+  tweakUnit.addEventListener("change", () => {
+    if (tweaking === null) return;
+    const { value } = tweaking.entry;
+    const n = typeof value === "number" ? value : parseFloat(value) || 0;
+    const q = quoteOf(tweaking.entry);
+    if (tweakUnit.value === "auto") writeValue(`${q}auto${q}`);
+    else if (tweakUnit.value === "%") writeValue(`${q}${Math.min(100, Math.max(-100, n))}%${q}`);
+    else writeValue(String(n));
+  });
+  document.addEventListener("selectionchange", onCaret);
+  editor.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") hideTweak();
+  });
+  // Clicking elsewhere hides the controls; clicking the controls themselves keeps them.
+  editor.addEventListener("blur", (event) => {
+    const next = event.relatedTarget;
+    if (!(next instanceof Element && tweak.contains(next))) hideTweak();
+  });
+
+  editor.addEventListener("input", () => {
+    update();
+    onCaret();
+  });
+  editor.addEventListener("scroll", () => {
+    const pre = code.parentElement!;
+    pre.scrollTop = editor.scrollTop;
+    pre.scrollLeft = editor.scrollLeft;
+    placeTweak();
+  });
+  editor.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    event.preventDefault();
+    const { selectionStart, selectionEnd } = editor;
+    editor.setRangeText("  ", selectionStart, selectionEnd, "end");
+    update();
+  });
+  editor.addEventListener("mousemove", (event) => {
+    const style = getComputedStyle(editor);
+    const lineHeight = parseFloat(style.lineHeight);
+    const y = event.clientY - editor.getBoundingClientRect().top + editor.scrollTop - parseFloat(style.paddingTop);
+    const line = Math.floor(y / lineHeight);
+    setHot(lineToBox[line] ?? null);
+  });
+  editor.addEventListener("mouseleave", () => setHot(null));
+
+  stage.addEventListener("mousemove", (event) => {
+    const rect = stage.getBoundingClientRect();
+    setHot(boxAt(event.clientX - rect.left, event.clientY - rect.top));
+  });
+  stage.addEventListener("mouseleave", () => setHot(null));
+
+  for (const button of buttons) {
+    button.addEventListener("click", () => {
+      history.replaceState(null, "", `#${button.dataset.id}`);
+      load(button.dataset.id!);
+    });
+  }
+  window.addEventListener("resize", draw);
+  window.addEventListener("hashchange", () => load(location.hash.slice(1)));
+
+  load(location.hash.slice(1));
+</script>

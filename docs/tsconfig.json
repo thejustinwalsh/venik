@@ -1,0 +1,10 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "paths": { "baba-yaga": ["../src/index.ts"] }
+  },
+  "include": [".astro/types.d.ts", "**/*", "../src/globals.d.ts"],
+  "exclude": ["dist"]
+}

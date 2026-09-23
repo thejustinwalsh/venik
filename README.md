@@ -89,8 +89,6 @@ The same three engines on flexily's own benchmark:
 | 5×20, build and lay out | **1030µs** | 1090µs | 3250µs |
 | 50 levels deep, one change | **47µs** | 550µs | 82µs |
 
-As you can see, baba-yaga is more or less superior option for web usecase.
-
 ## Divergence from Yoga
 
 First of all, baba-yaga is not a drop-in replacement for Yoga, our APIs are different and overall mechanism differ quite a bit. 
