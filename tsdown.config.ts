@@ -5,7 +5,8 @@ export default defineConfig({
   format: ["esm", "cjs"],
   platform: "neutral",
   target: "es2023",
-  dts: true,
+  // Members tagged `@internal` are shared between modules but are not API.
+  dts: { generator: "oxc", oxc: { stripInternal: true } },
   sourcemap: true,
   minify: true,
   clean: true,
