@@ -84,8 +84,10 @@ export const stressScenarios = {
     return () => { t.root.setWidth(sweep(f++) / 2); api.layout(t.root); };
   },
   "text 100×20: build and lay out": (api) => {
-    // A live tree keeps the engine's hidden classes alive (see suites/hud.bench.ts).
+    // A live, laid-out tree keeps the engine's hidden classes alive (see
+    // suites/hud.bench.ts); one never laid out keeps only some of them.
     const live = buildText(api, 100, 20);
+    api.layout(live.root);
     return () => { api.layout(buildText(api, 100, 20).root); live.root.getChildCount(); };
   },
 };
