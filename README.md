@@ -57,7 +57,8 @@ I wanted a fast and robust layout engine that won't clog my render loop and JS h
 Here's the benchmark for this library and couple competitors, as printed by
 [`bench/`](bench/index.mjs) (`cd bench && npm install && npm run readme`, after
 `npm run build` in the root). Times are µs per frame, lower quartile of 40
-rounds after warm-up, best of three runs where the engines take turns.
+rounds after warm-up, best of three runs where the engines take turns, on an
+Apple M2 Pro with Node 26.
 
 For changes to venik itself, `bench/` also has a [@pmndrs/labs](https://github.com/pmndrs/labs)
 suite that runs the working tree against the last release and both competitors,
@@ -72,16 +73,16 @@ npm run bench:gate       # tables, plus exit 1 on a significant slowdown against
 
 | Time per frame | venik | flexily | yoga-layout |
 |---|---|---|---|
-| One leaf changes | **25µs** | 200µs | 260µs |
-| 50 leaves change | **510µs** | 730µs | 1660µs |
-| Root resized (full relayout) | **1000µs** | 1050µs | 3190µs |
-| Build the tree and lay it out once | 2360µs | **1910µs** | 5910µs |
+| One leaf changes | **15µs** | 150µs | 170µs |
+| 50 leaves change | **310µs** | 500µs | 980µs |
+| Root resized (full relayout) | **550µs** | 670µs | 1900µs |
+| Build the tree and lay it out once | 1180µs | **1010µs** | 3270µs |
 
 | Garbage per frame (JS heap) | venik | flexily | yoga-layout |
 |---|---|---|---|
-| One leaf changes | **1.0 KB** | 16 KB | **1.0 KB** |
-| 50 leaves change | **15 KB** | 77 KB | 22 KB |
-| Root resized (full relayout) | 65 KB | 181 KB | **2.1 KB** |
+| One leaf changes | **1.1 KB** | 17 KB | **1.1 KB** |
+| 50 leaves change | **16 KB** | 77 KB | 22 KB |
+| Root resized (full relayout) | 64 KB | 181 KB | **1.7 KB** |
 | Retained per node after layout | 2.8 KB | 2.8 KB | 0.2 KB + WASM |
 
 | Bundle size | venik | flexily | yoga-layout |
@@ -93,12 +94,12 @@ The same three engines on flexily's own benchmark:
 
 | flexily's board | venik | flexily | yoga-layout |
 |---|---|---|---|
-| 5×20, one text leaf dirty | **67µs** | 140µs | 79µs |
-| 8×30, one text leaf dirty | 150µs | 300µs | **140µs** |
-| 8×30, 50 leaves dirty | **550µs** | 890µs | 1390µs |
-| 5×20, resize cycle 120→80→120 | **640µs** | 1140µs | 1080µs |
-| 5×20, build and lay out | **1030µs** | 1090µs | 3250µs |
-| 50 levels deep, one change | **47µs** | 550µs | 82µs |
+| 5×20, one text leaf dirty | **48µs** | 110µs | 54µs |
+| 8×30, one text leaf dirty | 110µs | 240µs | **100µs** |
+| 8×30, 50 leaves dirty | **340µs** | 630µs | 810µs |
+| 5×20, resize cycle 120→80→120 | **370µs** | 740µs | 610µs |
+| 5×20, build and lay out | **540µs** | 670µs | 1850µs |
+| 50 levels deep, one change | **28µs** | 420µs | 47µs |
 
 ## Divergence from Yoga
 
