@@ -1,0 +1,16 @@
+{
+  // Type-checks the public API as consumers see it: `venik` resolves to the
+  // built declarations, so run `npm run build` first (`npm run typecheck:dist`).
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["es2023"],
+    "types": [],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "paths": { "venik": ["../dist/index.d.ts"] }
+  },
+  "include": ["*.ts"]
+}

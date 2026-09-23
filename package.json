@@ -38,7 +38,8 @@
     "test:watch": "vitest tests",
     "fuzz": "vitest run fuzz",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build && npm run typecheck:dist",
+    "typecheck:dist": "tsc -p test-d"
   },
   "devDependencies": {
     "tsdown": "^0.23.0",
