@@ -3,6 +3,14 @@
   "version": "0.0.0",
   "description": "Pure TypeScript port of the Yoga layout engine",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koteelok/baba-yaga.git"
+  },
+  "homepage": "https://koteelok.github.io/baba-yaga/",
+  "bugs": {
+    "url": "https://github.com/koteelok/baba-yaga/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
