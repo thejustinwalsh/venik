@@ -3,9 +3,17 @@
 
 export const ENGINES = ["venik", "flexily", "yoga-layout"];
 
+// What the labs suites run: the working tree against the last release, and the
+// other engines.
+export const BENCH_ENGINES = ["venik", "venik-1.0.0", "flexily", "yoga-layout"];
+
+// `VENIK_FROM=venik-base` makes "venik" load the release instead of ../dist, so a
+// run of the release can be saved under the same bench names as a labs baseline.
+const VENIK_FROM = process.env.VENIK_FROM || "../dist/index.js";
+
 export async function loadEngine(which) {
-  if (which === "venik") {
-    const Y = await import("../dist/index.js");
+  if (which === "venik" || which === "venik-1.0.0") {
+    const Y = await import(which === "venik" ? VENIK_FROM : "venik-base");
     return {
       node: () => new Y.Node(),
       setWidthPercent: (n, v) => n.setWidth(`${v}%`),

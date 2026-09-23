@@ -55,9 +55,20 @@ with adding an actual CSS Flexbox implementation into it.
 I wanted a fast and robust layout engine that won't clog my render loop and JS heap every time I use it.
 
 Here's the benchmark for this library and couple competitors, as printed by
-[`bench/`](bench/index.mjs) (`cd bench && npm install && npm run bench`, after
+[`bench/`](bench/index.mjs) (`cd bench && npm install && npm run readme`, after
 `npm run build` in the root). Times are µs per frame, lower quartile of 40
 rounds after warm-up, best of three runs where the engines take turns.
+
+For changes to venik itself, `bench/` also has a [@pmndrs/labs](https://github.com/pmndrs/labs)
+suite that runs the working tree against the last release and both competitors,
+each engine × scenario in fresh processes:
+
+```sh
+cd bench
+npm run bench:baseline   # once: save the release as the labs baseline
+npm run bench            # the working tree, next to venik 1.0.0, flexily and yoga-layout
+npm run bench:gate       # tables, plus exit 1 on a significant slowdown against the baseline
+```
 
 | Time per frame | venik | flexily | yoga-layout |
 |---|---|---|---|

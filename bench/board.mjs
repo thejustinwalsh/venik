@@ -47,7 +47,7 @@ const leafOf = (board, col, card) => board.getChild(col).getChild(card).getChild
 
 // name -> { setup, op, iters }
 export function boardScenarios(api) {
-  const L = api.layout;
+  const L = api?.layout;
   const laidOut = (cols, cards) => { const b = buildBoard(api, cols, cards); L(b, 120, 40); return b; };
   return {
     "5×20, one text leaf dirty": {
