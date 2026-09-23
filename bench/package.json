@@ -2,13 +2,19 @@
   "name": "venik-bench",
   "private": true,
   "type": "module",
-  "description": "Compares venik against flexily and yoga-layout; prints the README tables",
+  "description": "Compares venik against its last release, flexily and yoga-layout",
   "scripts": {
-    "bench": "node index.mjs"
+    "bench": "labs",
+    "bench:baseline": "VENIK_FROM=venik-base labs -n v1.0.0 -b -f",
+    "bench:gate": "node table.mjs --gate",
+    "table": "node table.mjs",
+    "readme": "node index.mjs"
   },
   "dependencies": {
+    "@pmndrs/labs": "0.9.0",
     "flexily": "0.7.3",
     "rolldown": "1.2.9",
+    "venik-base": "npm:venik@1.0.0",
     "yoga-layout": "3.2.1"
   }
 }

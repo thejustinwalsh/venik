@@ -35,8 +35,10 @@ function checkLayouts() {
     ENGINES.filter((_, e) => snaps[e][key].some((v, i) => Math.abs(v - snaps[0][key][i]) > 1e-4));
   const hud = differing("layout");
   if (hud.length) throw new Error(`${hud.join(", ")} lay out the HUD tree differently from ${ENGINES[0]}`);
-  const board = differing("board");
-  if (board.length) console.error(`note: ${board.join(", ")} lay out the board tree slightly differently from ${ENGINES[0]}`);
+  for (const [key, what] of [["board", "board tree"], ["stress", "wide and text trees"]]) {
+    const engines = differing(key);
+    if (engines.length) console.error(`note: ${engines.join(", ")} lay out the ${what} slightly differently from ${ENGINES[0]}`);
+  }
 }
 
 function timeTable(task) {
