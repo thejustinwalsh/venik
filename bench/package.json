@@ -1,8 +1,8 @@
 {
-  "name": "baba-yaga-bench",
+  "name": "venik-bench",
   "private": true,
   "type": "module",
-  "description": "Compares baba-yaga against flexily and yoga-layout; prints the README tables",
+  "description": "Compares venik against flexily and yoga-layout; prints the README tables",
   "scripts": {
     "bench": "node index.mjs"
   },

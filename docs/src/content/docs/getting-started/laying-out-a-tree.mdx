@@ -1,15 +1,15 @@
 ---
 title: Laying out a tree
-description: Install baba-yaga, build a tree of nodes, lay it out, and read the results.
+description: Install venik, build a tree of nodes, lay it out, and read the results.
 order: 1
 ---
 
-Each box in baba-yaga is a **Node**. Nodes form a tree that holds both the input styles and the output layout. baba-yaga only computes sizes and positions; drawing is up to you.
+Each box in venik is a **Node**. Nodes form a tree that holds both the input styles and the output layout. venik only computes sizes and positions; drawing is up to you.
 
 ## Installation
 
 ```sh
-npm install baba-yaga
+npm install venik
 ```
 
 The package ships ESM and CJS builds with TypeScript types, and has no dependencies.
@@ -19,7 +19,7 @@ The package ships ESM and CJS builds with TypeScript types, and has no dependenc
 Nodes are created with `new Node()`, styled with setters, and linked with `insertChild`. See [Styling](../../styling/) for the full list of style properties.
 
 ```ts
-import { Edge, FlexDirection, Node } from "baba-yaga";
+import { Edge, FlexDirection, Node } from "venik";
 
 const root = new Node();
 root.setFlexDirection(FlexDirection.Row);
@@ -43,7 +43,7 @@ Nodes are ordinary JavaScript objects. There is nothing to free: drop the last r
 The whole tree is laid out from the root in one call. The layout can be constrained to an available width and height, or left unconstrained in either axis by passing `undefined`.
 
 ```ts
-import { Direction } from "baba-yaga";
+import { Direction } from "venik";
 
 root.calculateLayout(undefined, undefined, Direction.LTR);
 ```

@@ -1,15 +1,15 @@
 {
-  "name": "baba-yaga",
+  "name": "venik",
   "version": "0.0.0",
   "description": "Pure TypeScript port of the Yoga layout engine",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/koteelok/baba-yaga.git"
+    "url": "git+https://github.com/koteelok/venik.git"
   },
-  "homepage": "https://koteelok.github.io/baba-yaga/",
+  "homepage": "https://koteelok.github.io/venik/",
   "bugs": {
-    "url": "https://github.com/koteelok/baba-yaga/issues"
+    "url": "https://github.com/koteelok/venik/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",

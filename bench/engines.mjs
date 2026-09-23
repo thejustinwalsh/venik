@@ -1,10 +1,10 @@
 // One adapter per engine, so the same tree and the same mutations run on all three.
 // Every default the engines disagree on is set explicitly in buildTree.
 
-export const ENGINES = ["baba-yaga", "flexily", "yoga-layout"];
+export const ENGINES = ["venik", "flexily", "yoga-layout"];
 
 export async function loadEngine(which) {
-  if (which === "baba-yaga") {
+  if (which === "venik") {
     const Y = await import("../dist/index.js");
     return {
       node: () => new Y.Node(),

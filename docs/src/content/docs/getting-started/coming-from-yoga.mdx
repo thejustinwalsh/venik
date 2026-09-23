@@ -1,14 +1,14 @@
 ---
 title: Coming from Yoga
-description: What changes when you port a Yoga tree to baba-yaga.
+description: What changes when you port a Yoga tree to venik.
 order: 3
 ---
 
-baba-yaga started as a port of [Yoga](https://www.yogalayout.dev) and its test suite is Yoga's, ported. Given the same tree it produces the same boxes. It is not a drop-in replacement though: the API is different, and the defaults follow CSS instead of Yoga.
+venik started as a port of [Yoga](https://www.yogalayout.dev) and its test suite is Yoga's, ported. Given the same tree it produces the same boxes. It is not a drop-in replacement though: the API is different, and the defaults follow CSS instead of Yoga.
 
 ## Defaults follow CSS
 
-| Property | baba-yaga (and CSS) | Yoga |
+| Property | venik (and CSS) | Yoga |
 |---|---|---|
 | `flex-direction` | `row` | `column` |
 | `flex-shrink` | `1` | `0` |
@@ -33,4 +33,4 @@ Because `position: static` is the default, an absolutely positioned node is plac
 
 ## One quirk kept on purpose
 
-Flexbox defines an automatic minimum size for flex items, so that `min-width: auto` keeps an item from shrinking below its content. Finding that size needs an extra measure pass, so baba-yaga follows every released Yoga and treats `min-width: auto` and `min-height: auto` as `0`. Set an explicit minimum to keep an item from shrinking below its content.
+Flexbox defines an automatic minimum size for flex items, so that `min-width: auto` keeps an item from shrinking below its content. Finding that size needs an extra measure pass, so venik follows every released Yoga and treats `min-width: auto` and `min-height: auto` as `0`. Set an explicit minimum to keep an item from shrinking below its content.

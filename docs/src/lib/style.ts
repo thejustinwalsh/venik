@@ -1,6 +1,6 @@
 /**
  * The React Native / Yoga flavoured style props of the examples page: what
- * each key accepts, and how it is applied to a baba-yaga node.
+ * each key accepts, and how it is applied to a venik node.
  */
 import {
   Align,
@@ -16,7 +16,7 @@ import {
   PositionType,
   Wrap,
   type Percent,
-} from "baba-yaga";
+} from "venik";
 import type { StyleValue } from "./jsx.ts";
 
 export class StyleError extends Error {}

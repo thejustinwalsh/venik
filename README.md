@@ -1,4 +1,4 @@
-# 🧹 baba-yaga
+# 🧹 venik
 
 Layout engine built for JavaScript games.
 
@@ -6,7 +6,7 @@ Initially started as a TypeScript port of the [Yoga](https://github.com/facebook
 engine, but for performance and bundle size reasons diverged from it quite a bit. [See how.](#divergence-from-yoga)
 
 ```ts
-import { Node, Edge, Justify, Align, Direction } from "baba-yaga";
+import { Node, Edge, Justify, Align, Direction } from "venik";
 
 const hud = new Node();
 hud.setPadding(Edge.All, 16);
@@ -59,28 +59,28 @@ Here's the benchmark for this library and couple competitors, as printed by
 `npm run build` in the root). Times are µs per frame, lower quartile of 40
 rounds after warm-up, best of three runs where the engines take turns.
 
-| Time per frame | baba-yaga | flexily | yoga-layout |
+| Time per frame | venik | flexily | yoga-layout |
 |---|---|---|---|
 | One leaf changes | **25µs** | 200µs | 260µs |
 | 50 leaves change | **510µs** | 730µs | 1660µs |
 | Root resized (full relayout) | **1000µs** | 1050µs | 3190µs |
 | Build the tree and lay it out once | 2360µs | **1910µs** | 5910µs |
 
-| Garbage per frame (JS heap) | baba-yaga | flexily | yoga-layout |
+| Garbage per frame (JS heap) | venik | flexily | yoga-layout |
 |---|---|---|---|
 | One leaf changes | **1.0 KB** | 16 KB | **1.0 KB** |
 | 50 leaves change | **15 KB** | 77 KB | 22 KB |
 | Root resized (full relayout) | 65 KB | 181 KB | **2.1 KB** |
 | Retained per node after layout | 2.8 KB | 2.8 KB | 0.2 KB + WASM |
 
-| Bundle size | baba-yaga | flexily | yoga-layout |
+| Bundle size | venik | flexily | yoga-layout |
 |---|---|---|---|
 | Minified | 72 KB | **71 KB** | 125 KB |
 | Minified + gzip | **19 KB** | 22 KB | 50 KB |
 
 The same three engines on flexily's own benchmark:
 
-| flexily's board | baba-yaga | flexily | yoga-layout |
+| flexily's board | venik | flexily | yoga-layout |
 |---|---|---|---|
 | 5×20, one text leaf dirty | **67µs** | 140µs | 79µs |
 | 8×30, one text leaf dirty | 150µs | 300µs | **140µs** |
@@ -91,13 +91,13 @@ The same three engines on flexily's own benchmark:
 
 ## Divergence from Yoga
 
-First of all, baba-yaga is not a drop-in replacement for Yoga, our APIs are different and overall mechanism differ quite a bit. 
+First of all, venik is not a drop-in replacement for Yoga, our APIs are different and overall mechanism differ quite a bit. 
 
 We do though output the same layouts given the same nodes and our test suite is basically Yoga's tests ported to TypeScript.
 
 Also, we don't use the same defaults as Yoga does, leaning more into how browsers pick defaults:
 
-| Property | baba-yaga (and CSS) | Yoga |
+| Property | venik (and CSS) | Yoga |
 |---|---|---|
 | `flex-direction` | `row` | `column` |
 | `flex-shrink` | `1` | `0` |

@@ -4,7 +4,7 @@ description: Laying out only what changed, every frame.
 order: 1
 ---
 
-Most real-world UIs are not static. baba-yaga is built to be called every frame: a tree that has not changed is laid out for the cost of a few field comparisons, and a tree where a few nodes changed revisits only the branches those changes affect.
+Most real-world UIs are not static. venik is built to be called every frame: a tree that has not changed is laid out for the cost of a few field comparisons, and a tree where a few nodes changed revisits only the branches those changes affect.
 
 ## Dirtying
 
@@ -46,4 +46,4 @@ Consider a tree that has already been laid out, where the style of one leaf is t
 
 ## Cost
 
-On the bundled benchmark, one leaf changing in a tree of a few hundred nodes lays out in tens of microseconds and produces about a kilobyte of garbage. See the [README](https://github.com/koteelok/baba-yaga#motivation) for the full numbers.
+On the bundled benchmark, one leaf changing in a tree of a few hundred nodes lays out in tens of microseconds and produces about a kilobyte of garbage. See the [README](https://github.com/koteelok/venik#motivation) for the full numbers.

@@ -6,13 +6,13 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 export default defineConfig({
   site: "https://koteelok.github.io",
-  base: "/baba-yaga",
+  base: "/venik",
   integrations: [mdx()],
   vite: {
     resolve: {
       // The playground runs the engine straight from the source tree, so it
       // never needs `npm run build` in the root and always reflects `src/`.
-      alias: { "baba-yaga": fileURLToPath(new URL("../src/index.ts", import.meta.url)) },
+      alias: { "venik": fileURLToPath(new URL("../src/index.ts", import.meta.url)) },
     },
     // The event system is test-only; see ../src/globals.d.ts.
     define: { __EVENTS__: "false" },
