@@ -12,6 +12,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} · baba-yaga</title>
+    <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+    <meta name="description" content="🧹 baba-yaga — Flexbox layout engine built for JavaScript games." />
     <style is:global>
       :root {
         color-scheme: light dark;
@@ -80,6 +82,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         font-weight: 600;
         color: var(--fg);
         text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      header.top .brand .logo {
+        font-size: 20px;
+        line-height: 1;
       }
       header.top nav a {
         margin-right: 14px;
@@ -97,7 +106,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   </head>
   <body>
     <header class="top">
-      <a class="brand" href={`${base}/`}>baba-yaga</a>
+      <a class="brand" href={`${base}/`}><span class="logo" aria-hidden="true">🧹</span>baba-yaga</a>
       <nav>
         <a href={`${base}/examples/`} aria-current={Astro.url.pathname.startsWith(`${base}/examples`) ? "page" : undefined}>Examples</a>
         <a href="https://github.com/koteelok/baba-yaga">GitHub</a>

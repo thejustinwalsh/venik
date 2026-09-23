@@ -1,4 +1,4 @@
-# baba-yaga
+# 🧹 baba-yaga
 
 Layout engine built for JavaScript games.
 
