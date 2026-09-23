@@ -2,6 +2,18 @@ import { Dimension, Display } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { inexactEquals } from "../math.ts";
 import { PhysicalEdge } from "./FlexDirection.ts";
+import {
+  ABSOLUTE_WALK_GENERATION,
+  DIMENSIONS,
+  F,
+  GENERATION,
+  I,
+  POSITION,
+  RAW_DIMENSIONS,
+  ROUNDED_POSITION,
+  ROUNDING_ORIGIN_LEFT,
+  ROUNDING_ORIGIN_TOP,
+} from "../node/Store.ts";
 
 // Operand and result of `roundScratchToPixelGrid`: [value, pointScaleFactor].
 // V8 boxes fractional doubles that cross a call it doesn't inline, both as
@@ -72,16 +84,16 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
   const absoluteTop = absolutePositions[offset + 1]!;
 
   const pointScaleFactor = node.getConfig().getPointScaleFactor();
-  const layout = node.layout;
+  const layout = node;
 
-  const nodeLeft = layout.position[PhysicalEdge.Left];
-  const nodeTop = layout.position[PhysicalEdge.Top];
+  const nodeLeft = F[layout.rf + POSITION + PhysicalEdge.Left]!;
+  const nodeTop = F[layout.rf + POSITION + PhysicalEdge.Top]!;
 
-  const nodeWidth = layout.rawDimensions[Dimension.Width];
-  const nodeHeight = layout.rawDimensions[Dimension.Height];
+  const nodeWidth = F[layout.rf + RAW_DIMENSIONS + Dimension.Width]!;
+  const nodeHeight = F[layout.rf + RAW_DIMENSIONS + Dimension.Height]!;
 
-  layout.roundingOriginLeft = absoluteLeft;
-  layout.roundingOriginTop = absoluteTop;
+  F[layout.rf + ROUNDING_ORIGIN_LEFT] = absoluteLeft;
+  F[layout.rf + ROUNDING_ORIGIN_TOP] = absoluteTop;
 
   const absoluteNodeLeft = absoluteLeft + nodeLeft;
   const absoluteNodeTop = absoluteTop + nodeTop;
@@ -99,11 +111,11 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
 
     scratch[0] = nodeLeft;
     roundScratchToPixelGrid(false, textRounding);
-    layout.roundedPosition[PhysicalEdge.Left] = scratch[0];
+    F[layout.rf + ROUNDED_POSITION + PhysicalEdge.Left] = scratch[0];
 
     scratch[0] = nodeTop;
     roundScratchToPixelGrid(false, textRounding);
-    layout.roundedPosition[PhysicalEdge.Top] = scratch[0];
+    F[layout.rf + ROUNDED_POSITION + PhysicalEdge.Top] = scratch[0];
 
     // We multiply dimension by scale factor and if the result is close to the
     // whole number, we don't have any fraction To verify if the result is close
@@ -123,7 +135,7 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
       textRounding && hasFractionalWidth,
       textRounding && !hasFractionalWidth,
     );
-    layout.dimensions[Dimension.Width] = scratch[0] - roundedAbsoluteLeft;
+    F[layout.rf + DIMENSIONS + Dimension.Width] = scratch[0] - roundedAbsoluteLeft;
 
     scratch[0] = absoluteNodeTop;
     roundScratchToPixelGrid(false, textRounding);
@@ -133,12 +145,12 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
       textRounding && hasFractionalHeight,
       textRounding && !hasFractionalHeight,
     );
-    layout.dimensions[Dimension.Height] = scratch[0] - roundedAbsoluteTop;
+    F[layout.rf + DIMENSIONS + Dimension.Height] = scratch[0] - roundedAbsoluteTop;
   } else {
-    layout.roundedPosition[PhysicalEdge.Left] = nodeLeft;
-    layout.roundedPosition[PhysicalEdge.Top] = nodeTop;
-    layout.dimensions[Dimension.Width] = nodeWidth;
-    layout.dimensions[Dimension.Height] = nodeHeight;
+    F[layout.rf + ROUNDED_POSITION + PhysicalEdge.Left] = nodeLeft;
+    F[layout.rf + ROUNDED_POSITION + PhysicalEdge.Top] = nodeTop;
+    F[layout.rf + DIMENSIONS + Dimension.Width] = nodeWidth;
+    F[layout.rf + DIMENSIONS + Dimension.Height] = nodeHeight;
   }
 
   const children = node.getChildren();
@@ -148,12 +160,12 @@ function roundSubtreeToPixelGrid(node: Node, offset: number, generationCount: nu
     // either, rounding gives what it gave then: a node is rounded by where its
     // edges are on the grid, so a subtree that moves is rounded again.
     // A `display: contents` node is never visited itself, but its children are.
-    const childLayout = children[i]!.layout;
+    const childLayout = children[i]!;
     if (
-      childLayout.generationCount !== generationCount &&
-      childLayout.absoluteWalkGeneration !== generationCount &&
-      childLayout.roundingOriginLeft === absoluteNodeLeft &&
-      childLayout.roundingOriginTop === absoluteNodeTop &&
+      I[childLayout.ri + GENERATION]! !== generationCount &&
+      I[childLayout.ri + ABSOLUTE_WALK_GENERATION]! !== generationCount &&
+      F[childLayout.rf + ROUNDING_ORIGIN_LEFT]! === absoluteNodeLeft &&
+      F[childLayout.rf + ROUNDING_ORIGIN_TOP]! === absoluteNodeTop &&
       children[i]!.style.display !== Display.Contents
     ) {
       continue;

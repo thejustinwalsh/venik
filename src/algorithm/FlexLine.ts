@@ -2,6 +2,10 @@ import { type Direction, Display, PositionType, Wrap } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { boundAxisWithinMinAndMax } from "./BoundAxis.ts";
 import { resolveDirection } from "./FlexDirection.ts";
+import {
+  F,
+  FLEX_BASIS,
+} from "../node/Store.ts";
 
 export class FlexLineRunningLayout {
   // Total flex grow factors of flex items which are to be laid in the current
@@ -157,11 +161,11 @@ export function calculateFlexLine(
           child,
           direction,
           mainAxis,
-          child.layout.computedFlexBasis,
+          F[child.rf + FLEX_BASIS]!,
           availableInnerMainDim,
           availableInnerWidth,
         )
-      : child.layout.computedFlexBasis;
+      : F[child.rf + FLEX_BASIS]!;
 
     // If this is a multi-line flow and this item pushes us over the available
     // size, we've hit the end of the current line. Break out of the loop and
@@ -192,7 +196,7 @@ export function calculateFlexLine(
 
       // Unlike the grow factor, the shrink factor is scaled relative to the
       // child dimension.
-      totalFlexShrinkScaledFactors += -child.resolveFlexShrink() * child.layout.computedFlexBasis;
+      totalFlexShrinkScaledFactors += -child.resolveFlexShrink() * F[child.rf + FLEX_BASIS]!;
     }
 
     if (itemCount === itemsInFlow.length) {

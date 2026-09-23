@@ -14,8 +14,6 @@ import {
   Wrap,
 } from "../enums.ts";
 import { Event, LayoutData, LayoutPassReason, LayoutType } from "../event/event.ts";
-import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
-import { LayoutResults } from "../node/LayoutResults.ts";
 import type { Node } from "../node/Node.ts";
 import { inexactEquals, maxOrDefined, minOrDefined, sameAvailableSize } from "../math.ts";
 import type { Style } from "../style/Style.ts";
@@ -32,12 +30,21 @@ import {
   paddingAndBorderForAxis,
 } from "./BoundAxis.ts";
 import {
+  entryF,
+  entryHas,
+  entryU,
   findCachedMeasurement,
   findRelaxedMeasurement,
   hasSameOwnerSize,
   LAYOUT_MISS,
   LAYOUT_STRETCHED,
+  measurementAt,
+  NO_ENTRY,
+  promoteMeasurement,
   relaxedLayoutFits,
+  resetEntry,
+  setEntryFlag,
+  takeMeasurement,
 } from "./Cache.ts";
 import {
   dimension,
@@ -58,6 +65,50 @@ import {
 } from "./FlexLine.ts";
 import { roundLayoutResultsToPixelGrid } from "./PixelGrid.ts";
 import { needsTrailingPosition, setChildTrailingPosition } from "./TrailingPosition.ts";
+import {
+  AVAILABLE_HEIGHT,
+  AVAILABLE_WIDTH,
+  BASELINE,
+  BASELINE_LAYOUT,
+  BORDER,
+  COMPUTED_HEIGHT,
+  COMPUTED_WIDTH,
+  CONFIG_VERSION,
+  CONTENT_SIZED,
+  DIRECTION,
+  ENTRY_BASELINE,
+  ENTRY_FROM_LAYOUT,
+  ENTRY_HAD_OVERFLOW,
+  ENTRY_MAIN_SIZE_INVARIANT,
+  ENTRY_MEASURE_HAD_OVERFLOW,
+  ENTRY_RELAXABLE,
+  F,
+  FLEX_BASIS,
+  FLEX_BASIS_GENERATION,
+  GENERATION,
+  HAD_OVERFLOW,
+  HAS_RELAXABLE_MEASUREMENTS,
+  HEIGHT_SIZING_MODE,
+  I,
+  LAST_OWNER_DIRECTION,
+  LAYOUT_ENTRY,
+  MAIN_CONTENT_SIZE,
+  MARGIN,
+  MEASURE_DIFFERS,
+  MEASURE_HAD_OVERFLOW,
+  MEASURED,
+  MEASURED_SINCE_LAYOUT,
+  NEXT_CACHED_MEASUREMENT,
+  OWNER_HEIGHT,
+  OWNER_WIDTH,
+  PADDING,
+  POSITION,
+  RAW_DIMENSIONS,
+  U,
+  WIDTH_SIZING_MODE,
+  F_STRIDE,
+  resetResults,
+} from "../node/Store.ts";
 
 let gCurrentGenerationCount = 0;
 // Public layout calls currently executing. Clean-root fast exits are disabled
@@ -69,7 +120,7 @@ let gActiveLayoutPasses = 0;
 // margins or paddings that are percentages, or the overflow flag.
 let gMeasurementLeftResults = false;
 // Set by `calculateLayoutImpl`: whether the result it computed is `relaxable`
-// (see `CachedMeasurement`).
+// (see ENTRY_RELAXABLE in node/Store.ts).
 let gPassRelaxable = false;
 // Set by `calculateLayoutImpl` for a layout pass: whether a measurement in
 // the same space would have found another size. A measurement given an
@@ -84,7 +135,8 @@ let gPassMeasureDiffers = false;
 let gLineItemSizeDiffers = false;
 let gLineItemMeasureDiffers = false;
 // Set by `calculateLayoutImpl`: whether the layout it computed is
-// `mainSizeInvariant`, and its `mainContentSize` (see `CachedMeasurement`).
+// main-size-invariant, and its main content size (see ENTRY_MAIN_SIZE_INVARIANT
+// in node/Store.ts).
 let gPassMainSizeInvariant = false;
 let gPassMainContentSize = NaN;
 // Whether the pass issuing the current request, or a pass above it, aligns
@@ -366,13 +418,13 @@ function computeFlexBasisForChild(
     resolvedFlexBasis === resolvedFlexBasis && mainAxisSize === mainAxisSize;
 
   if (useResolvedFlexBasis) {
-    const childLayout = child.layout;
+    const childLayout = child;
     if (
-      childLayout.computedFlexBasis !== childLayout.computedFlexBasis ||
-      childLayout.computedFlexBasisGeneration !== generationCount
+      F[childLayout.rf + FLEX_BASIS]! !== F[childLayout.rf + FLEX_BASIS]! ||
+      I[childLayout.ri + FLEX_BASIS_GENERATION]! !== generationCount
     ) {
       const paddingAndBorder = paddingAndBorderForAxis(child, mainAxis, direction, ownerWidth);
-      childLayout.computedFlexBasis = maxOrDefined(resolvedFlexBasis, paddingAndBorder);
+      F[childLayout.rf + FLEX_BASIS] = maxOrDefined(resolvedFlexBasis, paddingAndBorder);
     }
   } else if (isMainAxisRow && isRowStyleDimDefined) {
     // The width is definite, so use that as the flex basis.
@@ -383,7 +435,7 @@ function computeFlexBasisForChild(
       ownerWidth,
     );
 
-    child.layout.computedFlexBasis = maxOrDefined(
+    F[child.rf + FLEX_BASIS] = maxOrDefined(
       child.getResolvedDimension(direction, Dimension.Width, ownerWidth, ownerWidth),
       paddingAndBorder,
     );
@@ -395,7 +447,7 @@ function computeFlexBasisForChild(
       direction,
       ownerWidth,
     );
-    child.layout.computedFlexBasis = maxOrDefined(
+    F[child.rf + FLEX_BASIS] = maxOrDefined(
       child.getResolvedDimension(direction, Dimension.Height, ownerHeight, ownerWidth),
       paddingAndBorder,
     );
@@ -437,7 +489,7 @@ function computeFlexBasisForChild(
     // size changes elsewhere in a vertical scroll subtree.
     const parentDoesNotScroll = node.style.overflow !== Overflow.Scroll;
     let applyHeightFitContent = isMainAxisRow || parentDoesNotScroll;
-    const childHadOverflow = child.isDirty() && child.layout.hadOverflow;
+    const childHadOverflow = child.isDirty() && (U[child.ru + HAD_OVERFLOW]! !== 0);
     const hasHeightIndependentSubtree =
       !isMainAxisRow &&
       parentDoesNotScroll &&
@@ -447,7 +499,7 @@ function computeFlexBasisForChild(
       isInColumnStretchScrollSubtree(node) &&
       canSkipHeightFitContent(child);
     if (hasHeightIndependentSubtree && childHadOverflow) {
-      child.layout.hadOverflow = false;
+      U[child.ru + HAD_OVERFLOW] = 0;
     }
     if (hasHeightIndependentSubtree) {
       applyHeightFitContent = false;
@@ -522,12 +574,12 @@ function computeFlexBasisForChild(
       // size follows its content: a percentage below resolves against another
       // reference in each. The flag is that of the last full pass, so a dirty
       // node waits for one.
-      child.layout.contentSized &&
+      (U[child.ru + CONTENT_SIZED]! !== 0) &&
       !child.isDirty() &&
       !gOwnerIsBaselineLayout &&
       // Nor do they agree on the cross size of a node aligning its children
       // by their baselines, which each pass takes from passes of its own kind.
-      !child.layout.baselineLayout &&
+      !(U[child.ru + BASELINE_LAYOUT]! !== 0) &&
       !child.style.dependsOnOwnerSpace &&
       !child.hasMeasureFunc() &&
       child.resolveFlexGrow() === 0 &&
@@ -553,12 +605,12 @@ function computeFlexBasisForChild(
       generationCount,
     );
 
-    child.layout.computedFlexBasis = maxOrDefined(
-      child.layout.measuredDimensions[dimension(mainAxis)],
+    F[child.rf + FLEX_BASIS] = maxOrDefined(
+      F[child.rf + MEASURED + (dimension(mainAxis))]!,
       paddingAndBorderForAxis(child, mainAxis, direction, ownerWidth),
     );
   }
-  child.layout.computedFlexBasisGeneration = generationCount;
+  I[child.ri + FLEX_BASIS_GENERATION] = generationCount;
 }
 
 function measureNodeWithMeasureFunc(
@@ -584,17 +636,17 @@ function measureNodeWithMeasureFunc(
     availableHeight = NaN;
   }
 
-  const layout = node.layout;
+  const layout = node;
   const paddingAndBorderAxisRow =
-    layout.padding[PhysicalEdge.Left] +
-    layout.padding[PhysicalEdge.Right] +
-    layout.border[PhysicalEdge.Left] +
-    layout.border[PhysicalEdge.Right];
+    F[layout.rf + PADDING + PhysicalEdge.Left]! +
+    F[layout.rf + PADDING + PhysicalEdge.Right]! +
+    F[layout.rf + BORDER + PhysicalEdge.Left]! +
+    F[layout.rf + BORDER + PhysicalEdge.Right]!;
   const paddingAndBorderAxisColumn =
-    layout.padding[PhysicalEdge.Top] +
-    layout.padding[PhysicalEdge.Bottom] +
-    layout.border[PhysicalEdge.Top] +
-    layout.border[PhysicalEdge.Bottom];
+    F[layout.rf + PADDING + PhysicalEdge.Top]! +
+    F[layout.rf + PADDING + PhysicalEdge.Bottom]! +
+    F[layout.rf + BORDER + PhysicalEdge.Top]! +
+    F[layout.rf + BORDER + PhysicalEdge.Bottom]!;
 
   // We want to make sure we don't call measure with negative size
   const innerWidth =
@@ -608,7 +660,7 @@ function measureNodeWithMeasureFunc(
 
   if (widthSizingMode === SizingMode.StretchFit && heightSizingMode === SizingMode.StretchFit) {
     // Don't bother sizing the text if both dimensions are already defined.
-    layout.measuredDimensions[Dimension.Width] = boundAxis(
+    F[layout.rf + MEASURED + Dimension.Width] = boundAxis(
       node,
       FlexDirection.Row,
       direction,
@@ -616,7 +668,7 @@ function measureNodeWithMeasureFunc(
       ownerWidth,
       ownerWidth,
     );
-    layout.measuredDimensions[Dimension.Height] = boundAxis(
+    F[layout.rf + MEASURED + Dimension.Height] = boundAxis(
       node,
       FlexDirection.Column,
       direction,
@@ -652,7 +704,7 @@ function measureNodeWithMeasureFunc(
       });
     }
 
-    layout.measuredDimensions[Dimension.Width] = boundAxis(
+    F[layout.rf + MEASURED + Dimension.Width] = boundAxis(
       node,
       FlexDirection.Row,
       direction,
@@ -663,7 +715,7 @@ function measureNodeWithMeasureFunc(
       ownerWidth,
     );
 
-    layout.measuredDimensions[Dimension.Height] = boundAxis(
+    F[layout.rf + MEASURED + Dimension.Height] = boundAxis(
       node,
       FlexDirection.Column,
       direction,
@@ -688,24 +740,24 @@ function measureNodeWithoutChildren(
   ownerWidth: number,
   ownerHeight: number,
 ): void {
-  const layout = node.layout;
+  const layout = node;
   const paddingAndBorderRow =
-    layout.padding[PhysicalEdge.Left] +
-    layout.padding[PhysicalEdge.Right] +
-    layout.border[PhysicalEdge.Left] +
-    layout.border[PhysicalEdge.Right];
+    F[layout.rf + PADDING + PhysicalEdge.Left]! +
+    F[layout.rf + PADDING + PhysicalEdge.Right]! +
+    F[layout.rf + BORDER + PhysicalEdge.Left]! +
+    F[layout.rf + BORDER + PhysicalEdge.Right]!;
   const paddingAndBorderColumn =
-    layout.padding[PhysicalEdge.Top] +
-    layout.padding[PhysicalEdge.Bottom] +
-    layout.border[PhysicalEdge.Top] +
-    layout.border[PhysicalEdge.Bottom];
+    F[layout.rf + PADDING + PhysicalEdge.Top]! +
+    F[layout.rf + PADDING + PhysicalEdge.Bottom]! +
+    F[layout.rf + BORDER + PhysicalEdge.Top]! +
+    F[layout.rf + BORDER + PhysicalEdge.Bottom]!;
 
   const width = widthSizingMode === SizingMode.StretchFit ? availableWidth : paddingAndBorderRow;
   const height =
     heightSizingMode === SizingMode.StretchFit ? availableHeight : paddingAndBorderColumn;
 
   if (node.style.hasSizeBounds) {
-    layout.measuredDimensions[Dimension.Width] = boundAxis(
+    F[layout.rf + MEASURED + Dimension.Width] = boundAxis(
       node,
       FlexDirection.Row,
       direction,
@@ -713,7 +765,7 @@ function measureNodeWithoutChildren(
       ownerWidth,
       ownerWidth,
     );
-    layout.measuredDimensions[Dimension.Height] = boundAxis(
+    F[layout.rf + MEASURED + Dimension.Height] = boundAxis(
       node,
       FlexDirection.Column,
       direction,
@@ -724,9 +776,9 @@ function measureNodeWithoutChildren(
   } else {
     // All `boundAxis` does without min or max sizes. The sums above are the
     // padding and border it would work out again.
-    layout.measuredDimensions[Dimension.Width] =
+    F[layout.rf + MEASURED + Dimension.Width] =
       width >= paddingAndBorderRow ? width : paddingAndBorderRow;
-    layout.measuredDimensions[Dimension.Height] =
+    F[layout.rf + MEASURED + Dimension.Height] =
       height >= paddingAndBorderColumn ? height : paddingAndBorderColumn;
   }
 }
@@ -751,8 +803,8 @@ function measureNodeWithFixedSize(
     isFixedSize(availableWidth, widthSizingMode) &&
     isFixedSize(availableHeight, heightSizingMode)
   ) {
-    const layout = node.layout;
-    layout.measuredDimensions[Dimension.Width] = boundAxis(
+    const layout = node;
+    F[layout.rf + MEASURED + Dimension.Width] = boundAxis(
       node,
       FlexDirection.Row,
       direction,
@@ -764,7 +816,7 @@ function measureNodeWithFixedSize(
       ownerWidth,
     );
 
-    layout.measuredDimensions[Dimension.Height] = boundAxis(
+    F[layout.rf + MEASURED + Dimension.Height] = boundAxis(
       node,
       FlexDirection.Column,
       direction,
@@ -782,7 +834,7 @@ function measureNodeWithFixedSize(
 }
 
 function resetLayout(node: Node): void {
-  node.layout.reset();
+  resetResults(node.rf / F_STRIDE);
   node.setLayoutDimension(0, Dimension.Width);
   node.setLayoutDimension(0, Dimension.Height);
 }
@@ -919,8 +971,8 @@ function computeFlexBasisForChildren(
       continue;
     }
     if (child === singleFlexChild) {
-      child.layout.computedFlexBasisGeneration = generationCount;
-      child.layout.computedFlexBasis = 0;
+      I[child.ri + FLEX_BASIS_GENERATION] = generationCount;
+      F[child.rf + FLEX_BASIS] = 0;
     } else {
       computeFlexBasisForChild(
         node,
@@ -939,7 +991,7 @@ function computeFlexBasisForChildren(
     }
 
     totalOuterFlexBasis +=
-      child.layout.computedFlexBasis +
+      F[child.rf + FLEX_BASIS]! +
       child.style.computeMarginForAxis(mainAxis, availableInnerWidth);
   }
 
@@ -971,7 +1023,7 @@ function flexStartingSize(
   availableInnerWidth: number,
   freeSpaceSign: number,
 ): number {
-  const flexBasis = child.layout.computedFlexBasis;
+  const flexBasis = F[child.rf + FLEX_BASIS]!;
   const hypotheticalSize = boundAxisWithinMinAndMax(
     child,
     direction,
@@ -1189,7 +1241,7 @@ function distributeFreeSpaceSecondPass(
       currentLineChild,
       childWidth,
       childHeight,
-      node.layout.direction,
+      (U[node.ru + DIRECTION]! as Direction),
       childWidthSizingMode,
       childHeightSizingMode,
       availableInnerWidth,
@@ -1200,13 +1252,13 @@ function distributeFreeSpaceSecondPass(
       depth,
       generationCount,
     );
-    node.layout.hadOverflow = node.layout.hadOverflow || currentLineChild.layout.hadOverflow;
-    node.layout.measureHadOverflow =
-      node.layout.measureHadOverflow || currentLineChild.layout.measureHadOverflow;
-    const childLayout = currentLineChild.layout;
+    U[node.ru + HAD_OVERFLOW] = ((U[node.ru + HAD_OVERFLOW]! !== 0) || (U[currentLineChild.ru + HAD_OVERFLOW]! !== 0) ? 1 : 0);
+    U[node.ru + MEASURE_HAD_OVERFLOW] =
+      ((U[node.ru + MEASURE_HAD_OVERFLOW]! !== 0) || (U[currentLineChild.ru + MEASURE_HAD_OVERFLOW]! !== 0) ? 1 : 0);
+    const childLayout = currentLineChild;
     itemSizeDiffers =
-      itemSizeDiffers || Math.abs(childLayout.measuredDimensions[mainDim] - updatedMainSize) > 0.0001;
-    itemMeasureDiffers = itemMeasureDiffers || childLayout.measureDiffers;
+      itemSizeDiffers || Math.abs(F[childLayout.rf + MEASURED + mainDim]! - updatedMainSize) > 0.0001;
+    itemMeasureDiffers = itemMeasureDiffers || (U[childLayout.ru + MEASURE_DIFFERS]! !== 0);
   }
   // After the items' passes, which set the same globals for their own lines.
   gLineItemSizeDiffers = itemSizeDiffers;
@@ -1301,7 +1353,7 @@ function distributeFreeSpaceFirstPass(
             flexLine.layout.totalFlexGrowFactors -= flexFactor;
           } else {
             flexLine.layout.totalFlexShrinkScaledFactors -=
-              -currentLineChild.resolveFlexShrink() * currentLineChild.layout.computedFlexBasis;
+              -currentLineChild.resolveFlexShrink() * F[currentLineChild.rf + FLEX_BASIS]!;
           }
         }
       }
@@ -1356,7 +1408,7 @@ function resolveFlexibleLength(
   const frozenSizes = flexLine.frozenSizes;
   for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const child = flexLine.itemsInFlow[i]!;
-    let startingSize = child.layout.computedFlexBasis;
+    let startingSize = F[child.rf + FLEX_BASIS]!;
     let frozenSize = NaN;
     if (child.style.hasSizeBounds) {
       startingSize = flexStartingSize(
@@ -1375,7 +1427,7 @@ function resolveFlexibleLength(
           flexLine.layout.totalFlexGrowFactors -= child.resolveFlexGrow();
         } else {
           flexLine.layout.totalFlexShrinkScaledFactors -=
-            -child.resolveFlexShrink() * child.layout.computedFlexBasis;
+            -child.resolveFlexShrink() * F[child.rf + FLEX_BASIS]!;
         }
       }
     }
@@ -1539,7 +1591,7 @@ function justifyMainAxis(
   const lastChild = flexLine.itemsInFlow[itemCount - 1];
   for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const child = flexLine.itemsInFlow[i]!;
-    const childLayout = child.layout;
+    const childLayout = child;
     const childStyle = child.style;
     if (
       childStyle.flexStartMarginIsAuto(mainAxis, direction) &&
@@ -1549,8 +1601,8 @@ function justifyMainAxis(
     }
 
     if (performLayout) {
-      childLayout.position[flexStartEdge(mainAxis)] =
-        childLayout.position[flexStartEdge(mainAxis)] + flexLine.layout.mainDim;
+      F[childLayout.rf + POSITION + (flexStartEdge(mainAxis))] =
+        F[childLayout.rf + POSITION + (flexStartEdge(mainAxis))]! + flexLine.layout.mainDim;
     }
 
     if (child !== lastChild) {
@@ -1574,7 +1626,7 @@ function justifyMainAxis(
           child,
           direction,
           mainAxis,
-          childLayout.computedFlexBasis,
+          F[childLayout.rf + FLEX_BASIS]!,
           availableInnerMainDim,
           availableInnerWidth,
         );
@@ -1591,7 +1643,7 @@ function justifyMainAxis(
           baselineOf(child) +
           childStyle.computeFlexStartMargin(FlexDirection.Column, direction, availableInnerWidth);
         const descent =
-          childLayout.measuredDimensions[Dimension.Height] +
+          F[childLayout.rf + MEASURED + Dimension.Height]! +
           childStyle.computeMarginForAxis(FlexDirection.Column, availableInnerWidth) -
           ascent;
 
@@ -1659,7 +1711,7 @@ function justifyMainAxis(
 // Details:
 //    This routine is called recursively to lay out subtrees of flexbox
 //    elements. It uses the information in node.style, which is treated as a
-//    read-only input. It is responsible for setting the layout.direction and
+//    read-only input. It is responsible for setting the (U[layout.ru + DIRECTION]! as Direction) and
 //    layout.measuredDimensions fields for the input node as well as the
 //    layout.position and layout.lineIndex fields for its child nodes. The
 //    layout.measuredDimensions field includes any border or padding for the
@@ -1689,7 +1741,7 @@ function alignContentLines(
   generationCount: number,
 ): void {
   const style = node.style;
-  const direction = node.layout.direction;
+  const direction = (U[node.ru + DIRECTION]! as Direction);
   const mainAxis = resolveDirection(style.flexDirection, direction);
   const crossAxis = resolveCrossDirection(mainAxis, direction);
   const isMainAxisRow = isRow(mainAxis);
@@ -1697,7 +1749,7 @@ function alignContentLines(
   const paddingAndBorderAxisCross = paddingAndBorderForAxis(node, crossAxis, direction, ownerWidth);
   const crossStartEdge = flexStartEdge(crossAxis);
   const leadingPaddingAndBorderCross =
-    node.layout.padding[crossStartEdge] + node.layout.border[crossStartEdge];
+    F[node.rf + PADDING + crossStartEdge]! + F[node.rf + BORDER + crossStartEdge]!;
   const crossAxisGap = style.computeGapForAxis(crossAxis, availableInnerCrossDim);
 
   let leadPerLine = 0;
@@ -1774,7 +1826,7 @@ function alignContentLines(
         if (child.isLayoutDimensionDefined(crossAxis)) {
           lineHeight = maxOrDefined(
             lineHeight,
-            child.layout.measuredDimensions[crossDimension] +
+            F[child.rf + MEASURED + crossDimension]! +
               childStyle.computeMarginForAxis(crossAxis, availableInnerWidth),
           );
         }
@@ -1783,7 +1835,7 @@ function alignContentLines(
             baselineOf(child) +
             childStyle.computeFlexStartMargin(FlexDirection.Column, direction, availableInnerWidth);
           const descent =
-            child.layout.measuredDimensions[Dimension.Height] +
+            F[child.rf + MEASURED + Dimension.Height]! +
             childStyle.computeMarginForAxis(FlexDirection.Column, availableInnerWidth) -
             ascent;
           maxAscentForCurrentLine = maxOrDefined(maxAscentForCurrentLine, ascent);
@@ -1799,7 +1851,7 @@ function alignContentLines(
     for (index = startIndex; index < endIndex; index++) {
       const child = layoutChildren[index]!;
       const childStyle = child.style;
-      const childLayout = child.layout;
+      const childLayout = child;
       if (childStyle.display === Display.None) {
         continue;
       }
@@ -1810,28 +1862,28 @@ function alignContentLines(
             // Not yet implemented
             break;
           case Align.FlexStart: {
-            childLayout.position[flexStartEdge(crossAxis)] =
+            F[childLayout.rf + POSITION + (flexStartEdge(crossAxis))] =
               currentLead +
               childStyle.computeFlexStartPosition(crossAxis, direction, availableInnerWidth);
             break;
           }
           case Align.FlexEnd: {
-            childLayout.position[flexStartEdge(crossAxis)] =
+            F[childLayout.rf + POSITION + (flexStartEdge(crossAxis))] =
               currentLead +
               lineHeight -
               childStyle.computeFlexEndMargin(crossAxis, direction, availableInnerWidth) -
-              childLayout.measuredDimensions[crossDimension];
+              F[childLayout.rf + MEASURED + crossDimension]!;
             break;
           }
           case Align.Center: {
-            const childHeight = childLayout.measuredDimensions[crossDimension];
+            const childHeight = F[childLayout.rf + MEASURED + crossDimension]!;
 
-            childLayout.position[flexStartEdge(crossAxis)] =
+            F[childLayout.rf + POSITION + (flexStartEdge(crossAxis))] =
               currentLead + (lineHeight - childHeight) / 2;
             break;
           }
           case Align.Stretch: {
-            childLayout.position[flexStartEdge(crossAxis)] =
+            F[childLayout.rf + POSITION + (flexStartEdge(crossAxis))] =
               currentLead +
               childStyle.computeFlexStartMargin(crossAxis, direction, availableInnerWidth);
 
@@ -1839,18 +1891,18 @@ function alignContentLines(
             // measured with the owners height yet.
             if (!child.hasDefiniteLength(crossDimension, availableInnerCrossDim)) {
               const childWidth = isMainAxisRow
-                ? childLayout.measuredDimensions[Dimension.Width] +
+                ? F[childLayout.rf + MEASURED + Dimension.Width]! +
                   childStyle.computeMarginForAxis(mainAxis, availableInnerWidth)
                 : leadPerLine + lineHeight;
 
               const childHeight = !isMainAxisRow
-                ? childLayout.measuredDimensions[Dimension.Height] +
+                ? F[childLayout.rf + MEASURED + Dimension.Height]! +
                   childStyle.computeMarginForAxis(crossAxis, availableInnerWidth)
                 : leadPerLine + lineHeight;
 
               if (!(
-                inexactEquals(childWidth, childLayout.measuredDimensions[Dimension.Width]) &&
-                inexactEquals(childHeight, childLayout.measuredDimensions[Dimension.Height])
+                inexactEquals(childWidth, F[childLayout.rf + MEASURED + Dimension.Width]!) &&
+                inexactEquals(childHeight, F[childLayout.rf + MEASURED + Dimension.Height]!)
               )) {
                 calculateLayoutInternal(
                   child,
@@ -1872,7 +1924,7 @@ function alignContentLines(
             break;
           }
           case Align.Baseline: {
-            childLayout.position[PhysicalEdge.Top] =
+            F[childLayout.rf + POSITION + PhysicalEdge.Top] =
               currentLead +
               maxAscentForCurrentLine -
               baselineOf(child) +
@@ -1914,7 +1966,7 @@ function alignChildrenOnCrossAxis(
   generationCount: number,
 ): void {
   const style = node.style;
-  const direction = node.layout.direction;
+  const direction = (U[node.ru + DIRECTION]! as Direction);
   const mainAxis = resolveDirection(style.flexDirection, direction);
   const crossAxis = resolveCrossDirection(mainAxis, direction);
   const isMainAxisRow = isRow(mainAxis);
@@ -1923,7 +1975,7 @@ function alignChildrenOnCrossAxis(
   const isNodeFlexWrap = style.flexWrap !== Wrap.NoWrap;
   const crossStartEdge = flexStartEdge(crossAxis);
   const leadingPaddingAndBorderCross =
-    node.layout.padding[crossStartEdge] + node.layout.border[crossStartEdge];
+    F[node.rf + PADDING + crossStartEdge]! + F[node.rf + BORDER + crossStartEdge]!;
 
   for (let i = 0, length = flexLine.itemCount; i < length; i++) {
     const child = flexLine.itemsInFlow[i]!;
@@ -1946,7 +1998,7 @@ function alignChildrenOnCrossAxis(
       // If the child defines a definite size for its cross axis, there's
       // no need to stretch.
       if (!child.hasDefiniteLength(crossDimension, availableInnerCrossDim)) {
-        let childMainSize = child.layout.measuredDimensions[mainDimension];
+        let childMainSize = F[child.rf + MEASURED + mainDimension]!;
         const aspectRatio = childStyle.aspectRatio;
         let childCrossSize =
           aspectRatio === aspectRatio
@@ -2021,8 +2073,8 @@ function alignChildrenOnCrossAxis(
       }
     }
     // And we apply the position
-    child.layout.position[flexStartEdge(crossAxis)] =
-      child.layout.position[flexStartEdge(crossAxis)] + totalLineCrossDim + leadingCrossDim;
+    F[child.rf + POSITION + (flexStartEdge(crossAxis))] =
+      F[child.rf + POSITION + (flexStartEdge(crossAxis))]! + totalLineCrossDim + leadingCrossDim;
   }
 }
 
@@ -2061,7 +2113,7 @@ function calculateLayoutImpl(
   }
 
   const style = node.style;
-  const layout = node.layout;
+  const layout = node;
   // A baseline is computed from the baseline of a child, and that from its
   // child's: what holds for the children of a node aligning by baselines
   // holds for everything below them.
@@ -2073,12 +2125,12 @@ function calculateLayoutImpl(
 
   // Set the resolved resolution in the node's layout.
   const direction = node.resolveDirection(ownerDirection);
-  layout.direction = direction;
+  U[layout.ru + DIRECTION] = direction;
 
   // Also when only measuring, and whichever way the size is found: the flag of
   // an earlier pass says nothing about this one.
-  layout.hadOverflow = false;
-  layout.measureHadOverflow = false;
+  U[layout.ru + HAD_OVERFLOW] = 0;
+  U[layout.ru + MEASURE_HAD_OVERFLOW] = 0;
 
   let marginAxisRow: number;
   let marginAxisColumn: number;
@@ -2089,12 +2141,12 @@ function calculateLayoutImpl(
     const borderPoints = style.borderPoints;
     const paddingPoints = style.paddingPoints;
     for (let edge = PhysicalEdge.Left; edge <= PhysicalEdge.Bottom; edge++) {
-      layout.margin[edge] = marginPoints[offset + edge]!;
-      layout.border[edge] = borderPoints[offset + edge]!;
-      layout.padding[edge] = paddingPoints[offset + edge]!;
+      F[layout.rf + MARGIN + edge] = marginPoints[offset + edge]!;
+      F[layout.rf + BORDER + edge] = borderPoints[offset + edge]!;
+      F[layout.rf + PADDING + edge] = paddingPoints[offset + edge]!;
     }
-    marginAxisRow = layout.margin[PhysicalEdge.Left] + layout.margin[PhysicalEdge.Right];
-    marginAxisColumn = layout.margin[PhysicalEdge.Top] + layout.margin[PhysicalEdge.Bottom];
+    marginAxisRow = F[layout.rf + MARGIN + PhysicalEdge.Left]! + F[layout.rf + MARGIN + PhysicalEdge.Right]!;
+    marginAxisColumn = F[layout.rf + MARGIN + PhysicalEdge.Top]! + F[layout.rf + MARGIN + PhysicalEdge.Bottom]!;
   } else {
     const flexRowDirection = resolveDirection(FlexDirection.Row, direction);
     const flexColumnDirection = resolveDirection(FlexDirection.Column, direction);
@@ -2107,52 +2159,52 @@ function calculateLayoutImpl(
       direction,
       ownerWidth,
     );
-    layout.margin[startEdge] = marginRowLeading;
+    F[layout.rf + MARGIN + startEdge] = marginRowLeading;
     const marginRowTrailing = style.computeInlineEndMargin(flexRowDirection, direction, ownerWidth);
-    layout.margin[endEdge] = marginRowTrailing;
+    F[layout.rf + MARGIN + endEdge] = marginRowTrailing;
     const marginColumnLeading = style.computeInlineStartMargin(
       flexColumnDirection,
       direction,
       ownerWidth,
     );
-    layout.margin[PhysicalEdge.Top] = marginColumnLeading;
+    F[layout.rf + MARGIN + PhysicalEdge.Top] = marginColumnLeading;
     const marginColumnTrailing = style.computeInlineEndMargin(
       flexColumnDirection,
       direction,
       ownerWidth,
     );
-    layout.margin[PhysicalEdge.Bottom] = marginColumnTrailing;
+    F[layout.rf + MARGIN + PhysicalEdge.Bottom] = marginColumnTrailing;
 
     marginAxisRow = marginRowLeading + marginRowTrailing;
     marginAxisColumn = marginColumnLeading + marginColumnTrailing;
 
-    layout.border[startEdge] = style.computeInlineStartBorder(flexRowDirection, direction);
-    layout.border[endEdge] = style.computeInlineEndBorder(flexRowDirection, direction);
-    layout.border[PhysicalEdge.Top] = style.computeInlineStartBorder(
+    F[layout.rf + BORDER + startEdge] = style.computeInlineStartBorder(flexRowDirection, direction);
+    F[layout.rf + BORDER + endEdge] = style.computeInlineEndBorder(flexRowDirection, direction);
+    F[layout.rf + BORDER + PhysicalEdge.Top] = style.computeInlineStartBorder(
       flexColumnDirection,
       direction,
     );
-    layout.border[PhysicalEdge.Bottom] = style.computeInlineEndBorder(
+    F[layout.rf + BORDER + PhysicalEdge.Bottom] = style.computeInlineEndBorder(
       flexColumnDirection,
       direction,
     );
 
-    layout.padding[startEdge] = style.computeInlineStartPadding(
+    F[layout.rf + PADDING + startEdge] = style.computeInlineStartPadding(
       flexRowDirection,
       direction,
       ownerWidth,
     );
-    layout.padding[endEdge] = style.computeInlineEndPadding(
+    F[layout.rf + PADDING + endEdge] = style.computeInlineEndPadding(
       flexRowDirection,
       direction,
       ownerWidth,
     );
-    layout.padding[PhysicalEdge.Top] = style.computeInlineStartPadding(
+    F[layout.rf + PADDING + PhysicalEdge.Top] = style.computeInlineStartPadding(
       flexColumnDirection,
       direction,
       ownerWidth,
     );
-    layout.padding[PhysicalEdge.Bottom] = style.computeInlineEndPadding(
+    F[layout.rf + PADDING + PhysicalEdge.Bottom] = style.computeInlineEndPadding(
       flexColumnDirection,
       direction,
       ownerWidth,
@@ -2173,8 +2225,8 @@ function calculateLayoutImpl(
       reason,
     );
     // A measure function answers for its content, as far as the cache can tell.
-    layout.contentSized = true;
-    layout.measureDiffers = false;
+    U[layout.ru + CONTENT_SIZED] = 1;
+    U[layout.ru + MEASURE_DIFFERS] = 0;
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
@@ -2194,8 +2246,8 @@ function calculateLayoutImpl(
       ownerWidth,
       ownerHeight,
     );
-    layout.contentSized = true;
-    layout.measureDiffers = false;
+    U[layout.ru + CONTENT_SIZED] = 1;
+    U[layout.ru + MEASURE_DIFFERS] = 0;
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
@@ -2220,7 +2272,7 @@ function calculateLayoutImpl(
   ) {
     // The children are not visited: what the last full pass found out about
     // them holds while nothing below changed.
-    layout.contentSized = layout.contentSized && !node.isDirty();
+    U[layout.ru + CONTENT_SIZED] = ((U[layout.ru + CONTENT_SIZED]! !== 0) && !node.isDirty() ? 1 : 0);
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
     if (node.hasContentsChildren())
@@ -2249,15 +2301,15 @@ function calculateLayoutImpl(
   // an axis add up to the same total whichever way the direction runs, and
   // asking the style again is four calls the inlining budget has to pay for.
   const paddingAndBorderAxisRowEdges =
-    layout.padding[PhysicalEdge.Left] +
-    layout.padding[PhysicalEdge.Right] +
-    layout.border[PhysicalEdge.Left] +
-    layout.border[PhysicalEdge.Right];
+    F[layout.rf + PADDING + PhysicalEdge.Left]! +
+    F[layout.rf + PADDING + PhysicalEdge.Right]! +
+    F[layout.rf + BORDER + PhysicalEdge.Left]! +
+    F[layout.rf + BORDER + PhysicalEdge.Right]!;
   const paddingAndBorderAxisColumnEdges =
-    layout.padding[PhysicalEdge.Top] +
-    layout.padding[PhysicalEdge.Bottom] +
-    layout.border[PhysicalEdge.Top] +
-    layout.border[PhysicalEdge.Bottom];
+    F[layout.rf + PADDING + PhysicalEdge.Top]! +
+    F[layout.rf + PADDING + PhysicalEdge.Bottom]! +
+    F[layout.rf + BORDER + PhysicalEdge.Top]! +
+    F[layout.rf + BORDER + PhysicalEdge.Bottom]!;
   const paddingAndBorderAxisMain = isMainAxisRow
     ? paddingAndBorderAxisRowEdges
     : paddingAndBorderAxisColumnEdges;
@@ -2268,7 +2320,7 @@ function calculateLayoutImpl(
   // and STEP 8 below ask for it.
   const isNodeBaselineLayout = isBaselineLayout(node);
   gOwnerIsBaselineLayout = isNodeBaselineLayout || underBaselineLayout;
-  layout.baselineLayout = isNodeBaselineLayout;
+  U[layout.ru + BASELINE_LAYOUT] = (isNodeBaselineLayout ? 1 : 0);
 
   let sizingModeMainDim = isMainAxisRow ? widthSizingMode : heightSizingMode;
   const sizingModeCrossDim = isMainAxisRow ? heightSizingMode : widthSizingMode;
@@ -2461,7 +2513,7 @@ function calculateLayoutImpl(
     // Less than the layout cache tells available sizes apart by is a rounding
     // error, not an overflow.
     ownOverflow = ownOverflow || flexLine.layout.remainingFreeSpace < -0.0001;
-    layout.hadOverflow = layout.hadOverflow || flexLine.layout.remainingFreeSpace < -0.0001;
+    U[layout.ru + HAD_OVERFLOW] = ((U[layout.ru + HAD_OVERFLOW]! !== 0) || flexLine.layout.remainingFreeSpace < -0.0001 ? 1 : 0);
 
     // STEP 6: MAIN-AXIS JUSTIFICATION & CROSS-AXIS SIZE DETERMINATION
 
@@ -2578,7 +2630,7 @@ function calculateLayoutImpl(
 
   // STEP 9: COMPUTING FINAL DIMENSIONS
 
-  layout.measuredDimensions[Dimension.Width] = boundAxisAbovePaddingAndBorder(
+  F[layout.rf + MEASURED + Dimension.Width] = boundAxisAbovePaddingAndBorder(
     node,
     FlexDirection.Row,
     direction,
@@ -2588,7 +2640,7 @@ function calculateLayoutImpl(
     paddingAndBorderAxisRowEdges,
   );
 
-  layout.measuredDimensions[Dimension.Height] = boundAxisAbovePaddingAndBorder(
+  F[layout.rf + MEASURED + Dimension.Height] = boundAxisAbovePaddingAndBorder(
     node,
     FlexDirection.Column,
     direction,
@@ -2606,7 +2658,7 @@ function calculateLayoutImpl(
   ) {
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
-    layout.measuredDimensions[mainDimension] = boundAxisAbovePaddingAndBorder(
+    F[layout.rf + MEASURED + mainDimension] = boundAxisAbovePaddingAndBorder(
       node,
       mainAxis,
       direction,
@@ -2616,7 +2668,7 @@ function calculateLayoutImpl(
       paddingAndBorderAxisMain,
     );
   } else if (sizingModeMainDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
-    layout.measuredDimensions[mainDimension] = maxOrDefined(
+    F[layout.rf + MEASURED + mainDimension] = maxOrDefined(
       minOrDefined(
         availableInnerMainDim + paddingAndBorderAxisMain,
         boundAxisWithinMinAndMax(
@@ -2638,7 +2690,7 @@ function calculateLayoutImpl(
   ) {
     // Clamp the size to the min/max size, if specified, and make sure it
     // doesn't go below the padding and border amount.
-    layout.measuredDimensions[crossDimension] = boundAxisAbovePaddingAndBorder(
+    F[layout.rf + MEASURED + crossDimension] = boundAxisAbovePaddingAndBorder(
       node,
       crossAxis,
       direction,
@@ -2648,7 +2700,7 @@ function calculateLayoutImpl(
       paddingAndBorderAxisCross,
     );
   } else if (sizingModeCrossDim === SizingMode.FitContent && style.overflow === Overflow.Scroll) {
-    layout.measuredDimensions[crossDimension] = maxOrDefined(
+    F[layout.rf + MEASURED + crossDimension] = maxOrDefined(
       minOrDefined(
         availableInnerCrossDim + paddingAndBorderAxisCross,
         boundAxisWithinMinAndMax(
@@ -2670,11 +2722,11 @@ function calculateLayoutImpl(
     for (let i = 0, length = layoutChildren.length; i < length; i++) {
       const child = layoutChildren[i]!;
       if (child.style.positionType !== PositionType.Absolute) {
-        const childLayout = child.layout;
-        childLayout.position[flexStartEdge(crossAxis)] =
-          layout.measuredDimensions[crossDimension] -
-          childLayout.position[flexStartEdge(crossAxis)] -
-          childLayout.measuredDimensions[crossDimension];
+        const childLayout = child;
+        F[childLayout.rf + POSITION + (flexStartEdge(crossAxis))] =
+          F[layout.rf + MEASURED + crossDimension]! -
+          F[childLayout.rf + POSITION + (flexStartEdge(crossAxis))]! -
+          F[childLayout.rf + MEASURED + crossDimension]!;
       }
     }
   }
@@ -2736,23 +2788,23 @@ function calculateLayoutImpl(
     }
     contentSized =
       !child.style.dependsOnOwnerSpace &&
-      child.layout.contentSized &&
-      !(child.isDirty() && child.layout.generationCount !== generationCount);
+      (U[child.ru + CONTENT_SIZED]! !== 0) &&
+      !(child.isDirty() && I[child.ri + GENERATION]! !== generationCount);
   }
-  layout.contentSized = contentSized;
+  U[layout.ru + CONTENT_SIZED] = (contentSized ? 1 : 0);
   if (performLayout) {
     // The flag a measurement in this space would have reported: none where it
     // would have taken the node's size for granted, the lines' overflow before
     // the flex step where it would have skipped that step, and otherwise what
     // this pass found, including what its children report for a measurement.
-    layout.measureHadOverflow =
-      widthSizingMode === SizingMode.StretchFit && heightSizingMode === SizingMode.StretchFit
+    U[layout.ru + MEASURE_HAD_OVERFLOW] =
+      ((widthSizingMode === SizingMode.StretchFit && heightSizingMode === SizingMode.StretchFit
         ? false
         : sizingModeCrossDim === SizingMode.StretchFit
           ? preFlexOverflow
-          : ownOverflow || layout.measureHadOverflow;
+          : ownOverflow || (U[layout.ru + MEASURE_HAD_OVERFLOW]! !== 0)) ? 1 : 0);
   } else {
-    layout.measureHadOverflow = layout.hadOverflow;
+    U[layout.ru + MEASURE_HAD_OVERFLOW] = ((U[layout.ru + HAD_OVERFLOW]! !== 0) ? 1 : 0);
   }
   // A measurement in a space it takes for fixed (see `measureNodeWithFixedSize`)
   // reports that space, which for a space of nothing to fit is nothing, where
@@ -2767,7 +2819,7 @@ function calculateLayoutImpl(
       (sizingModeCrossDim === SizingMode.StretchFit
         ? mainSpaceWasToFit && (preFlexOverflow || itemSizeDiffers)
         : itemMeasureDiffers));
-  layout.measureDiffers = measureDiffers;
+  U[layout.ru + MEASURE_DIFFERS] = (measureDiffers ? 1 : 0);
   gPassMeasureDiffers = measureDiffers;
   gPassRelaxable =
     contentSized &&
@@ -2796,22 +2848,22 @@ function calculateLayoutImpl(
 // The main size of a `mainSizeInvariant` layout restored in a larger exact
 // main size: the room asked for, less the margin, as STEP 9 would compute it.
 function setStretchedMainSize(node: Node, availableWidth: number, availableHeight: number): void {
-  const layout = node.layout;
-  if (isRow(resolveDirection(node.style.flexDirection, layout.direction))) {
-    layout.measuredDimensions[Dimension.Width] = Math.max(
-      availableWidth - layout.margin[PhysicalEdge.Left] - layout.margin[PhysicalEdge.Right],
-      layout.padding[PhysicalEdge.Left] +
-        layout.padding[PhysicalEdge.Right] +
-        layout.border[PhysicalEdge.Left] +
-        layout.border[PhysicalEdge.Right],
+  const layout = node;
+  if (isRow(resolveDirection(node.style.flexDirection, (U[layout.ru + DIRECTION]! as Direction)))) {
+    F[layout.rf + MEASURED + Dimension.Width] = Math.max(
+      availableWidth - F[layout.rf + MARGIN + PhysicalEdge.Left]! - F[layout.rf + MARGIN + PhysicalEdge.Right]!,
+      F[layout.rf + PADDING + PhysicalEdge.Left]! +
+        F[layout.rf + PADDING + PhysicalEdge.Right]! +
+        F[layout.rf + BORDER + PhysicalEdge.Left]! +
+        F[layout.rf + BORDER + PhysicalEdge.Right]!,
     );
   } else {
-    layout.measuredDimensions[Dimension.Height] = Math.max(
-      availableHeight - layout.margin[PhysicalEdge.Top] - layout.margin[PhysicalEdge.Bottom],
-      layout.padding[PhysicalEdge.Top] +
-        layout.padding[PhysicalEdge.Bottom] +
-        layout.border[PhysicalEdge.Top] +
-        layout.border[PhysicalEdge.Bottom],
+    F[layout.rf + MEASURED + Dimension.Height] = Math.max(
+      availableHeight - F[layout.rf + MARGIN + PhysicalEdge.Top]! - F[layout.rf + MARGIN + PhysicalEdge.Bottom]!,
+      F[layout.rf + PADDING + PhysicalEdge.Top]! +
+        F[layout.rf + PADDING + PhysicalEdge.Bottom]! +
+        F[layout.rf + BORDER + PhysicalEdge.Top]! +
+        F[layout.rf + BORDER + PhysicalEdge.Bottom]!,
     );
   }
 }
@@ -2820,22 +2872,54 @@ function setStretchedMainSize(node: Node, availableWidth: number, availableHeigh
 // small enough for V8 to inline the cache probes into it.
 
 // Brings a node's results back from a cache entry, next to its measured size.
-function restoreCachedResults(
-  layout: LayoutResults,
-  cachedResults: CachedMeasurement,
-  performLayout: boolean,
-): void {
-  layout.baseline = cachedResults.baseline;
+function restoreCachedResults(node: Node, entry: number, performLayout: boolean): void {
+  const f = entryF(node, entry);
+  const u = entryU(node, entry);
+  F[node.rf + MEASURED + Dimension.Width] = F[f + COMPUTED_WIDTH]!;
+  F[node.rf + MEASURED + Dimension.Height] = F[f + COMPUTED_HEIGHT]!;
+  F[node.rf + BASELINE] = F[f + ENTRY_BASELINE]!;
   // A measurement reports the flag of a measurement, also from a layout's
   // entry. One that brings back another flag than the one of the node's last
   // layout leaves a result of its own, like one that is computed.
-  const hadOverflow = performLayout ? cachedResults.hadOverflow : cachedResults.measureHadOverflow;
-  if (!performLayout && layout.hadOverflow !== hadOverflow) {
-    layout.measuredSinceLayout = true;
+  const measureHadOverflow = entryHas(u, ENTRY_MEASURE_HAD_OVERFLOW);
+  const hadOverflow = performLayout ? entryHas(u, ENTRY_HAD_OVERFLOW) : measureHadOverflow;
+  if (!performLayout && (U[node.ru + HAD_OVERFLOW] !== 0) !== hadOverflow) {
+    U[node.ru + MEASURED_SINCE_LAYOUT] = 1;
     gMeasurementLeftResults = true;
   }
-  layout.hadOverflow = hadOverflow;
-  layout.measureHadOverflow = cachedResults.measureHadOverflow;
+  U[node.ru + HAD_OVERFLOW] = hadOverflow ? 1 : 0;
+  U[node.ru + MEASURE_HAD_OVERFLOW] = measureHadOverflow ? 1 : 0;
+}
+
+// Writes the question a pass answered, and the node's answer, into a cache
+// entry. Only the flags named here change: an entry taken back from the ones
+// in use keeps its others.
+function storeEntry(
+  node: Node,
+  entry: number,
+  availableWidth: number,
+  availableHeight: number,
+  widthSizingMode: SizingMode,
+  heightSizingMode: SizingMode,
+  ownerWidth: number,
+  ownerHeight: number,
+  hadOverflow: boolean,
+  relaxable: boolean,
+): void {
+  const f = entryF(node, entry);
+  const u = entryU(node, entry);
+  F[f + AVAILABLE_WIDTH] = availableWidth;
+  F[f + AVAILABLE_HEIGHT] = availableHeight;
+  U[u + WIDTH_SIZING_MODE] = widthSizingMode;
+  U[u + HEIGHT_SIZING_MODE] = heightSizingMode;
+  F[f + OWNER_WIDTH] = ownerWidth;
+  F[f + OWNER_HEIGHT] = ownerHeight;
+  F[f + COMPUTED_WIDTH] = F[node.rf + MEASURED + Dimension.Width]!;
+  F[f + COMPUTED_HEIGHT] = F[node.rf + MEASURED + Dimension.Height]!;
+  F[f + ENTRY_BASELINE] = F[node.rf + BASELINE]!;
+  setEntryFlag(u, ENTRY_HAD_OVERFLOW, hadOverflow);
+  setEntryFlag(u, ENTRY_MEASURE_HAD_OVERFLOW, U[node.ru + MEASURE_HAD_OVERFLOW] !== 0);
+  setEntryFlag(u, ENTRY_RELAXABLE, relaxable);
 }
 
 // After a node is computed: tells the layout cache of the node and of its
@@ -2846,17 +2930,17 @@ function noteResultsLeftByMeasurement(
   hadOverflow: boolean,
   outerMeasurementLeftResults: boolean,
 ): void {
-  const layout = node.layout;
+  const layout = node;
   if (performLayout) {
     // Every node below has been laid out after it was last measured.
-    layout.measuredSinceLayout = false;
+    U[layout.ru + MEASURED_SINCE_LAYOUT] = 0;
     gMeasurementLeftResults = outerMeasurementLeftResults;
   } else if (
     gMeasurementLeftResults ||
     node.style.edgesNeedOwnerWidth ||
-    layout.hadOverflow !== hadOverflow
+    (U[layout.ru + HAD_OVERFLOW]! !== 0) !== hadOverflow
   ) {
-    layout.measuredSinceLayout = true;
+    U[layout.ru + MEASURED_SINCE_LAYOUT] = 1;
     gMeasurementLeftResults = true;
   } else {
     gMeasurementLeftResults = outerMeasurementLeftResults;
@@ -2886,23 +2970,23 @@ export function calculateLayoutInternal(
   depth: number,
   generationCount: number,
 ): boolean {
-  const layout = node.layout;
+  const layout = node;
 
   depth++;
 
   const needToVisitNode =
-    (node.isDirty() && layout.generationCount !== generationCount) ||
-    layout.configVersion !== node.getConfig().version ||
-    layout.lastOwnerDirection !== ownerDirection;
+    (node.isDirty() && I[layout.ri + GENERATION]! !== generationCount) ||
+    I[layout.ri + CONFIG_VERSION]! !== node.getConfig().version ||
+    (U[layout.ru + LAST_OWNER_DIRECTION]! as Direction) !== ownerDirection;
 
   if (needToVisitNode) {
     // Invalidate the cached results, flags included.
-    layout.nextCachedMeasurementsIndex = 0;
-    layout.hasRelaxableMeasurements = false;
-    layout.cachedLayout.reset();
+    I[layout.ri + NEXT_CACHED_MEASUREMENT] = 0;
+    U[layout.ru + HAS_RELAXABLE_MEASUREMENTS] = 0;
+    resetEntry(node, LAYOUT_ENTRY);
   }
 
-  let cachedResults: CachedMeasurement | null = null;
+  let cachedResults = NO_ENTRY;
   // A flex basis measurement promoted to a layout, because the space it is
   // asked in is the one the node ends up with. It takes a measurement it
   // finds cached like a measurement would, and only does the work it has to
@@ -2937,30 +3021,34 @@ export function calculateLayoutInternal(
     if (!performLayout || promoted) {
       const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
       const relaxed = !ownerIsBaselineLayout;
-      for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
-        const cachedMeasurement = layout.cachedMeasurements[i]!;
+      const count = I[layout.ri + NEXT_CACHED_MEASUREMENT]!;
+      for (let i = 0; i < count; i++) {
+        const entry = measurementAt(node, i);
+        const f = entryF(node, entry);
+        const u = entryU(node, entry);
         // The sizing modes settle about half the entries between them, and
         // cost two integer compares against the two calls a size takes. They
         // go first.
         if (
-          cachedMeasurement.widthSizingMode === widthSizingMode &&
-          cachedMeasurement.heightSizingMode === heightSizingMode &&
-          sameAvailableSize(cachedMeasurement.availableWidth, availableWidth) &&
-          sameAvailableSize(cachedMeasurement.availableHeight, availableHeight) &&
-          (!keyedOnOwnerSize || hasSameOwnerSize(cachedMeasurement, ownerWidth, ownerHeight)) &&
-          (relaxed || !cachedMeasurement.fromLayout)
+          U[u + WIDTH_SIZING_MODE] === widthSizingMode &&
+          U[u + HEIGHT_SIZING_MODE] === heightSizingMode &&
+          sameAvailableSize(F[f + AVAILABLE_WIDTH]!, availableWidth) &&
+          sameAvailableSize(F[f + AVAILABLE_HEIGHT]!, availableHeight) &&
+          (!keyedOnOwnerSize || hasSameOwnerSize(f, ownerWidth, ownerHeight)) &&
+          (relaxed || !entryHas(u, ENTRY_FROM_LAYOUT))
         ) {
-          cachedResults = cachedMeasurement;
+          cachedResults = entry;
           if (i > 0) {
-            layout.promoteCachedMeasurement(i);
+            promoteMeasurement(node, i);
           }
           break;
         }
       }
       if (
-        cachedResults === null &&
+        cachedResults === NO_ENTRY &&
         relaxed &&
-        (layout.hasRelaxableMeasurements || layout.cachedLayout.relaxable)
+        (U[layout.ru + HAS_RELAXABLE_MEASUREMENTS] !== 0 ||
+          entryHas(entryU(node, LAYOUT_ENTRY), ENTRY_RELAXABLE))
       ) {
         cachedResults = findRelaxedMeasurement(
           node,
@@ -2972,21 +3060,22 @@ export function calculateLayoutInternal(
           ownerHeight,
         );
       }
-      if (cachedResults !== null) {
+      if (cachedResults !== NO_ENTRY) {
         // A promoted pass that finds a measurement takes it as one.
         performLayout = false;
       }
     }
-    if (cachedResults === null && performLayout) {
+    if (cachedResults === NO_ENTRY && performLayout) {
+      const f = entryF(node, LAYOUT_ENTRY);
+      const u = entryU(node, LAYOUT_ENTRY);
       if (
-        layout.cachedLayout.widthSizingMode === widthSizingMode &&
-        layout.cachedLayout.heightSizingMode === heightSizingMode &&
-        sameAvailableSize(layout.cachedLayout.availableWidth, availableWidth) &&
-        sameAvailableSize(layout.cachedLayout.availableHeight, availableHeight) &&
-        (!node.style.dependsOnOwnerSize ||
-          hasSameOwnerSize(layout.cachedLayout, ownerWidth, ownerHeight))
+        U[u + WIDTH_SIZING_MODE] === widthSizingMode &&
+        U[u + HEIGHT_SIZING_MODE] === heightSizingMode &&
+        sameAvailableSize(F[f + AVAILABLE_WIDTH]!, availableWidth) &&
+        sameAvailableSize(F[f + AVAILABLE_HEIGHT]!, availableHeight) &&
+        (!node.style.dependsOnOwnerSize || hasSameOwnerSize(f, ownerWidth, ownerHeight))
       ) {
-        cachedResults = layout.cachedLayout;
+        cachedResults = LAYOUT_ENTRY;
       } else if (!ownerIsBaselineLayout) {
         const fit = relaxedLayoutFits(
           node,
@@ -2998,7 +3087,7 @@ export function calculateLayoutInternal(
           ownerHeight,
         );
         if (fit !== LAYOUT_MISS) {
-          cachedResults = layout.cachedLayout;
+          cachedResults = LAYOUT_ENTRY;
           stretched = fit === LAYOUT_STRETCHED;
         }
       }
@@ -3006,17 +3095,15 @@ export function calculateLayoutInternal(
   }
 
   // A layout cannot be restored over what a later measurement left behind.
-  if (performLayout && layout.measuredSinceLayout) {
-    cachedResults = null;
+  if (performLayout && U[layout.ru + MEASURED_SINCE_LAYOUT] !== 0) {
+    cachedResults = NO_ENTRY;
   }
 
-  if (!needToVisitNode && cachedResults !== null) {
-    layout.measuredDimensions[Dimension.Width] = cachedResults.computedWidth;
-    layout.measuredDimensions[Dimension.Height] = cachedResults.computedHeight;
+  if (!needToVisitNode && cachedResults !== NO_ENTRY) {
+    restoreCachedResults(node, cachedResults, performLayout);
     if (stretched) {
       setStretchedMainSize(node, availableWidth, availableHeight);
     }
-    restoreCachedResults(layout, cachedResults, performLayout);
 
     if (__EVENTS__ && layoutMarkerData !== null) {
       if (performLayout) {
@@ -3028,7 +3115,7 @@ export function calculateLayoutInternal(
   } else {
     const outerMeasurementLeftResults = gMeasurementLeftResults;
     gMeasurementLeftResults = false;
-    const hadOverflow = layout.hadOverflow;
+    const hadOverflow = U[layout.ru + HAD_OVERFLOW] !== 0;
     const visitedChildren = calculateLayoutImpl(
       node,
       availableWidth,
@@ -3073,20 +3160,20 @@ export function calculateLayoutInternal(
       relaxable = gPassRelaxable;
       mainSizeInvariant = false;
       gOwnerIsBaselineLayout = ownerIsBaselineLayout;
-      layout.cachedLayout.reset();
+      resetEntry(node, LAYOUT_ENTRY);
       performLayout = false;
     }
 
     // A node without children of its own to go by has its bottom edge for a
     // baseline. So has one measured with a definite cross size: that skips the
     // flex step, and leaves the children as they were.
-    layout.baseline =
+    F[layout.rf + BASELINE] =
       visitedChildren &&
       (performLayout ||
         (isRow(node.style.flexDirection) ? heightSizingMode : widthSizingMode) !==
           SizingMode.StretchFit)
         ? calculateBaseline(node, performLayout)
-        : layout.measuredDimensions[Dimension.Height];
+        : F[layout.rf + MEASURED + Dimension.Height]!;
     noteResultsLeftByMeasurement(node, performLayout, hadOverflow, outerMeasurementLeftResults);
     // A promoted measurement lays the subtree out in the space it is asked in,
     // which its owner may yet lay it out in another. Until then, the owner and
@@ -3095,62 +3182,57 @@ export function calculateLayoutInternal(
     if (promotedRan) {
       gMeasurementLeftResults = true;
     }
-    layout.lastOwnerDirection = ownerDirection;
-    layout.configVersion = node.getConfig().version;
+    U[layout.ru + LAST_OWNER_DIRECTION] = ownerDirection;
+    I[layout.ri + CONFIG_VERSION] = node.getConfig().version;
 
-    if (cachedResults === null) {
+    if (cachedResults === NO_ENTRY) {
       if (__EVENTS__ && layoutMarkerData !== null) {
         layoutMarkerData.maxMeasureCache = Math.max(
           layoutMarkerData.maxMeasureCache,
-          layout.nextCachedMeasurementsIndex + 1,
+          I[layout.ri + NEXT_CACHED_MEASUREMENT]! + 1,
         );
       }
 
-      let newCacheEntry: CachedMeasurement;
-      if (performLayout) {
-        // Use the single layout cache entry.
-        newCacheEntry = layout.cachedLayout;
-      } else {
-        newCacheEntry = layout.takeCachedMeasurement();
-      }
-
-      newCacheEntry.availableWidth = availableWidth;
-      newCacheEntry.availableHeight = availableHeight;
-      newCacheEntry.widthSizingMode = widthSizingMode;
-      newCacheEntry.heightSizingMode = heightSizingMode;
-      newCacheEntry.ownerWidth = ownerWidth;
-      newCacheEntry.ownerHeight = ownerHeight;
-      newCacheEntry.computedWidth = layout.measuredDimensions[Dimension.Width];
-      newCacheEntry.computedHeight = layout.measuredDimensions[Dimension.Height];
-      newCacheEntry.baseline = layout.baseline;
-      newCacheEntry.hadOverflow = layout.hadOverflow;
-      newCacheEntry.measureHadOverflow = layout.measureHadOverflow;
-      newCacheEntry.relaxable = relaxable;
-      newCacheEntry.mainSizeInvariant = mainSizeInvariant;
-      newCacheEntry.mainContentSize = mainContentSize;
+      // A layout uses the single layout cache entry.
+      const entry = performLayout ? LAYOUT_ENTRY : takeMeasurement(node);
+      storeEntry(
+        node,
+        entry,
+        availableWidth,
+        availableHeight,
+        widthSizingMode,
+        heightSizingMode,
+        ownerWidth,
+        ownerHeight,
+        U[layout.ru + HAD_OVERFLOW] !== 0,
+        relaxable,
+      );
+      const u = entryU(node, entry);
+      setEntryFlag(u, ENTRY_MAIN_SIZE_INVARIANT, mainSizeInvariant);
+      F[entryF(node, entry) + MAIN_CONTENT_SIZE] = mainContentSize;
       if (relaxable && !performLayout) {
-        layout.hasRelaxableMeasurements = true;
+        U[layout.ru + HAS_RELAXABLE_MEASUREMENTS] = 1;
       }
       // The layout cache entry stands for the layout the subtree holds, which
       // the next layout pass replaces. What a promoted measurement found out
       // about the node's size outlives that: keep it with the measurements.
       if (promoted && performLayout) {
-        const measurement = layout.takeCachedMeasurement();
-        measurement.availableWidth = availableWidth;
-        measurement.availableHeight = availableHeight;
-        measurement.widthSizingMode = widthSizingMode;
-        measurement.heightSizingMode = heightSizingMode;
-        measurement.ownerWidth = ownerWidth;
-        measurement.ownerHeight = ownerHeight;
-        measurement.computedWidth = newCacheEntry.computedWidth;
-        measurement.computedHeight = newCacheEntry.computedHeight;
-        measurement.baseline = layout.baseline;
-        measurement.hadOverflow = layout.measureHadOverflow;
-        measurement.measureHadOverflow = layout.measureHadOverflow;
-        measurement.relaxable = relaxable;
-        measurement.fromLayout = true;
+        const measurement = takeMeasurement(node);
+        storeEntry(
+          node,
+          measurement,
+          availableWidth,
+          availableHeight,
+          widthSizingMode,
+          heightSizingMode,
+          ownerWidth,
+          ownerHeight,
+          U[layout.ru + MEASURE_HAD_OVERFLOW] !== 0,
+          relaxable,
+        );
+        setEntryFlag(entryU(node, measurement), ENTRY_FROM_LAYOUT, true);
         if (relaxable) {
-          layout.hasRelaxableMeasurements = true;
+          U[layout.ru + HAS_RELAXABLE_MEASUREMENTS] = 1;
         }
       }
     }
@@ -3159,29 +3241,29 @@ export function calculateLayoutInternal(
   if (performLayout) {
     // The size as reported is set when the pass rounds its results. A pass that
     // finds nothing to do does not round, and must leave the last one standing.
-    layout.rawDimensions[Dimension.Width] = layout.measuredDimensions[Dimension.Width];
-    layout.rawDimensions[Dimension.Height] = layout.measuredDimensions[Dimension.Height];
+    F[layout.rf + RAW_DIMENSIONS + Dimension.Width] = F[layout.rf + MEASURED + Dimension.Width]!;
+    F[layout.rf + RAW_DIMENSIONS + Dimension.Height] = F[layout.rf + MEASURED + Dimension.Height]!;
 
     node.hasNewLayout = true;
     node.setDirty(false);
   }
 
-  layout.generationCount = generationCount;
+  I[layout.ri + GENERATION] = generationCount;
 
   if (__EVENTS__ && Event.hasSubscribers()) {
     let layoutType: LayoutType;
     if (performLayout) {
       layoutType =
-        !needToVisitNode && cachedResults === layout.cachedLayout
+        !needToVisitNode && cachedResults === LAYOUT_ENTRY
           ? LayoutType.CachedLayout
           : LayoutType.Layout;
     } else {
-      layoutType = cachedResults !== null ? LayoutType.CachedMeasure : LayoutType.Measure;
+      layoutType = cachedResults !== NO_ENTRY ? LayoutType.CachedMeasure : LayoutType.Measure;
     }
     Event.publish(node, Event.NodeLayout, { layoutType });
   }
 
-  return needToVisitNode || cachedResults === null;
+  return needToVisitNode || cachedResults === NO_ENTRY;
 }
 
 export function calculateLayout(
@@ -3198,19 +3280,19 @@ export function calculateLayout(
   // Keep nested calls on the regular path. Besides preserving the global
   // generation/measurement bookkeeping during callbacks, this means a layout
   // invoked reentrantly cannot observe a half-finished outer pass as final.
-  const cachedLayout = node.layout.cachedLayout;
+  const cachedLayout = entryF(node, LAYOUT_ENTRY);
   if (
     gActiveLayoutPasses === 0 &&
     node.owner === null &&
     !node.isDirty() &&
     node.hasNewLayout &&
-    !node.layout.measuredSinceLayout &&
-    cachedLayout.computedWidth >= 0 &&
-    cachedLayout.computedHeight >= 0 &&
-    sameLayoutConstraint(cachedLayout.ownerWidth, ownerWidth) &&
-    sameLayoutConstraint(cachedLayout.ownerHeight, ownerHeight) &&
-    node.layout.lastOwnerDirection === ownerDirection &&
-    node.layout.configVersion === node.getConfig().version
+    U[node.ru + MEASURED_SINCE_LAYOUT] === 0 &&
+    F[cachedLayout + COMPUTED_WIDTH]! >= 0 &&
+    F[cachedLayout + COMPUTED_HEIGHT]! >= 0 &&
+    sameLayoutConstraint(F[cachedLayout + OWNER_WIDTH]!, ownerWidth) &&
+    sameLayoutConstraint(F[cachedLayout + OWNER_HEIGHT]!, ownerHeight) &&
+    (U[node.ru + LAST_OWNER_DIRECTION]! as Direction) === ownerDirection &&
+    I[node.ri + CONFIG_VERSION]! === node.getConfig().version
   ) {
     if (__EVENTS__) {
       Event.publish(node, Event.LayoutPassStart);
@@ -3299,7 +3381,7 @@ export function calculateLayout(
         generationCount,
       )
     ) {
-      node.setLayoutPositionFromStyle(node.layout.direction, ownerWidth, ownerHeight);
+      node.setLayoutPositionFromStyle((U[node.ru + DIRECTION]! as Direction), ownerWidth, ownerHeight);
       roundLayoutResultsToPixelGrid(node, generationCount);
     }
   } finally {
@@ -3311,8 +3393,8 @@ export function calculateLayout(
   // These fields are already the owner-size part of the root layout-cache key.
   // Updating them after a successful public call also makes them the raw-input
   // fingerprint. A throw never records a pass as complete.
-  cachedLayout.ownerWidth = ownerWidth;
-  cachedLayout.ownerHeight = ownerHeight;
+  F[cachedLayout + OWNER_WIDTH] = ownerWidth;
+  F[cachedLayout + OWNER_HEIGHT] = ownerHeight;
 
   if (__EVENTS__) Event.publish(node, Event.LayoutPassEnd, { layoutData: markerData });
 }

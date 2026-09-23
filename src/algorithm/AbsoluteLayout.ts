@@ -30,6 +30,24 @@ import {
   needsTrailingPosition,
   setChildTrailingPosition,
 } from "./TrailingPosition.ts";
+import {
+  ABSOLUTE_WALK_CONTAINING_HEIGHT,
+  ABSOLUTE_WALK_CONTAINING_WIDTH,
+  ABSOLUTE_WALK_DIRECTION,
+  ABSOLUTE_WALK_GENERATION,
+  ABSOLUTE_WALK_LEFT,
+  ABSOLUTE_WALK_SIZING_MODE,
+  ABSOLUTE_WALK_TOP,
+  BORDER,
+  F,
+  GENERATION,
+  I,
+  MEASURED,
+  PADDING,
+  POSITION,
+  RAW_DIMENSIONS,
+  U,
+} from "../node/Store.ts";
 
 function setFlexStartLayoutPosition(
   parent: Node,
@@ -40,10 +58,10 @@ function setFlexStartLayoutPosition(
 ): void {
   const position =
     child.style.computeFlexStartMargin(axis, direction, containingBlockWidth) +
-    parent.layout.border[flexStartEdge(axis)] +
-    parent.layout.padding[flexStartEdge(axis)];
+    F[parent.rf + BORDER + (flexStartEdge(axis))]! +
+    F[parent.rf + PADDING + (flexStartEdge(axis))]!;
 
-  child.layout.position[flexStartEdge(axis)] = position;
+  F[child.rf + POSITION + (flexStartEdge(axis))] = position;
 }
 
 function setFlexEndLayoutPosition(
@@ -54,11 +72,11 @@ function setFlexEndLayoutPosition(
   containingBlockWidth: number,
 ): void {
   const flexEndPosition =
-    parent.layout.border[flexEndEdge(axis)] +
-    parent.layout.padding[flexEndEdge(axis)] +
+    F[parent.rf + BORDER + (flexEndEdge(axis))]! +
+    F[parent.rf + PADDING + (flexEndEdge(axis))]! +
     child.style.computeFlexEndMargin(axis, direction, containingBlockWidth);
 
-  child.layout.position[flexStartEdge(axis)] = getPositionOfOppositeEdge(
+  F[child.rf + POSITION + (flexStartEdge(axis))] = getPositionOfOppositeEdge(
     flexEndPosition,
     axis,
     parent,
@@ -73,25 +91,25 @@ function setCenterLayoutPosition(
   axis: FlexDirection,
   containingBlockWidth: number,
 ): void {
-  const parentLayout = parent.layout;
+  const parentLayout = parent;
   const parentContentBoxSize =
-    parentLayout.measuredDimensions[dimension(axis)] -
-    parentLayout.border[flexStartEdge(axis)] -
-    parentLayout.border[flexEndEdge(axis)] -
-    parentLayout.padding[flexStartEdge(axis)] -
-    parentLayout.padding[flexEndEdge(axis)];
+    F[parentLayout.rf + MEASURED + (dimension(axis))]! -
+    F[parentLayout.rf + BORDER + (flexStartEdge(axis))]! -
+    F[parentLayout.rf + BORDER + (flexEndEdge(axis))]! -
+    F[parentLayout.rf + PADDING + (flexStartEdge(axis))]! -
+    F[parentLayout.rf + PADDING + (flexEndEdge(axis))]!;
 
   const childOuterSize =
-    child.layout.measuredDimensions[dimension(axis)] +
+    F[child.rf + MEASURED + (dimension(axis))]! +
     child.style.computeMarginForAxis(axis, containingBlockWidth);
 
   const position =
     (parentContentBoxSize - childOuterSize) / 2.0 +
-    parentLayout.border[flexStartEdge(axis)] +
-    parentLayout.padding[flexStartEdge(axis)] +
+    F[parentLayout.rf + BORDER + (flexStartEdge(axis))]! +
+    F[parentLayout.rf + PADDING + (flexStartEdge(axis))]! +
     child.style.computeFlexStartMargin(axis, direction, containingBlockWidth);
 
-  child.layout.position[flexStartEdge(axis)] = position;
+  F[child.rf + POSITION + (flexStartEdge(axis))] = position;
 }
 
 function justifyAbsoluteChild(
@@ -203,22 +221,22 @@ function positionAbsoluteChild(
   ) {
     const positionRelativeToInlineStart =
       childStyle.computeInlineStartPosition(axis, direction, containingBlockSize) +
-      containingNode.layout.border[inlineStartEdge(axis, direction)] +
+      F[containingNode.rf + BORDER + (inlineStartEdge(axis, direction))]! +
       childStyle.computeInlineStartMargin(axis, direction, containingBlockSize);
     const positionRelativeToFlexStart =
       inlineStartEdge(axis, direction) !== flexStartEdge(axis)
         ? getPositionOfOppositeEdge(positionRelativeToInlineStart, axis, containingNode, child)
         : positionRelativeToInlineStart;
 
-    child.layout.position[flexStartEdge(axis)] = positionRelativeToFlexStart;
+    F[child.rf + POSITION + (flexStartEdge(axis))] = positionRelativeToFlexStart;
   } else if (
     childStyle.isInlineEndPositionDefined(axis, direction) &&
     !childStyle.isInlineEndPositionAuto(axis, direction)
   ) {
     const positionRelativeToInlineStart =
-      containingNode.layout.measuredDimensions[dimension(axis)] -
-      child.layout.measuredDimensions[dimension(axis)] -
-      containingNode.layout.border[inlineEndEdge(axis, direction)] -
+      F[containingNode.rf + MEASURED + (dimension(axis))]! -
+      F[child.rf + MEASURED + (dimension(axis))]! -
+      F[containingNode.rf + BORDER + (inlineEndEdge(axis, direction))]! -
       childStyle.computeInlineEndMargin(axis, direction, containingBlockSize) -
       childStyle.computeInlineEndPosition(axis, direction, containingBlockSize);
     const positionRelativeToFlexStart =
@@ -226,7 +244,7 @@ function positionAbsoluteChild(
         ? getPositionOfOppositeEdge(positionRelativeToInlineStart, axis, containingNode, child)
         : positionRelativeToInlineStart;
 
-    child.layout.position[flexStartEdge(axis)] = positionRelativeToFlexStart;
+    F[child.rf + POSITION + (flexStartEdge(axis))] = positionRelativeToFlexStart;
   } else if (isMainAxis) {
     justifyAbsoluteChild(parent, child, direction, axis, containingBlockWidth);
   } else {
@@ -382,10 +400,10 @@ function layoutAbsoluteChild(
       generationCount,
     );
     childWidth =
-      child.layout.measuredDimensions[Dimension.Width] +
+      F[child.rf + MEASURED + Dimension.Width]! +
       childStyle.computeMarginForAxis(FlexDirection.Row, containingBlockWidth);
     childHeight =
-      child.layout.measuredDimensions[Dimension.Height] +
+      F[child.rf + MEASURED + Dimension.Height]! +
       childStyle.computeMarginForAxis(FlexDirection.Column, containingBlockWidth);
   }
 
@@ -444,15 +462,15 @@ export function layoutAbsoluteDescendants(
   // The containing block is the padding box of the containing node. Its border
   // is read from its layout, where it is resolved for its own direction: the
   // direction at hand is that of the absolute child's parent.
-  const containingBorder = containingNode.layout.border;
+  const containingBorder = containingNode.rf + BORDER;
   const containingBlockWidth =
-    containingNode.layout.measuredDimensions[Dimension.Width] -
-    containingBorder[PhysicalEdge.Left] -
-    containingBorder[PhysicalEdge.Right];
+    F[containingNode.rf + MEASURED + Dimension.Width]! -
+    F[containingBorder + PhysicalEdge.Left]! -
+    F[containingBorder + PhysicalEdge.Right]!;
   const containingBlockHeight =
-    containingNode.layout.measuredDimensions[Dimension.Height] -
-    containingBorder[PhysicalEdge.Top] -
-    containingBorder[PhysicalEdge.Bottom];
+    F[containingNode.rf + MEASURED + Dimension.Height]! -
+    F[containingBorder + PhysicalEdge.Top]! -
+    F[containingBorder + PhysicalEdge.Bottom]!;
   const children = currentNode.getLayoutChildren();
   for (let i = 0, length = children.length; i < length; i++) {
     const child = children[i]!;
@@ -516,9 +534,9 @@ export function layoutAbsoluteDescendants(
        * set with positions that are relative to the containing block if insets
        * are defined
        */
-      const childLayout = child.layout;
-      const childLeftPosition = childLayout.position[PhysicalEdge.Left];
-      const childTopPosition = childLayout.position[PhysicalEdge.Top];
+      const childLayout = child;
+      const childLeftPosition = F[childLayout.rf + POSITION + PhysicalEdge.Left]!;
+      const childTopPosition = F[childLayout.rf + POSITION + PhysicalEdge.Top]!;
 
       const childLeftOffsetFromParent = childStyle.horizontalInsetsDefined()
         ? childLeftPosition - currentNodeLeftOffsetFromContainingBlock
@@ -527,8 +545,8 @@ export function layoutAbsoluteDescendants(
         ? childTopPosition - currentNodeTopOffsetFromContainingBlock
         : childTopPosition;
 
-      childLayout.position[PhysicalEdge.Left] = childLeftOffsetFromParent;
-      childLayout.position[PhysicalEdge.Top] = childTopOffsetFromParent;
+      F[childLayout.rf + POSITION + PhysicalEdge.Left] = childLeftOffsetFromParent;
+      F[childLayout.rf + POSITION + PhysicalEdge.Top] = childTopOffsetFromParent;
     } else if (childStyle.positionType === PositionType.Static) {
       // Absolute descendants of "child" are positioned relative to the current
       // containing block instead of their parent.
@@ -536,44 +554,44 @@ export function layoutAbsoluteDescendants(
       // By now all descendants of the containing block that are not absolute
       // will have their positions set for left and top.
       const childLeftOffsetFromContainingBlock =
-        currentNodeLeftOffsetFromContainingBlock + child.layout.position[PhysicalEdge.Left];
+        currentNodeLeftOffsetFromContainingBlock + F[child.rf + POSITION + PhysicalEdge.Left]!;
       const childTopOffsetFromContainingBlock =
-        currentNodeTopOffsetFromContainingBlock + child.layout.position[PhysicalEdge.Top];
+        currentNodeTopOffsetFromContainingBlock + F[child.rf + POSITION + PhysicalEdge.Top]!;
 
       // A change anywhere below `child` dirties it, and a dirty node is visited.
       // So when this pass has not visited it, and the walk arrives with what
       // it came with last time, the absolute descendants are laid out already.
       // What places them is the size of the containing block and where `child`
       // is in it, so the offsets of the key are taken from its padding box.
-      const childLayout = child.layout;
+      const childLayout = child;
       const walkLeft =
-        childLeftOffsetFromContainingBlock - containingNode.layout.border[PhysicalEdge.Left];
+        childLeftOffsetFromContainingBlock - F[containingNode.rf + BORDER + PhysicalEdge.Left]!;
       const walkTop =
-        childTopOffsetFromContainingBlock - containingNode.layout.border[PhysicalEdge.Top];
+        childTopOffsetFromContainingBlock - F[containingNode.rf + BORDER + PhysicalEdge.Top]!;
       if (
-        childLayout.generationCount !== generationCount &&
-        childLayout.absoluteWalkDirection === childDirection &&
-        childLayout.absoluteWalkSizingMode === widthSizingMode &&
-        childLayout.absoluteWalkContainingWidth === containingBlockWidth &&
-        childLayout.absoluteWalkContainingHeight === containingBlockHeight &&
-        childLayout.absoluteWalkLeft === walkLeft &&
-        childLayout.absoluteWalkTop === walkTop
+        I[childLayout.ri + GENERATION]! !== generationCount &&
+        (U[childLayout.ru + ABSOLUTE_WALK_DIRECTION]! as Direction) === childDirection &&
+        (U[childLayout.ru + ABSOLUTE_WALK_SIZING_MODE]! as SizingMode) === widthSizingMode &&
+        F[childLayout.rf + ABSOLUTE_WALK_CONTAINING_WIDTH]! === containingBlockWidth &&
+        F[childLayout.rf + ABSOLUTE_WALK_CONTAINING_HEIGHT]! === containingBlockHeight &&
+        F[childLayout.rf + ABSOLUTE_WALK_LEFT]! === walkLeft &&
+        F[childLayout.rf + ABSOLUTE_WALK_TOP]! === walkTop
       ) {
         continue;
       }
       // The walk reads the size `child` was laid out with. When a measurement
       // came after that layout, the measured dimensions are its result instead.
-      childLayout.measuredDimensions[Dimension.Width] = childLayout.rawDimensions[Dimension.Width];
-      childLayout.measuredDimensions[Dimension.Height] =
-        childLayout.rawDimensions[Dimension.Height];
+      F[childLayout.rf + MEASURED + Dimension.Width] = F[childLayout.rf + RAW_DIMENSIONS + Dimension.Width]!;
+      F[childLayout.rf + MEASURED + Dimension.Height] =
+        F[childLayout.rf + RAW_DIMENSIONS + Dimension.Height]!;
 
-      childLayout.absoluteWalkGeneration = generationCount;
-      childLayout.absoluteWalkDirection = childDirection;
-      childLayout.absoluteWalkSizingMode = widthSizingMode;
-      childLayout.absoluteWalkContainingWidth = containingBlockWidth;
-      childLayout.absoluteWalkContainingHeight = containingBlockHeight;
-      childLayout.absoluteWalkLeft = walkLeft;
-      childLayout.absoluteWalkTop = walkTop;
+      I[childLayout.ri + ABSOLUTE_WALK_GENERATION] = generationCount;
+      U[childLayout.ru + ABSOLUTE_WALK_DIRECTION] = childDirection;
+      U[childLayout.ru + ABSOLUTE_WALK_SIZING_MODE] = widthSizingMode;
+      F[childLayout.rf + ABSOLUTE_WALK_CONTAINING_WIDTH] = containingBlockWidth;
+      F[childLayout.rf + ABSOLUTE_WALK_CONTAINING_HEIGHT] = containingBlockHeight;
+      F[childLayout.rf + ABSOLUTE_WALK_LEFT] = walkLeft;
+      F[childLayout.rf + ABSOLUTE_WALK_TOP] = walkTop;
 
       hasNewLayout =
         layoutAbsoluteDescendants(

@@ -1,54 +1,77 @@
 import { describe, expect, test } from "vitest";
-import { LayoutResults } from "../src/node/LayoutResults.ts";
+import {
+  entryF,
+  measurementAt,
+  NO_ENTRY,
+  takeMeasurement,
+} from "../src/algorithm/Cache.ts";
+import { Node } from "../src/index.ts";
+import {
+  AVAILABLE_WIDTH,
+  COMPUTED_WIDTH,
+  F,
+  F_STRIDE,
+  I,
+  MAX_CACHED_MEASUREMENTS,
+  NEXT_CACHED_MEASUREMENT,
+  RECORD_BYTES,
+  reserveSlots,
+  resetResults,
+  slotsInUse,
+} from "../src/node/Store.ts";
 
-describe("LayoutResults", () => {
-  test("allocates measurement cache entries only as they are needed", () => {
-    const layout = new LayoutResults();
+const count = (node: Node) => I[node.ri + NEXT_CACHED_MEASUREMENT];
+const order = (node: Node) =>
+  Array.from({ length: count(node)! }, (_, i) => measurementAt(node, i));
 
-    expect(layout.cachedMeasurements).toHaveLength(0);
-    expect(layout.nextCachedMeasurementsIndex).toBe(0);
+describe("layout results store", () => {
+  test("hands out measurement cache entries in use order, newest first", () => {
+    const node = new Node();
+    expect(count(node)).toBe(0);
 
-    const first = layout.takeCachedMeasurement();
-    expect(layout.cachedMeasurements).toEqual([first]);
-    expect(layout.nextCachedMeasurementsIndex).toBe(1);
+    const first = takeMeasurement(node);
+    expect(order(node)).toEqual([first]);
 
-    const second = layout.takeCachedMeasurement();
-    expect(layout.cachedMeasurements).toHaveLength(2);
-    expect(layout.cachedMeasurements).toEqual([second, first]);
-    expect(layout.nextCachedMeasurementsIndex).toBe(2);
+    const second = takeMeasurement(node);
+    expect(second).not.toBe(first);
+    expect(order(node)).toEqual([second, first]);
   });
 
   test("recycles the least recently used entry once the cache is full", () => {
-    const layout = new LayoutResults();
-    const entries = Array.from(
-      { length: LayoutResults.MaxCachedMeasurements },
-      () => layout.takeCachedMeasurement(),
-    );
+    const node = new Node();
+    const entries = Array.from({ length: MAX_CACHED_MEASUREMENTS }, () => takeMeasurement(node));
+    expect(new Set(entries).size).toBe(MAX_CACHED_MEASUREMENTS);
+    expect(entries).not.toContain(NO_ENTRY);
 
-    expect(layout.cachedMeasurements).toHaveLength(LayoutResults.MaxCachedMeasurements);
-    expect(layout.nextCachedMeasurementsIndex).toBe(LayoutResults.MaxCachedMeasurements);
-
-    const recycled = layout.takeCachedMeasurement();
+    const recycled = takeMeasurement(node);
     expect(recycled).toBe(entries[0]);
-    expect(layout.cachedMeasurements[0]).toBe(recycled);
-    expect(layout.cachedMeasurements).toHaveLength(LayoutResults.MaxCachedMeasurements);
-    expect(layout.nextCachedMeasurementsIndex).toBe(LayoutResults.MaxCachedMeasurements);
+    expect(measurementAt(node, 0)).toBe(recycled);
+    expect(count(node)).toBe(MAX_CACHED_MEASUREMENTS);
   });
 
-  test("reset keeps allocated entries for reuse and clears their values", () => {
-    const layout = new LayoutResults();
-    const first = layout.takeCachedMeasurement();
-    first.availableWidth = 100;
-    first.computedWidth = 80;
+  test("a reset clears the entries and the count", () => {
+    const node = new Node();
+    const first = takeMeasurement(node);
+    F[entryF(node, first) + AVAILABLE_WIDTH] = 100;
+    F[entryF(node, first) + COMPUTED_WIDTH] = 80;
+    takeMeasurement(node);
 
-    layout.takeCachedMeasurement();
-    layout.reset();
+    resetResults(node.rf / F_STRIDE);
 
-    expect(layout.cachedMeasurements).toHaveLength(2);
-    expect(layout.nextCachedMeasurementsIndex).toBe(0);
-    expect(first.availableWidth).toBe(-1);
-    expect(first.computedWidth).toBe(-1);
-    expect(layout.takeCachedMeasurement()).toBe(layout.cachedMeasurements[0]);
-    expect(layout.cachedMeasurements).toHaveLength(2);
+    expect(count(node)).toBe(0);
+    expect(F[entryF(node, first) + AVAILABLE_WIDTH]).toBe(-1);
+    expect(F[entryF(node, first) + COMPUTED_WIDTH]).toBe(-1);
+  });
+
+  test("keeps every node's record when it grows", () => {
+    const node = new Node();
+    node.setWidth(37);
+    node.calculateLayout();
+    const records = RECORD_BYTES;
+    reserveSlots(slotsInUse() + 5000);
+    const others = Array.from({ length: 5000 }, () => new Node());
+    expect(others).toHaveLength(5000);
+    expect(records).toBe(RECORD_BYTES);
+    expect(node.getComputedWidth()).toBe(37);
   });
 });

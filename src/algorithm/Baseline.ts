@@ -1,22 +1,32 @@
-import { Align, Dimension, Display, FlexDirection, PositionType } from "../enums.ts";
+import { Align, Dimension, type Direction, Display, FlexDirection, PositionType } from "../enums.ts";
 import { Event } from "../event/event.ts";
 import type { Node } from "../node/Node.ts";
 import { resolveChildAlignment } from "./Align.ts";
 import { isColumn, PhysicalEdge } from "./FlexDirection.ts";
+import {
+  BASELINE,
+  BORDER,
+  DIRECTION,
+  F,
+  MEASURED,
+  PADDING,
+  POSITION,
+  U,
+} from "../node/Store.ts";
 
 // A node's baseline as an offset from its top edge, for the measurement or
 // layout it just went through. Only valid right after that, while the node's
 // measured dimensions are still the ones of that result.
 export function baselineOf(node: Node): number {
   if (!node.hasBaselineFunc()) {
-    return node.layout.baseline;
+    return F[node.rf + BASELINE]!;
   }
 
   if (__EVENTS__) Event.publish(node, Event.NodeBaselineStart);
 
   const baseline = node.baseline(
-    node.layout.measuredDimensions[Dimension.Width],
-    node.layout.measuredDimensions[Dimension.Height],
+    F[node.rf + MEASURED + Dimension.Width]!,
+    F[node.rf + MEASURED + Dimension.Height]!,
   );
 
   if (__EVENTS__) Event.publish(node, Event.NodeBaselineEnd);
@@ -30,7 +40,7 @@ export function baselineOf(node: Node): number {
 // Calculates the baseline that `baselineOf` reports for a node without a
 // baseline function.
 //
-// The baseline is part of the node's result: it is stored in `layout.baseline`
+// The baseline is part of the node's result: it is stored in `F[layout.rf + BASELINE]!`
 // and in the cache entry. Walking down the tree when the owner asks would read
 // descendants in whatever state their last measurement left them, which is not
 // the state behind a result restored from the cache.
@@ -65,28 +75,28 @@ export function calculateBaseline(node: Node, performLayout: boolean): number {
   }
 
   if (baselineChild === null) {
-    return node.layout.measuredDimensions[Dimension.Height];
+    return F[node.rf + MEASURED + Dimension.Height]!;
   }
 
   if (performLayout) {
-    return baselineOf(baselineChild) + baselineChild.layout.position[PhysicalEdge.Top];
+    return baselineOf(baselineChild) + F[baselineChild.rf + POSITION + PhysicalEdge.Top]!;
   }
 
   // Taken from the node's own results and the child's style: the edges in the
   // child's layout are those of its last visit, which a cached measurement
   // does not bring back.
-  const layout = node.layout;
+  const layout = node;
   const innerWidth =
-    layout.measuredDimensions[Dimension.Width] -
-    layout.border[PhysicalEdge.Left] -
-    layout.border[PhysicalEdge.Right] -
-    layout.padding[PhysicalEdge.Left] -
-    layout.padding[PhysicalEdge.Right];
+    F[layout.rf + MEASURED + Dimension.Width]! -
+    F[layout.rf + BORDER + PhysicalEdge.Left]! -
+    F[layout.rf + BORDER + PhysicalEdge.Right]! -
+    F[layout.rf + PADDING + PhysicalEdge.Left]! -
+    F[layout.rf + PADDING + PhysicalEdge.Right]!;
   return (
     baselineOf(baselineChild) +
-    layout.border[PhysicalEdge.Top] +
-    layout.padding[PhysicalEdge.Top] +
-    baselineChild.style.computeFlexStartMargin(FlexDirection.Column, layout.direction, innerWidth)
+    F[layout.rf + BORDER + PhysicalEdge.Top]! +
+    F[layout.rf + PADDING + PhysicalEdge.Top]! +
+    baselineChild.style.computeFlexStartMargin(FlexDirection.Column, (U[layout.ru + DIRECTION]! as Direction), innerWidth)
   );
 }
 

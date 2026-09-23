@@ -1,6 +1,11 @@
 import { FlexDirection } from "../enums.ts";
 import type { Node } from "../node/Node.ts";
 import { dimension, flexEndEdge, flexStartEdge } from "./FlexDirection.ts";
+import {
+  F,
+  MEASURED,
+  POSITION,
+} from "../node/Store.ts";
 
 // Given an offset to an edge, returns the offset to the opposite edge on the
 // same axis. This assumes that the width/height of both nodes is determined at
@@ -12,15 +17,15 @@ export function getPositionOfOppositeEdge(
   node: Node,
 ): number {
   return (
-    containingNode.layout.measuredDimensions[dimension(axis)] -
-    node.layout.measuredDimensions[dimension(axis)] -
+    F[containingNode.rf + MEASURED + (dimension(axis))]! -
+    F[node.rf + MEASURED + (dimension(axis))]! -
     position
   );
 }
 
 export function setChildTrailingPosition(node: Node, child: Node, axis: FlexDirection): void {
-  child.layout.position[flexEndEdge(axis)] = getPositionOfOppositeEdge(
-    child.layout.position[flexStartEdge(axis)],
+  F[child.rf + POSITION + (flexEndEdge(axis))] = getPositionOfOppositeEdge(
+    F[child.rf + POSITION + (flexStartEdge(axis))]!,
     axis,
     node,
     child,

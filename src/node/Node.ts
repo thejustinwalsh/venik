@@ -36,7 +36,30 @@ import type {
   Size,
   Value,
 } from "../types.ts";
-import { LayoutResults } from "./LayoutResults.ts";
+import {
+  BORDER,
+  CONFIG_VERSION,
+  DIMENSIONS,
+  DIRECTION,
+  F,
+  FLEX_BASIS,
+  HAD_OVERFLOW,
+  I,
+  MARGIN,
+  MEASURED,
+  PADDING,
+  POSITION,
+  RAW_DIMENSIONS,
+  ROUNDED_POSITION,
+  U,
+  F_STRIDE,
+  recordF,
+  recordI,
+  recordU,
+  releaseSlot,
+  resetResults,
+  takeSlot,
+} from "./Store.ts";
 
 /**
  * A layout node.
@@ -52,8 +75,12 @@ export class Node {
 
   /** @internal */
   style: Style = new Style();
+  /** @internal Where the node's layout results start in the store's `F`, `I` and `U` (see Store.ts). */
+  readonly rf: number;
   /** @internal */
-  layout: LayoutResults = new LayoutResults();
+  readonly ri: number;
+  /** @internal */
+  readonly ru: number;
   /** @internal */
   lineIndex: number = 0;
 
@@ -72,6 +99,11 @@ export class Node {
   private processedDimensions_: StyleLength[] = [StyleLength.ofAuto(), StyleLength.ofAuto()];
 
   constructor(config: Config = Config.getDefault()) {
+    const slot = takeSlot();
+    this.rf = recordF(slot);
+    this.ri = recordI(slot);
+    this.ru = recordU(slot);
+    slots.register(this, slot);
     this.config_ = config;
     if (__EVENTS__) Event.publish(this, Event.NodeAllocation, { config });
   }
@@ -156,7 +188,7 @@ export class Node {
       const oldChild = this.children_[i]!;
       // Children that stay keep their layout.
       if (!children.includes(oldChild)) {
-        oldChild.layout.reset();
+        resetResults(oldChild.rf / F_STRIDE);
         oldChild.owner = null;
       }
     }
@@ -177,11 +209,11 @@ export class Node {
   setConfig(config: Config): void {
     if (configUpdateInvalidatesLayout(this.config_, config)) {
       this.markDirtyAndPropagate();
-      this.layout.configVersion = 0;
+      I[this.ri + CONFIG_VERSION] = 0;
     } else {
       // If the config is functionally the same, then align the configVersion so
       // that we can reuse the layout cache
-      this.layout.configVersion = config.version;
+      I[this.ri + CONFIG_VERSION] = config.version;
     }
 
     this.config_ = config;
@@ -224,55 +256,55 @@ export class Node {
 
   // Computed layout (YGNodeLayoutGet*)
   getComputedLeft(): number {
-    return this.layout.roundedPosition[PhysicalEdge.Left];
+    return F[this.rf + ROUNDED_POSITION + PhysicalEdge.Left]!;
   }
   getComputedTop(): number {
-    return this.layout.roundedPosition[PhysicalEdge.Top];
+    return F[this.rf + ROUNDED_POSITION + PhysicalEdge.Top]!;
   }
   getComputedRight(): number {
-    return this.layout.position[PhysicalEdge.Right];
+    return F[this.rf + POSITION + PhysicalEdge.Right]!;
   }
   getComputedBottom(): number {
-    return this.layout.position[PhysicalEdge.Bottom];
+    return F[this.rf + POSITION + PhysicalEdge.Bottom]!;
   }
   getComputedWidth(): number {
-    return this.layout.dimensions[Dimension.Width];
+    return F[this.rf + DIMENSIONS + Dimension.Width]!;
   }
   getComputedHeight(): number {
-    return this.layout.dimensions[Dimension.Height];
+    return F[this.rf + DIMENSIONS + Dimension.Height]!;
   }
   getComputedRawWidth(): number {
-    return this.layout.rawDimensions[Dimension.Width];
+    return F[this.rf + RAW_DIMENSIONS + Dimension.Width]!;
   }
   getComputedRawHeight(): number {
-    return this.layout.rawDimensions[Dimension.Height];
+    return F[this.rf + RAW_DIMENSIONS + Dimension.Height]!;
   }
   /** The same preallocated object on every call, for any node; valid until the next call. */
   getComputedLayout(): Layout {
-    const layout = this.layout;
+    const layout = this;
     const result = computedLayout;
-    result.left = layout.roundedPosition[PhysicalEdge.Left];
-    result.right = layout.position[PhysicalEdge.Right];
-    result.top = layout.roundedPosition[PhysicalEdge.Top];
-    result.bottom = layout.position[PhysicalEdge.Bottom];
-    result.width = layout.dimensions[Dimension.Width];
-    result.height = layout.dimensions[Dimension.Height];
+    result.left = F[layout.rf + ROUNDED_POSITION + PhysicalEdge.Left]!;
+    result.right = F[layout.rf + POSITION + PhysicalEdge.Right]!;
+    result.top = F[layout.rf + ROUNDED_POSITION + PhysicalEdge.Top]!;
+    result.bottom = F[layout.rf + POSITION + PhysicalEdge.Bottom]!;
+    result.width = F[layout.rf + DIMENSIONS + Dimension.Width]!;
+    result.height = F[layout.rf + DIMENSIONS + Dimension.Height]!;
     return result;
   }
   getComputedDirection(): Direction {
-    return this.layout.direction;
+    return (U[this.ru + DIRECTION]! as Direction);
   }
   getComputedHadOverflow(): boolean {
-    return this.layout.hadOverflow;
+    return (U[this.ru + HAD_OVERFLOW]! !== 0);
   }
   getComputedMargin(edge: Edge): number {
-    return this.layout.margin[this.resolveLayoutEdge(edge)];
+    return F[this.rf + MARGIN + (this.resolveLayoutEdge(edge))]!;
   }
   getComputedBorder(edge: Edge): number {
-    return this.layout.border[this.resolveLayoutEdge(edge)];
+    return F[this.rf + BORDER + (this.resolveLayoutEdge(edge))]!;
   }
   getComputedPadding(edge: Edge): number {
-    return this.layout.padding[this.resolveLayoutEdge(edge)];
+    return F[this.rf + PADDING + (this.resolveLayoutEdge(edge))]!;
   }
 
   // Style
@@ -700,7 +732,7 @@ export class Node {
   markDirtyAndPropagate(): void {
     if (!this.isDirty_) {
       this.setDirty(true);
-      this.layout.computedFlexBasis = NaN;
+      F[this.rf + FLEX_BASIS] = NaN;
       if (this.owner !== null) {
         this.owner.markDirtyAndPropagate();
       }
@@ -732,14 +764,14 @@ export class Node {
   /** @internal */
   dimensionWithMargin(axis: FlexDirection, widthSize: number): number {
     return (
-      this.layout.measuredDimensions[dimension(axis)] +
+      F[this.rf + MEASURED + (dimension(axis))]! +
       this.style.computeMarginForAxis(axis, widthSize)
     );
   }
 
   /** @internal */
   isLayoutDimensionDefined(axis: FlexDirection): boolean {
-    const value = this.layout.measuredDimensions[dimension(axis)];
+    const value = F[this.rf + MEASURED + (dimension(axis))]!;
     return value >= 0;
   }
 
@@ -785,8 +817,8 @@ export class Node {
 
   /** @internal */
   setLayoutDimension(lengthValue: number, dimension: Dimension): void {
-    this.layout.dimensions[dimension] = lengthValue;
-    this.layout.rawDimensions[dimension] = lengthValue;
+    F[this.rf + DIMENSIONS + dimension] = lengthValue;
+    F[this.rf + RAW_DIMENSIONS + dimension] = lengthValue;
   }
 
   // If both left and right are defined, then use left. Otherwise return +left or
@@ -814,7 +846,7 @@ export class Node {
      * values. */
     const directionRespectingRoot = this.owner !== null ? direction : Direction.LTR;
     const style = this.style;
-    const layout = this.layout;
+    const layout = this;
     if (
       !style.edgesNeedOwnerWidth &&
       (style.positionType === PositionType.Static || !style.hasInsets())
@@ -823,7 +855,7 @@ export class Node {
       const offset = direction === Direction.RTL ? 4 : 0;
       const marginPoints = style.marginPoints;
       for (let edge = PhysicalEdge.Left; edge <= PhysicalEdge.Bottom; edge++) {
-        layout.position[edge] = marginPoints[offset + edge]!;
+        F[layout.rf + POSITION + edge] = marginPoints[offset + edge]!;
       }
       return;
     }
@@ -848,13 +880,13 @@ export class Node {
     const crossAxisLeadingEdge = inlineStartEdge(crossAxis, direction);
     const crossAxisTrailingEdge = inlineEndEdge(crossAxis, direction);
 
-    layout.position[mainAxisLeadingEdge] =
+    F[layout.rf + POSITION + mainAxisLeadingEdge] =
       style.computeInlineStartMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
-    layout.position[mainAxisTrailingEdge] =
+    F[layout.rf + POSITION + mainAxisTrailingEdge] =
       style.computeInlineEndMargin(mainAxis, direction, ownerWidth) + relativePositionMain;
-    layout.position[crossAxisLeadingEdge] =
+    F[layout.rf + POSITION + crossAxisLeadingEdge] =
       style.computeInlineStartMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
-    layout.position[crossAxisTrailingEdge] =
+    F[layout.rf + POSITION + crossAxisTrailingEdge] =
       style.computeInlineEndMargin(crossAxis, direction, ownerWidth) + relativePositionCross;
   }
 
@@ -988,7 +1020,7 @@ export class Node {
 
   /** The layout of a node removed from its owner is no longer valid. */
   private detachFromOwner(): void {
-    this.layout.reset();
+    resetResults(this.rf / F_STRIDE);
     this.owner = null;
     // Mark dirty to invalidate cache, but suppress the dirtied callback
     // since the node is being detached from the tree and should not
@@ -1005,11 +1037,11 @@ export class Node {
     }
 
     if (edge === Edge.Start) {
-      return this.layout.direction === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;
+      return (U[this.ru + DIRECTION]! as Direction) === Direction.RTL ? PhysicalEdge.Right : PhysicalEdge.Left;
     }
 
     if (edge === Edge.End) {
-      return this.layout.direction === Direction.RTL ? PhysicalEdge.Left : PhysicalEdge.Right;
+      return (U[this.ru + DIRECTION]! as Direction) === Direction.RTL ? PhysicalEdge.Left : PhysicalEdge.Right;
     }
 
     return edge as PhysicalEdge;
@@ -1044,6 +1076,9 @@ export class Node {
     }
   }
 }
+
+// A node's slot in the store goes back to it once the node is collected.
+const slots = new FinalizationRegistry<number>(releaseSlot);
 
 // V8 reaches the hidden classes that nodes, styles and layout results end up
 // with through transitions it holds weakly. Once no node is left alive (all

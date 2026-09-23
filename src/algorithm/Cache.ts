@@ -1,12 +1,116 @@
 import type { Config } from "../config/Config.ts";
-import { FlexDirection, Wrap } from "../enums.ts";
-import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
-import type { Node } from "../node/Node.ts";
-import type { LayoutResults } from "../node/LayoutResults.ts";
-import { isRow, PhysicalEdge, resolveDirection } from "./FlexDirection.ts";
+import { type Direction, FlexDirection, SizingMode, Wrap } from "../enums.ts";
 import { inexactEquals, sameAvailableSize } from "../math.ts";
+import type { Node } from "../node/Node.ts";
+import {
+  AVAILABLE_HEIGHT,
+  AVAILABLE_WIDTH,
+  CACHE,
+  CACHE_ORDER,
+  COMPUTED_HEIGHT,
+  COMPUTED_WIDTH,
+  DIRECTION,
+  ENTRY_BASELINE,
+  ENTRY_F64,
+  ENTRY_FLAGS,
+  ENTRY_HAD_OVERFLOW,
+  ENTRY_MAIN_SIZE_INVARIANT,
+  ENTRY_MEASURE_HAD_OVERFLOW,
+  ENTRY_RELAXABLE,
+  ENTRY_U8,
+  ENTRY_U8_START,
+  F,
+  HEIGHT_SIZING_MODE,
+  I,
+  LAYOUT_ENTRY,
+  MAIN_CONTENT_SIZE,
+  MARGIN,
+  MAX_CACHED_MEASUREMENTS,
+  NEXT_CACHED_MEASUREMENT,
+  OWNER_HEIGHT,
+  OWNER_WIDTH,
+  U,
+  WIDTH_SIZING_MODE,
+} from "../node/Store.ts";
+import { isRow, PhysicalEdge, resolveDirection } from "./FlexDirection.ts";
 import { roundValueToPixelGrid } from "./PixelGrid.ts";
-import { SizingMode } from "../enums.ts";
+
+// A cache entry is referred to by its number in the node's record:
+// LAYOUT_ENTRY for the last layout, 1 to MAX_CACHED_MEASUREMENTS for
+// measurements, and NO_ENTRY for none. `entryF` and `entryU` are where its
+// numbers, and its modes and flags, start.
+
+export const NO_ENTRY = -1;
+
+export function entryF(node: Node, entry: number): number {
+  return node.rf + CACHE + entry * ENTRY_F64;
+}
+
+export function entryU(node: Node, entry: number): number {
+  return node.ru + ENTRY_U8_START + entry * ENTRY_U8;
+}
+
+/** Whether the entry at `u` (see `entryU`) has the flag. */
+export function entryHas(u: number, flag: number): boolean {
+  return (U[u + ENTRY_FLAGS]! & flag) !== 0;
+}
+
+/** Sets or clears a flag of the entry at `u` (see `entryU`). */
+export function setEntryFlag(u: number, flag: number, value: boolean): void {
+  const flags = U[u + ENTRY_FLAGS]!;
+  U[u + ENTRY_FLAGS] = value ? flags | flag : flags & ~flag;
+}
+
+/** The measurement entry probed `index`th. */
+export function measurementAt(node: Node, index: number): number {
+  return U[node.ru + CACHE_ORDER + index]!;
+}
+
+/**
+ * Moves a measurement entry to the front, where probes look first. A node is
+ * asked the same few questions on every pass, so the entries that answer them
+ * gather at the front and the rest age out at the back.
+ */
+export function promoteMeasurement(node: Node, index: number): void {
+  const order = node.ru + CACHE_ORDER;
+  const promoted = U[order + index]!;
+  U.copyWithin(order + 1, order, order + index);
+  U[order] = promoted;
+}
+
+/**
+ * Takes an unused measurement entry, or recycles the least recently used one
+ * once all are in use, and puts it first for the next probe. Its numbers and
+ * flags are those it last held.
+ */
+export function takeMeasurement(node: Node): number {
+  const i = node.ri + NEXT_CACHED_MEASUREMENT;
+  const count = I[i]!;
+  if (count < MAX_CACHED_MEASUREMENTS) {
+    I[i] = count + 1;
+  }
+  const last = I[i]! - 1;
+  const entry = U[node.ru + CACHE_ORDER + last]!;
+  promoteMeasurement(node, last);
+  return entry;
+}
+
+/** Back to the entry of a node never laid out. */
+export function resetEntry(node: Node, entry: number): void {
+  const f = entryF(node, entry);
+  F[f + AVAILABLE_WIDTH] = -1;
+  F[f + AVAILABLE_HEIGHT] = -1;
+  F[f + OWNER_WIDTH] = NaN;
+  F[f + OWNER_HEIGHT] = NaN;
+  F[f + COMPUTED_WIDTH] = -1;
+  F[f + COMPUTED_HEIGHT] = -1;
+  F[f + ENTRY_BASELINE] = NaN;
+  F[f + MAIN_CONTENT_SIZE] = NaN;
+  const u = entryU(node, entry);
+  U[u + WIDTH_SIZING_MODE] = SizingMode.MaxContent;
+  U[u + HEIGHT_SIZING_MODE] = SizingMode.MaxContent;
+  U[u + ENTRY_FLAGS] = 0;
+}
 
 function sizeIsExactAndMatchesOldMeasuredSize(
   sizeMode: SizingMode,
@@ -75,17 +179,15 @@ function isSameAvailableSize(lastSize: number, size: number, pointScaleFactor: n
 }
 
 /**
- * Whether a cached result was computed against the same owner size. That is
- * part of the key for a node whose style `dependsOnOwnerSize`. The results of
- * other nodes depend on the owner only through the available size.
+ * Whether a cache entry (at `f`, see `entryF`) was computed against the same
+ * owner size. That is part of the key for a node whose style
+ * `dependsOnOwnerSize`. The results of other nodes depend on the owner only
+ * through the available size.
  */
-export function hasSameOwnerSize(
-  cached: CachedMeasurement,
-  ownerWidth: number,
-  ownerHeight: number,
-): boolean {
+export function hasSameOwnerSize(f: number, ownerWidth: number, ownerHeight: number): boolean {
   return (
-    inexactEquals(cached.ownerWidth, ownerWidth) && inexactEquals(cached.ownerHeight, ownerHeight)
+    inexactEquals(F[f + OWNER_WIDTH]!, ownerWidth) &&
+    inexactEquals(F[f + OWNER_HEIGHT]!, ownerHeight)
   );
 }
 
@@ -163,9 +265,9 @@ export function canUseCachedMeasurement(
 }
 
 /**
- * The cached result a node with a measure function can reuse under the given
- * constraints: its layout cache entry, else the first measurement cache entry
- * that fits, else null.
+ * The cache entry a node with a measure function can reuse under the given
+ * constraints: its layout entry, else the first measurement entry that fits,
+ * else NO_ENTRY.
  */
 export function findCachedMeasurement(
   node: Node,
@@ -175,43 +277,45 @@ export function findCachedMeasurement(
   availableHeight: number,
   ownerWidth: number,
   ownerHeight: number,
-): CachedMeasurement | null {
-  const layout = node.layout;
+): number {
   const config = node.getConfig();
   const marginRow = node.style.computeMarginForAxis(FlexDirection.Row, ownerWidth);
   const marginColumn = node.style.computeMarginForAxis(FlexDirection.Column, ownerWidth);
 
   const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
+  const count = I[node.ri + NEXT_CACHED_MEASUREMENT]!;
 
-  let cached = layout.cachedLayout;
+  let entry = LAYOUT_ENTRY;
   for (let i = 0; ; i++) {
+    const f = entryF(node, entry);
+    const u = entryU(node, entry);
     if (
-      (!keyedOnOwnerSize || hasSameOwnerSize(cached, ownerWidth, ownerHeight)) &&
+      (!keyedOnOwnerSize || hasSameOwnerSize(f, ownerWidth, ownerHeight)) &&
       canUseCachedMeasurement(
         widthMode,
         availableWidth,
         heightMode,
         availableHeight,
-        cached.widthSizingMode,
-        cached.availableWidth,
-        cached.heightSizingMode,
-        cached.availableHeight,
-        cached.computedWidth,
-        cached.computedHeight,
+        U[u + WIDTH_SIZING_MODE]! as SizingMode,
+        F[f + AVAILABLE_WIDTH]!,
+        U[u + HEIGHT_SIZING_MODE]! as SizingMode,
+        F[f + AVAILABLE_HEIGHT]!,
+        F[f + COMPUTED_WIDTH]!,
+        F[f + COMPUTED_HEIGHT]!,
         marginRow,
         marginColumn,
         config,
       )
     ) {
       if (i > 1) {
-        layout.promoteCachedMeasurement(i - 1);
+        promoteMeasurement(node, i - 1);
       }
-      return cached;
+      return entry;
     }
-    if (i === layout.nextCachedMeasurementsIndex) {
-      return null;
+    if (i === count) {
+      return NO_ENTRY;
     }
-    cached = layout.cachedMeasurements[i]!;
+    entry = measurementAt(node, i);
   }
 }
 
@@ -272,26 +376,29 @@ function relaxedAxisWithoutMargin(
 // `start` margin lands on another physical edge under RTL, which summing the
 // style's edges without a direction cannot tell.
 function relaxableEntryFits(
-  cached: CachedMeasurement,
+  node: Node,
+  entry: number,
   widthMode: SizingMode,
   availableWidth: number,
   heightMode: SizingMode,
   availableHeight: number,
-  layout: LayoutResults,
 ): boolean {
+  const f = entryF(node, entry);
+  const u = entryU(node, entry);
   if (
-    !cached.relaxable ||
-    cached.hadOverflow ||
-    cached.measureHadOverflow ||
-    cached.computedWidth < 0
+    (U[u + ENTRY_FLAGS]! & (ENTRY_RELAXABLE | ENTRY_HAD_OVERFLOW | ENTRY_MEASURE_HAD_OVERFLOW)) !==
+      ENTRY_RELAXABLE ||
+    F[f + COMPUTED_WIDTH]! < 0
   ) {
     return false;
   }
+  const lastWidthMode = U[u + WIDTH_SIZING_MODE]! as SizingMode;
+  const lastHeightMode = U[u + HEIGHT_SIZING_MODE]! as SizingMode;
   const width = relaxedAxisWithoutMargin(
     widthMode,
     availableWidth,
-    cached.widthSizingMode,
-    cached.availableWidth,
+    lastWidthMode,
+    F[f + AVAILABLE_WIDTH]!,
   );
   if (width === AXIS_DIFFERENT) {
     return false;
@@ -299,21 +406,22 @@ function relaxableEntryFits(
   const height = relaxedAxisWithoutMargin(
     heightMode,
     availableHeight,
-    cached.heightSizingMode,
-    cached.availableHeight,
+    lastHeightMode,
+    F[f + AVAILABLE_HEIGHT]!,
   );
   if (height === AXIS_DIFFERENT) {
     return false;
   }
+  const margin = node.rf + MARGIN;
   if (
     width === AXIS_UNDECIDED &&
     !relaxedAxisFits(
       widthMode,
       availableWidth,
-      layout.margin[PhysicalEdge.Left] + layout.margin[PhysicalEdge.Right],
-      cached.widthSizingMode,
-      cached.availableWidth,
-      cached.computedWidth,
+      F[margin + PhysicalEdge.Left]! + F[margin + PhysicalEdge.Right]!,
+      lastWidthMode,
+      F[f + AVAILABLE_WIDTH]!,
+      F[f + COMPUTED_WIDTH]!,
     )
   ) {
     return false;
@@ -323,18 +431,18 @@ function relaxableEntryFits(
     relaxedAxisFits(
       heightMode,
       availableHeight,
-      layout.margin[PhysicalEdge.Top] + layout.margin[PhysicalEdge.Bottom],
-      cached.heightSizingMode,
-      cached.availableHeight,
-      cached.computedHeight,
+      F[margin + PhysicalEdge.Top]! + F[margin + PhysicalEdge.Bottom]!,
+      lastHeightMode,
+      F[f + AVAILABLE_HEIGHT]!,
+      F[f + COMPUTED_HEIGHT]!,
     )
   );
 }
 
 /**
- * The cached result a container can reuse for a measurement after its exact
+ * The cache entry a container can reuse for a measurement after its exact
  * probes missed: a relaxable measurement or layout entry that fits the given
- * space, else null. A layout is as good a measurement as any.
+ * space, else NO_ENTRY. A layout is as good a measurement as any.
  */
 export function findRelaxedMeasurement(
   node: Node,
@@ -344,28 +452,20 @@ export function findRelaxedMeasurement(
   availableHeight: number,
   ownerWidth: number,
   ownerHeight: number,
-): CachedMeasurement | null {
-  const layout = node.layout;
-  const style = node.style;
-  const keyedOnOwnerSize = style.dependsOnOwnerSize;
+): number {
+  const keyedOnOwnerSize = node.style.dependsOnOwnerSize;
+  const count = I[node.ri + NEXT_CACHED_MEASUREMENT]!;
 
-  for (let i = 0; i < layout.nextCachedMeasurementsIndex; i++) {
-    const cached = layout.cachedMeasurements[i]!;
+  for (let i = 0; i < count; i++) {
+    const entry = measurementAt(node, i);
     if (
-      (!keyedOnOwnerSize || hasSameOwnerSize(cached, ownerWidth, ownerHeight)) &&
-      relaxableEntryFits(
-        cached,
-        widthMode,
-        availableWidth,
-        heightMode,
-        availableHeight,
-        layout,
-      )
+      (!keyedOnOwnerSize || hasSameOwnerSize(entryF(node, entry), ownerWidth, ownerHeight)) &&
+      relaxableEntryFits(node, entry, widthMode, availableWidth, heightMode, availableHeight)
     ) {
       if (i > 0) {
-        layout.promoteCachedMeasurement(i);
+        promoteMeasurement(node, i);
       }
-      return cached;
+      return entry;
     }
   }
 
@@ -373,27 +473,28 @@ export function findRelaxedMeasurement(
   // which is what makes an entry relaxable: a layout shrinks content that
   // overflows, where a measurement reports it as it is, and a percentage
   // below resolves against another reference in each.
-  const cachedLayout = layout.cachedLayout;
+  const f = entryF(node, LAYOUT_ENTRY);
+  const u = entryU(node, LAYOUT_ENTRY);
   if (
-    cachedLayout.relaxable &&
-    cachedLayout.computedWidth >= 0 &&
-    (!keyedOnOwnerSize || hasSameOwnerSize(cachedLayout, ownerWidth, ownerHeight)) &&
-    ((cachedLayout.widthSizingMode === widthMode &&
-      cachedLayout.heightSizingMode === heightMode &&
-      inexactEquals(cachedLayout.availableWidth, availableWidth) &&
-      inexactEquals(cachedLayout.availableHeight, availableHeight)) ||
+    entryHas(u, ENTRY_RELAXABLE) &&
+    F[f + COMPUTED_WIDTH]! >= 0 &&
+    (!keyedOnOwnerSize || hasSameOwnerSize(f, ownerWidth, ownerHeight)) &&
+    ((U[u + WIDTH_SIZING_MODE] === widthMode &&
+      U[u + HEIGHT_SIZING_MODE] === heightMode &&
+      inexactEquals(F[f + AVAILABLE_WIDTH]!, availableWidth) &&
+      inexactEquals(F[f + AVAILABLE_HEIGHT]!, availableHeight)) ||
       relaxableEntryFits(
-        cachedLayout,
+        node,
+        LAYOUT_ENTRY,
         widthMode,
         availableWidth,
         heightMode,
         availableHeight,
-        layout,
       ))
   ) {
-    return cachedLayout;
+    return LAYOUT_ENTRY;
   }
-  return null;
+  return NO_ENTRY;
 }
 
 /** What `relaxedLayoutFits` answers. */
@@ -403,28 +504,29 @@ const LAYOUT_SAME = 1;
 /** The cached layout holds, with the node's main size set to the one asked for. */
 export const LAYOUT_STRETCHED = 2;
 
-// Whether an exact size along the main axis of a `mainSizeInvariant` entry
-// holds the entry's layout: it is at least the content the entry laid out.
+// Whether an exact size along the main axis of a main-size-invariant layout
+// entry holds the entry's layout: it is at least the content it laid out.
 function stretchesInvariantMain(
-  cached: CachedMeasurement,
+  f: number,
+  u: number,
   sizeMode: SizingMode,
   size: number,
   margin: number,
 ): boolean {
   return (
-    cached.mainSizeInvariant &&
+    entryHas(u, ENTRY_MAIN_SIZE_INVARIANT) &&
     sizeMode === SizingMode.StretchFit &&
-    size - margin >= cached.mainContentSize - 0.0001
+    size - margin >= F[f + MAIN_CONTENT_SIZE]! - 0.0001
   );
 }
 
 /**
- * Whether the layout cache entry of a container that does not wrap holds the
- * layout it would compute in the given space. Without wrapping, the lines of
- * a container that fits its space are laid out the same in any space that
- * fits them, and a space of exactly the computed size leaves nothing to
- * distribute either way. An entry that is `mainSizeInvariant` holds in any
- * larger exact main size as well (`LAYOUT_STRETCHED`).
+ * Whether the layout entry of a container that does not wrap holds the layout
+ * it would compute in the given space. Without wrapping, the lines of a
+ * container that fits its space are laid out the same in any space that fits
+ * them, and a space of exactly the computed size leaves nothing to distribute
+ * either way. A main-size-invariant entry holds in any larger exact main size
+ * as well (`LAYOUT_STRETCHED`).
  */
 export function relaxedLayoutFits(
   node: Node,
@@ -435,59 +537,66 @@ export function relaxedLayoutFits(
   ownerWidth: number,
   ownerHeight: number,
 ): number {
-  const layout = node.layout;
-  const cachedLayout = layout.cachedLayout;
+  const f = entryF(node, LAYOUT_ENTRY);
+  const u = entryU(node, LAYOUT_ENTRY);
   const style = node.style;
-  if (!cachedLayout.relaxable || style.flexWrap !== Wrap.NoWrap) {
+  if (!entryHas(u, ENTRY_RELAXABLE) || style.flexWrap !== Wrap.NoWrap) {
     return LAYOUT_MISS;
   }
-  if (style.dependsOnOwnerSize && !hasSameOwnerSize(cachedLayout, ownerWidth, ownerHeight)) {
+  if (style.dependsOnOwnerSize && !hasSameOwnerSize(f, ownerWidth, ownerHeight)) {
     return LAYOUT_MISS;
   }
   if (
-    relaxableEntryFits(cachedLayout, widthMode, availableWidth, heightMode, availableHeight, layout)
+    relaxableEntryFits(node, LAYOUT_ENTRY, widthMode, availableWidth, heightMode, availableHeight)
   ) {
     return LAYOUT_SAME;
   }
-  if (!cachedLayout.mainSizeInvariant || cachedLayout.hadOverflow || cachedLayout.measureHadOverflow) {
+  if (
+    (U[u + ENTRY_FLAGS]! &
+      (ENTRY_MAIN_SIZE_INVARIANT | ENTRY_HAD_OVERFLOW | ENTRY_MEASURE_HAD_OVERFLOW)) !==
+    ENTRY_MAIN_SIZE_INVARIANT
+  ) {
     return LAYOUT_MISS;
   }
   // The main axis stretched, the cross axis the same question.
-  const marginRow = layout.margin[PhysicalEdge.Left] + layout.margin[PhysicalEdge.Right];
-  const marginColumn = layout.margin[PhysicalEdge.Top] + layout.margin[PhysicalEdge.Bottom];
-  if (isRow(resolveDirection(style.flexDirection, layout.direction))) {
-    return stretchesInvariantMain(cachedLayout, widthMode, availableWidth, marginRow) &&
+  const margin = node.rf + MARGIN;
+  const marginRow = F[margin + PhysicalEdge.Left]! + F[margin + PhysicalEdge.Right]!;
+  const marginColumn = F[margin + PhysicalEdge.Top]! + F[margin + PhysicalEdge.Bottom]!;
+  const lastWidthMode = U[u + WIDTH_SIZING_MODE]! as SizingMode;
+  const lastHeightMode = U[u + HEIGHT_SIZING_MODE]! as SizingMode;
+  if (isRow(resolveDirection(style.flexDirection, U[node.ru + DIRECTION]! as Direction))) {
+    return stretchesInvariantMain(f, u, widthMode, availableWidth, marginRow) &&
       (relaxedAxisWithoutMargin(
         heightMode,
         availableHeight,
-        cachedLayout.heightSizingMode,
-        cachedLayout.availableHeight,
+        lastHeightMode,
+        F[f + AVAILABLE_HEIGHT]!,
       ) === AXIS_SAME ||
         relaxedAxisFits(
           heightMode,
           availableHeight,
           marginColumn,
-          cachedLayout.heightSizingMode,
-          cachedLayout.availableHeight,
-          cachedLayout.computedHeight,
+          lastHeightMode,
+          F[f + AVAILABLE_HEIGHT]!,
+          F[f + COMPUTED_HEIGHT]!,
         ))
       ? LAYOUT_STRETCHED
       : LAYOUT_MISS;
   }
-  return stretchesInvariantMain(cachedLayout, heightMode, availableHeight, marginColumn) &&
+  return stretchesInvariantMain(f, u, heightMode, availableHeight, marginColumn) &&
     (relaxedAxisWithoutMargin(
       widthMode,
       availableWidth,
-      cachedLayout.widthSizingMode,
-      cachedLayout.availableWidth,
+      lastWidthMode,
+      F[f + AVAILABLE_WIDTH]!,
     ) === AXIS_SAME ||
       relaxedAxisFits(
         widthMode,
         availableWidth,
         marginRow,
-        cachedLayout.widthSizingMode,
-        cachedLayout.availableWidth,
-        cachedLayout.computedWidth,
+        lastWidthMode,
+        F[f + AVAILABLE_WIDTH]!,
+        F[f + COMPUTED_WIDTH]!,
       ))
     ? LAYOUT_STRETCHED
     : LAYOUT_MISS;

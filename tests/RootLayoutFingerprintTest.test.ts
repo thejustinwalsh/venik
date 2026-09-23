@@ -1,8 +1,9 @@
 import { expect, test } from "vitest";
 import { Config, Direction, Node } from "../src/index.ts";
+import { GENERATION, I } from "../src/node/Store.ts";
 
 function generation(node: Node): number {
-  return node.layout.generationCount;
+  return I[node.ri + GENERATION]!;
 }
 
 test("an identical clean root layout returns before starting a generation", () => {
