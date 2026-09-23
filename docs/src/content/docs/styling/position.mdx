@@ -1,0 +1,34 @@
+---
+title: Position
+description: Whether a node flows with its siblings or is placed on its own.
+order: 14
+---
+import Demo from "../../../components/Demo.astro";
+
+**Static (default)**: The node is laid out in the normal flow of its flex container. It ignores [insets](../insets/) and does not form a [containing block](../../advanced/containing-block/) for absolutely positioned descendants. Yoga defaults to `relative`; baba-yaga follows CSS.
+
+**Relative**: Like static, the node takes part in the flexbox algorithm and takes up space in its container. [Insets](../insets/) then offset it from its normal position. A relative node always forms a [containing block](../../advanced/containing-block/).
+
+**Absolute**: The node is taken out of the flow of its flex container. It takes up no space and does not affect the position of its siblings. [Insets](../insets/) place it relative to its [containing block](../../advanced/containing-block/).
+
+```ts
+node.setPositionType(PositionType.Absolute);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 200,
+    padding: 10,
+    flexDirection: "column",
+  }}
+>
+  <Node
+    style={{
+      margin: 5,
+      height: 50,
+      top: 20,
+      position: "relative",
+    }}
+  />
+</Node>`} />

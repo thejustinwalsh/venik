@@ -1,0 +1,33 @@
+---
+title: Insets
+description: Offsetting a node from its edges.
+order: 9
+---
+import Demo from "../../../components/Demo.astro";
+
+Insets are the position offsets assigned to an edge, not to be confused with [position type](../position/):
+
+```ts
+node.setPosition(Edge.Right, 10);
+node.setPosition(Edge.Top, "10%");
+```
+
+How an inset moves the node depends on its [position type](../position/):
+
+- **Static**: Insets have no effect.
+- **Relative**: The node is moved by the given amount from where it would normally be. Each inset is relative to the node's own edge, so `setPosition(Edge.Right, 10)` moves the node so that its right edge sits 10 points left of where it would otherwise be.
+- **Absolute**: The node is moved by the given amount from the corresponding edge of its [containing block](../../advanced/containing-block/), so `setPosition(Edge.Right, 10)` puts the node's right edge 10 points inside the containing block's right edge.
+
+When a node has a fixed size and opposite insets are both set, for example left and right, the left and top edges win.
+
+<Demo code={`<Node style={{width: 200, height: 200}}>
+  <Node
+    style={{
+      height: 50,
+      width: 50,
+      top: 50,
+      left: 50,
+      position: "relative",
+    }}
+  />
+</Node>`} />

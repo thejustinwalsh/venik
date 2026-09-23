@@ -1,0 +1,36 @@
+---
+title: Justify content
+description: How children are distributed along the main axis.
+order: 10
+---
+import Demo from "../../../components/Demo.astro";
+
+Justify content describes how children are aligned along the main axis of their container. Use it to center a child horizontally in a row container, or vertically in a column container.
+
+**Flex start (default)**: Pack children at the start of the container's main axis.
+
+**Flex end**: Pack children at the end of the container's main axis.
+
+**Center**: Center children along the container's main axis.
+
+**Space between**: Space children evenly along the main axis, distributing remaining space between them.
+
+**Space around**: Space children evenly, distributing remaining space around them, so the first child gets half a gap before it and the last child half a gap after it.
+
+**Space evenly**: Space children evenly, with the gaps between children and between the children and the container edges all equal.
+
+```ts
+node.setJustifyContent(Justify.SpaceBetween);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 200,
+    padding: 10,
+    justifyContent: "flex-start",
+  }}
+>
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+</Node>`} />

@@ -1,3 +1,4 @@
+import mdx from "@astrojs/mdx";
 import { defineConfig } from "astro/config";
 import { fileURLToPath } from "node:url";
 
@@ -5,6 +6,10 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 export default defineConfig({
   site: "https://koteelok.github.io",
+  integrations: [mdx()],
+  redirects: {
+    "/docs": "/docs/getting-started/laying-out-a-tree",
+  },
   vite: {
     resolve: {
       // The playground runs the engine straight from the source tree, so it

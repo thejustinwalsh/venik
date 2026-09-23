@@ -1,0 +1,61 @@
+---
+title: Styling
+description: How nodes are styled, and how the defaults compare to CSS and Yoga.
+order: 0
+---
+
+Each node has a style. Nodes are styled with setters that mirror CSS properties, with a few caveats.
+
+## Default styles
+
+A fresh node behaves like a box on the web with `display: flex`. Unlike Yoga, the defaults are the CSS ones:
+
+| Property | Default |
+|---|---|
+| `flex-direction` | `row` |
+| `flex-shrink` | `1` |
+| `align-content` | `stretch` |
+| `align-items` | `stretch` |
+| `position` | `static` |
+
+A tree written for Yoga will need some of these set explicitly; see [Coming from Yoga](../getting-started/coming-from-yoga/).
+
+## Box sizing
+
+Nodes default to `box-sizing: border-box`: a specified width or height includes padding and border. Use `setBoxSizing(BoxSizing.ContentBox)` for the alternative.
+
+## Edges
+
+Margin, padding, border and insets are set against an `Edge`, which can be:
+
+1. Relative to the writing direction: `Edge.Start`, `Edge.End`
+2. A physical edge: `Edge.Top`, `Edge.Right`, `Edge.Bottom`, `Edge.Left`
+3. A group of edges: `Edge.Horizontal`, `Edge.Vertical`, `Edge.All`
+
+A value may be set against several edges at once. Precedence follows the order above, so `Edge.Start` beats `Edge.Left`, which beats `Edge.Horizontal`.
+
+```ts
+node.setPadding(Edge.All, 8);
+node.setPadding(Edge.Top, 16);
+```
+
+## Units
+
+baba-yaga has no CSS units such as `px` or `em`. Lengths are plain numbers in "points", an arbitrary absolute unit usually mapped to device-independent pixels, or percentage strings such as `"50%"`. Anything else should be resolved to points before it reaches the engine. Passing `undefined` unsets a value.
+
+```ts
+node.setWidth(200);
+node.setHeight("50%");
+node.setFlexBasis("auto");
+node.setMaxWidth(undefined);
+```
+
+## Non-standard properties
+
+`aspect-ratio` predates the CSS property of the same name and may act subtly differently.
+
+`flex` as a shorthand sets `flex-grow` when positive. As in CSS, `flex: n` means `n 1 0`.
+
+## The playground dialect
+
+The live examples in these pages describe a tree in a small JSX-like syntax with React Native style names, such as `flexDirection` and `marginTop`. Edit any example to see the layout update. The [Examples](../../examples/) page has larger scenes in the same syntax.

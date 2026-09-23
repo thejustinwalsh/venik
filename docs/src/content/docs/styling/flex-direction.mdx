@@ -1,0 +1,34 @@
+---
+title: Flex direction
+description: Which way the main axis runs.
+order: 6
+---
+import Demo from "../../../components/Demo.astro";
+
+Flex direction controls the direction in which the children of a node are laid out, also called the main axis. The cross axis is perpendicular to it and is the axis along which [wrapped](../flex-wrap/) lines stack.
+
+**Row (default)**: Lay children out from left to right. With wrapping, the next line starts under the first item.
+
+**Row reverse**: Lay children out from right to left. With wrapping, the next line starts under the first item on the right.
+
+**Column**: Lay children out from top to bottom. With wrapping, the next line starts to the right of the first item.
+
+**Column reverse**: Lay children out from bottom to top. With wrapping, the next line starts to the right of the first item at the bottom.
+
+Yoga defaults to `column`; baba-yaga follows CSS and defaults to `row`.
+
+```ts
+node.setFlexDirection(FlexDirection.Column);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 200,
+    padding: 10,
+    flexDirection: "column",
+  }}
+>
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+</Node>`} />

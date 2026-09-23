@@ -1,0 +1,32 @@
+---
+title: Layout direction
+description: Left-to-right and right-to-left layout.
+order: 11
+---
+import Demo from "../../../components/Demo.astro";
+
+Layout direction specifies which way children are laid out, and what `Edge.Start` and `Edge.End` refer to. By default layout is left-to-right (LTR), where start means left and end means right. For right-to-left languages, pass a direction to `calculateLayout` or set it on the root node.
+
+**LTR (default)**: Children are laid out from left to right. Styles applied to the start edge land on the left.
+
+**RTL**: Children are laid out from right to left. Styles applied to the start edge land on the right.
+
+**Inherit**: The node uses its parent's direction. This is the default for every node other than the root.
+
+```ts
+root.calculateLayout(undefined, undefined, Direction.RTL);
+// or
+node.setDirection(Direction.RTL);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 200,
+    padding: 10,
+    direction: "ltr",
+  }}
+>
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+</Node>`} />

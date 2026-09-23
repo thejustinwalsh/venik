@@ -1,0 +1,43 @@
+---
+title: Align items and align self
+description: How children are aligned along the cross axis.
+order: 2
+---
+import Demo from "../../../components/Demo.astro";
+
+Align items describes how children are aligned along the cross axis of their container. It is the cross-axis counterpart of [justify content](../justify-content/).
+
+**Stretch (default)**: Stretch children to fill the container's cross axis.
+
+**Flex start**: Align children to the start of the container's cross axis.
+
+**Flex end**: Align children to the end of the container's cross axis.
+
+**Center**: Center children along the container's cross axis.
+
+**Baseline**: Align children along a common baseline. A child can be made the reference baseline for its parent with `setIsReferenceBaseline(true)`, and a leaf can supply its own baseline with `setBaselineFunc`.
+
+```ts
+container.setAlignItems(Align.Center);
+```
+
+## Align self
+
+Align self has the same options and effect as align items, but applies to a single child, overriding what its parent set with align items.
+
+```ts
+child.setAlignSelf(Align.FlexEnd);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 250,
+    padding: 10,
+    flexDirection: "column",
+    alignItems: "flex-start",
+  }}
+>
+  <Node style={{margin: 5, height: 50, width: 50, alignSelf: "center"}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+</Node>`} />

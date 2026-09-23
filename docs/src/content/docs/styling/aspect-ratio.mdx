@@ -1,0 +1,22 @@
+---
+title: Aspect ratio
+description: Sizing one dimension from the other.
+order: 3
+---
+import Demo from "../../../components/Demo.astro";
+
+Aspect ratio is the ratio between a node's [width and height](../width-height/): a node with an aspect ratio of `2` is twice as wide as it is tall.
+
+- Accepts any number greater than `0`. The default is unset.
+- Respects the node's [min and max](../min-max-width-height/) dimensions.
+- Has higher priority than [flex grow](../flex-basis-grow-shrink/).
+- If aspect ratio, width and height are all set, the cross-axis dimension is overridden.
+
+```ts
+node.setAspectRatio(16 / 9);
+```
+
+<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
+  <Node style={{margin: 5, height: 50, aspectRatio: 1}} />
+  <Node style={{margin: 5, height: 50, aspectRatio: 1.5}} />
+</Node>`} />

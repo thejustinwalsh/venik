@@ -1,0 +1,49 @@
+---
+title: Incremental layout
+description: Laying out only what changed, every frame.
+order: 1
+---
+
+Most real-world UIs are not static. baba-yaga is built to be called every frame: a tree that has not changed is laid out for the cost of a few field comparisons, and a tree where a few nodes changed revisits only the branches those changes affect.
+
+## Dirtying
+
+Changing a node's style or children marks the node and its ancestors as **dirty**. Marking stops at the first ancestor that is already dirty, so it usually touches one or two nodes.
+
+Setting a style to the value it already has does nothing at all: setters compare first and only dirty the node on a real change. That makes it safe to push the full style of every node each frame without diffing on your side.
+
+```ts
+function frame(width: number, height: number) {
+  root.setWidth(width);   // no-op unless the window was resized
+  root.setHeight(height);
+  root.calculateLayout(undefined, undefined, Direction.LTR);
+}
+```
+
+During the first layout every node is dirty and every node is visited. On later layouts, a clean node is skipped as long as the constraints its parent passes down have not changed. If `calculateLayout` is called on a clean root with the same available size and direction as last time, it returns immediately.
+
+Leaves with a [measure function](../measure-functions/) cannot know when their content changed, so tell them with `markDirty()`.
+
+## Applying results
+
+Every node has a `hasNewLayout` flag. It is set whenever the node's layout was written during a pass, and it is never cleared by the engine. Clear it yourself after you have applied the node's layout, and skip any subtree whose root does not have it set.
+
+```ts
+function applyLayout(node: Node) {
+  if (!node.hasNewLayout) return;
+  node.hasNewLayout = false;
+
+  // Do the real work: read getComputedLeft() and friends,
+  // update your sprites or DOM nodes...
+
+  for (let i = 0; i < node.getChildCount(); i++) {
+    applyLayout(node.getChild(i)!);
+  }
+}
+```
+
+Consider a tree that has already been laid out, where the style of one leaf is then changed. The leaf and its ancestors are dirtied. After layout, the dirtied nodes, and any children whose position or size changed as a result, have `hasNewLayout` set. Every other node is left untouched and keeps its previous results.
+
+## Cost
+
+On the bundled benchmark, one leaf changing in a tree of a few hundred nodes lays out in tens of microseconds and produces about a kilobyte of garbage. See the [README](https://github.com/koteelok/baba-yaga#motivation) for the full numbers.

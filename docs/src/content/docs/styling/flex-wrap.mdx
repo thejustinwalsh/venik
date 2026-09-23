@@ -1,0 +1,32 @@
+---
+title: Flex wrap
+description: What happens when children overflow the main axis.
+order: 7
+---
+import Demo from "../../../components/Demo.astro";
+
+Flex wrap is set on a container and controls what happens when its children overflow the main axis. By default children are forced onto a single line, shrinking if they have to. When lines wrap, [align content](../align-content/) controls how the lines are placed.
+
+**No wrap (default)**: No wrapping. Children may shrink as a result.
+
+**Wrap**: Children are wrapped onto several lines along the main axis as needed.
+
+**Wrap reverse**: Like wrap, but the order of the lines is reversed.
+
+```ts
+node.setFlexWrap(Wrap.Wrap);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 250,
+    padding: 10,
+    flexWrap: "wrap",
+  }}
+>
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+</Node>`} />

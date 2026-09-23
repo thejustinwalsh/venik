@@ -1,0 +1,54 @@
+---
+title: Flex basis, grow and shrink
+description: How free space is handed out along the main axis.
+order: 5
+---
+import Demo from "../../../components/Demo.astro";
+
+## Flex basis
+
+Flex basis is an axis-independent way of giving an item its default size along the main axis. It works like [width](../width-height/) in a row container and like height in a column container. It is the item's size before any growing or shrinking happens.
+
+```ts
+node.setFlexBasis(50);
+node.setFlexBasis("25%");
+node.setFlexBasis("auto");
+```
+
+<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
+  <Node style={{margin: 5, flexBasis: 50}} />
+</Node>`} />
+
+## Flex grow
+
+Flex grow describes how remaining space in a container is distributed among its children along the main axis. After laying out its children, a container hands out any remaining space in proportion to each child's flex grow value.
+
+Flex grow accepts any number greater than or equal to `0`. The default is `0`.
+
+```ts
+node.setFlexGrow(1);
+```
+
+<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
+  <Node style={{margin: 5, flexGrow: 0.25}} />
+  <Node style={{margin: 5, flexGrow: 0.75}} />
+</Node>`} />
+
+## Flex shrink
+
+Flex shrink describes how children are shrunk along the main axis when together they overflow the container. It is the mirror image of flex grow: overflow is treated as negative remaining space, taken back from each child in proportion to its flex shrink value.
+
+Flex shrink accepts any number greater than or equal to `0`. As in CSS, the default is `1`, so children shrink unless told not to. Yoga's default is `0`.
+
+```ts
+node.setFlexShrink(0);
+```
+
+<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
+  <Node style={{margin: 5, flexShrink: 5, width: 150}} />
+  <Node style={{margin: 5, flexShrink: 10, width: 150}} />
+</Node>`} />
+
+## Flex
+
+`setFlex(n)` is the shorthand: as in CSS, `flex: n` means `flex-grow: n`, `flex-shrink: 1`, `flex-basis: 0`.

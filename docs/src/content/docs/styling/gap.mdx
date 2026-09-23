@@ -1,0 +1,30 @@
+---
+title: Gap
+description: Spacing between rows and columns.
+order: 8
+---
+import Demo from "../../../components/Demo.astro";
+
+Gap adds spacing between the rows and columns of a flex container. The gutter argument says whether the value applies to rows, to columns, or to both.
+
+```ts
+node.setGap(Gutter.Row, 10);
+node.setGap(Gutter.Column, "5%");
+node.setGap(Gutter.All, 10);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 250,
+    padding: 10,
+    flexWrap: "wrap",
+    gap: 10,
+  }}
+>
+  <Node style={{height: 50, width: 50}} />
+  <Node style={{height: 50, width: 50}} />
+  <Node style={{height: 50, width: 50}} />
+  <Node style={{height: 50, width: 50}} />
+  <Node style={{height: 50, width: 50}} />
+</Node>`} />

@@ -1,0 +1,26 @@
+---
+title: Width and height
+description: The size of a node's border box.
+order: 15
+---
+import Demo from "../../../components/Demo.astro";
+
+Width specifies the width of the node's border box, which is its content plus padding and border. Height does the same for the other axis.
+
+Both accept the following values:
+
+**Auto (default)**: The size is computed from the node's content, whether that is other children or a [measure function](../../advanced/measure-functions/).
+
+**Points**: An absolute size. Depending on other properties, such as flex grow and shrink, this may or may not be the final size.
+
+**Percentage**: A fraction of the [containing block's](../../advanced/containing-block/) width or height.
+
+```ts
+node.setWidth(50);
+node.setHeight("50%");
+node.setWidth("auto");
+```
+
+<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
+  <Node style={{margin: 5, height: 50, width: 50}} />
+</Node>`} />

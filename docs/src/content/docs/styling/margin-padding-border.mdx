@@ -1,0 +1,38 @@
+---
+title: Margin, padding and border
+description: Space around, inside and at the edge of a node.
+order: 12
+---
+import Demo from "../../../components/Demo.astro";
+
+**Margin** affects the space around the outside of a node. A node with margin offsets itself from the bounds of its parent and also pushes its siblings. Margin contributes to the size of an auto-sized parent. Margins can be `"auto"`, which absorbs free space along the main axis.
+
+**Padding** affects the size of the node it is applied to. Since nodes use `box-sizing: border-box`, padding does not add to the size of a node with an explicit size. For auto-sized nodes, padding grows the node and offsets its children.
+
+**Border** behaves exactly like padding during layout. It only exists as a separate property so that a renderer knows how thick a border to draw.
+
+```ts
+node.setMargin(Edge.All, 5);
+node.setMargin(Edge.Left, "auto");
+node.setPadding(Edge.Horizontal, 20);
+node.setBorder(Edge.Bottom, 2);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 200,
+    padding: 10,
+    flexDirection: "column",
+  }}
+>
+  <Node
+    style={{
+      margin: 5,
+      padding: 20,
+      borderWidth: 20,
+      height: 50,
+    }}
+  />
+  <Node style={{height: 50}} />
+</Node>`} />

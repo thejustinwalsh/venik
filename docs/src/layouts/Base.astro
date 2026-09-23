@@ -108,6 +108,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <header class="top">
       <a class="brand" href={`${base}/`}><span class="logo" aria-hidden="true">🧹</span>baba-yaga</a>
       <nav>
+        <a href={`${base}/docs/`} aria-current={Astro.url.pathname.startsWith(`${base}/docs`) ? "page" : undefined}>Docs</a>
         <a href={`${base}/examples/`} aria-current={Astro.url.pathname.startsWith(`${base}/examples`) ? "page" : undefined}>Examples</a>
         <a href="https://github.com/koteelok/baba-yaga">GitHub</a>
       </nav>

@@ -1,0 +1,30 @@
+---
+title: Display
+description: Whether a node takes part in layout at all.
+order: 4
+---
+import Demo from "../../../components/Demo.astro";
+
+Display controls how a node takes part in layout.
+
+**Flex (default)**: The node is a flex container laid out by the CSS Flexible Box Model.
+
+**None**: The node and its subtree are removed from layout and get zero size.
+
+**Contents**: The node itself is skipped and its children are laid out as if they were children of its parent.
+
+```ts
+node.setDisplay(Display.None);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 200,
+    padding: 10,
+    flexDirection: "column",
+  }}
+>
+  <Node style={{margin: 5, height: 50, display: "none"}} />
+  <Node style={{margin: 5, height: 50, display: "flex"}} />
+</Node>`} />

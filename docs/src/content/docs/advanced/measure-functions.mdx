@@ -1,0 +1,57 @@
+---
+title: Measure functions
+description: Sizing text and other content the engine cannot see.
+order: 3
+---
+
+Applications usually have content whose size depends on things the layout engine cannot express, such as text or a view laid out by another system. A leaf node can delegate its sizing to you through a **measure function**.
+
+## Setting a measure function
+
+A measure function is set on a node that has no children. It is called when the engine needs to know the size of the node's content.
+
+```ts
+import { Node, SizingMode, type Size } from "baba-yaga";
+
+const label = new Node();
+label.context = { text: "Hello" };
+
+const size: Size = { width: 0, height: 0 };
+
+label.setMeasureFunc((width, widthMode, height, heightMode, node) => {
+  const { text } = node.context as { text: string };
+  const metrics = measureText(text, widthMode === SizingMode.MaxContent ? Infinity : width);
+  size.width = metrics.width;
+  size.height = metrics.height;
+  return size;
+});
+```
+
+The `context` field is free for your own data; the engine never reads it. Returning the same `size` object every call is the intended pattern: the engine copies the two numbers out immediately and never keeps the object, so a measure function need not allocate.
+
+## Responding with measurements
+
+The measure function is only called when the node does not otherwise have a definite size. It receives the available space in each axis with border and padding already subtracted, and a `SizingMode` for each axis saying how to interpret it:
+
+1. **StretchFit**: The measured length must be exactly the available length. This is [`stretch-fit`](https://www.w3.org/TR/css-sizing-3/#stretch-fit-size) sizing, Yoga's `Exactly`.
+2. **MaxContent**: The available length is unconstrained; return the content's natural length. This is [`max-content`](https://www.w3.org/TR/css-sizing-3/#max-content) sizing, Yoga's `Undefined`.
+3. **FitContent**: Return the smaller of the natural length and the available length. This is [`fit-content`](https://www.w3.org/TR/css-sizing-3/#fit-content-size) sizing, Yoga's `AtMost`.
+
+The engine caches measurements against these inputs, so a leaf whose constraints have not changed is not measured again.
+
+> The engine does not promise to call the measure function when the node already has a definite size. Read the final size from the node's layout results rather than from what your measure function returned.
+
+## Invalidating measurements
+
+The engine cannot see your content, so when it changes in a way that may affect measurement, say so:
+
+```ts
+label.context.text = "Goodbye";
+label.markDirty();
+```
+
+`markDirty` is only allowed on nodes with a measure function; every other node is dirtied automatically by its style setters.
+
+## Baselines
+
+For `Align.Baseline`, a leaf can report where its baseline is with `setBaselineFunc((width, height, node) => number)`. Without one, the baseline is taken from the node's first child, falling back to the bottom edge of the node.

@@ -1,0 +1,41 @@
+---
+title: Align content
+description: How wrapped lines are distributed along the cross axis.
+order: 1
+---
+import Demo from "../../../components/Demo.astro";
+
+Align content defines the distribution of lines along the cross axis. It only has an effect when items wrap onto several lines with [flex wrap](../flex-wrap/).
+
+**Stretch (default)**: Stretch wrapped lines to fill the container's cross axis.
+
+**Flex start**: Pack wrapped lines at the start of the container's cross axis.
+
+**Flex end**: Pack wrapped lines at the end of the container's cross axis.
+
+**Center**: Pack wrapped lines in the center of the container's cross axis.
+
+**Space between**: Space wrapped lines evenly across the cross axis, distributing remaining space between the lines.
+
+**Space around**: Space wrapped lines evenly, distributing remaining space around the lines, so the first line gets half a gap before it and the last line half a gap after it.
+
+**Space evenly**: Space wrapped lines evenly, with the gaps between lines and between the lines and the container edges all equal.
+
+```ts
+node.setAlignContent(Align.SpaceBetween);
+```
+
+<Demo code={`<Node
+  style={{
+    width: 200,
+    height: 250,
+    padding: 10,
+    alignContent: "flex-start",
+    flexWrap: "wrap",
+  }}
+>
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+  <Node style={{margin: 5, height: 50, width: 50}} />
+</Node>`} />

@@ -1,0 +1,71 @@
+---
+title: Laying out a tree
+description: Install baba-yaga, build a tree of nodes, lay it out, and read the results.
+order: 1
+---
+
+Each box in baba-yaga is a **Node**. Nodes form a tree that holds both the input styles and the output layout. baba-yaga only computes sizes and positions; drawing is up to you.
+
+## Installation
+
+```sh
+npm install baba-yaga
+```
+
+The package ships ESM and CJS builds with TypeScript types, and has no dependencies.
+
+## Building a tree
+
+Nodes are created with `new Node()`, styled with setters, and linked with `insertChild`. See [Styling](../../styling/) for the full list of style properties.
+
+```ts
+import { Edge, FlexDirection, Node } from "baba-yaga";
+
+const root = new Node();
+root.setFlexDirection(FlexDirection.Row);
+root.setWidth(100);
+root.setHeight(100);
+
+const child0 = new Node();
+child0.setFlexGrow(1);
+child0.setMargin(Edge.Right, 10);
+root.insertChild(child0, 0);
+
+const child1 = new Node();
+child1.setFlexGrow(1);
+root.insertChild(child1, 1);
+```
+
+Nodes are ordinary JavaScript objects. There is nothing to free: drop the last reference and the garbage collector reclaims the tree.
+
+## Laying out the tree
+
+The whole tree is laid out from the root in one call. The layout can be constrained to an available width and height, or left unconstrained in either axis by passing `undefined`.
+
+```ts
+import { Direction } from "baba-yaga";
+
+root.calculateLayout(undefined, undefined, Direction.LTR);
+```
+
+Calling `calculateLayout` on a tree that has not changed returns immediately, and a tree where only a few nodes changed revisits only those branches. See [Incremental layout](../../advanced/incremental-layout/).
+
+## Reading layout results
+
+After layout, every node holds its position relative to its parent's border box, its size, and the resolved margin, border and padding of each physical edge.
+
+```ts
+const left = child0.getComputedLeft();
+const top = child0.getComputedTop();
+const width = child0.getComputedWidth();
+const height = child0.getComputedHeight();
+
+const paddingLeft = child0.getComputedPadding(Edge.Left);
+```
+
+When you need all six numbers at once, `getComputedLayout()` returns them in a single object. That object is shared by every node and is overwritten by the next call, so copy the values out rather than holding on to it.
+
+```ts
+const box = child0.getComputedLayout();
+draw(box.left, box.top, box.width, box.height);
+```

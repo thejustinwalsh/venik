@@ -1,0 +1,293 @@
+---
+/**
+ * A small live playground for the docs: an editable tree on the left in the
+ * examples page's JSX dialect, the laid out boxes on the right. Every
+ * instance on a page is wired up by the script below.
+ */
+interface Props {
+  code: string;
+  /** Height of the panes in pixels. */
+  height?: number;
+}
+const { code, height = 260 } = Astro.props;
+---
+
+<div class="demo" style={`--demo-height: ${height}px`}>
+  <div class="editor">
+    <pre class="hl" aria-hidden="true"><code></code></pre>
+    <textarea spellcheck="false" wrap="off" autocomplete="off" autocapitalize="off" aria-label="Layout source" set:text={code.trim()} />
+  </div>
+  <div class="preview"><canvas></canvas></div>
+  <div class="status"></div>
+</div>
+
+<style>
+  .demo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: var(--demo-height) auto;
+    margin: 0 0 20px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  @media (max-width: 700px) {
+    .demo {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: var(--demo-height) var(--demo-height) auto;
+    }
+  }
+  .editor {
+    position: relative;
+    min-height: 0;
+    border-right: 1px solid var(--border);
+    font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (max-width: 700px) {
+    .editor {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+  }
+  .editor pre,
+  .editor textarea {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 12px 14px;
+    font: inherit;
+    white-space: pre;
+    overflow-wrap: normal;
+    tab-size: 2;
+    overflow: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+  }
+  .editor pre {
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .editor textarea {
+    display: block;
+    width: 100%;
+    height: 100%;
+    color: transparent;
+    caret-color: var(--fg);
+    outline: 0;
+    resize: none;
+  }
+  .editor textarea::selection {
+    background: rgba(128, 128, 128, 0.35);
+  }
+  .editor :global(.line) {
+    display: block;
+    min-height: 1lh;
+    margin: 0 -14px;
+    padding: 0 14px;
+  }
+  .editor :global(.line.hot) {
+    background: var(--hot);
+  }
+  .editor :global(.tk-tag) { color: var(--tk-tag); }
+  .editor :global(.tk-attr) { color: var(--tk-attr); }
+  .editor :global(.tk-key) { color: var(--tk-key); }
+  .editor :global(.tk-number) { color: var(--tk-number); }
+  .editor :global(.tk-string) { color: var(--tk-string); }
+  .editor :global(.tk-comment) { color: var(--tk-comment); font-style: italic; }
+  .editor :global(.tk-punct) { color: var(--tk-punct); }
+  .preview {
+    min-height: 0;
+    overflow: auto;
+    padding: 16px;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .preview canvas {
+    display: block;
+  }
+  .status {
+    grid-column: 1 / -1;
+    padding: 5px 14px;
+    border-top: 1px solid var(--border);
+    font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--muted);
+    min-height: 29px;
+    white-space: pre-wrap;
+  }
+  .status.error {
+    color: var(--error);
+  }
+</style>
+
+<script>
+  import { Direction, Node } from "baba-yaga";
+  import { highlight, LineIndex, parse, ParseError, type Element as SourceElement } from "../lib/jsx.ts";
+  import { applyStyle, StyleError } from "../lib/style.ts";
+
+  type Box = { node: Node; depth: number; lines: number[]; x: number; y: number; width: number; height: number };
+
+  function mount(demo: HTMLElement): void {
+    const editor = demo.querySelector<HTMLTextAreaElement>("textarea")!;
+    const code = demo.querySelector<HTMLElement>("pre code")!;
+    const preview = demo.querySelector<HTMLElement>(".preview")!;
+    const stage = demo.querySelector<HTMLCanvasElement>("canvas")!;
+    const status = demo.querySelector<HTMLElement>(".status")!;
+    const ctx = stage.getContext("2d")!;
+
+    let boxes: Box[] = [];
+    let boxOf = new Map<Node, Box>();
+    let hot: Box | null = null;
+    let rootSize = { width: 0, height: 0 };
+    let stale = false;
+    let scale = 1;
+    let summary = "";
+
+    function build(source: SourceElement, depth: number, out: Box[], lines: LineIndex): Node {
+      const node = new Node();
+      for (const entry of source.style) {
+        try {
+          applyStyle(node, entry.key, entry.value);
+        } catch (error) {
+          if (error instanceof StyleError) throw new ParseError(error.message, entry.span.start, []);
+          throw error;
+        }
+      }
+      const ownLines = lines.linesOf(source.open);
+      if (source.close !== null) ownLines.push(...lines.linesOf(source.close));
+      out.push({ node, depth, lines: ownLines, x: 0, y: 0, width: 0, height: 0 });
+      source.children.forEach((child, index) => node.insertChild(build(child, depth + 1, out, lines), index));
+      return node;
+    }
+
+    function place(box: Box, originX: number, originY: number): void {
+      const { node } = box;
+      box.x = originX + node.getComputedLeft();
+      box.y = originY + node.getComputedTop();
+      box.width = node.getComputedWidth();
+      box.height = node.getComputedHeight();
+      for (const child of node.getChildren()) {
+        const childBox = boxOf.get(child);
+        if (childBox !== undefined) place(childBox, box.x, box.y);
+      }
+    }
+
+    function draw(): void {
+      const style = getComputedStyle(preview);
+      const availableWidth = preview.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const availableHeight = preview.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      scale = Math.min(1, availableWidth / Math.max(1, rootSize.width), availableHeight / Math.max(1, rootSize.height));
+      const cssWidth = Math.ceil(rootSize.width * scale);
+      const cssHeight = Math.ceil(rootSize.height * scale);
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(1, Math.round(cssWidth * dpr));
+      const height = Math.max(1, Math.round(cssHeight * dpr));
+      if (stage.width !== width || stage.height !== height) {
+        stage.style.width = `${cssWidth}px`;
+        stage.style.height = `${cssHeight}px`;
+        stage.width = width;
+        stage.height = height;
+      }
+      ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+      ctx.clearRect(0, 0, rootSize.width, rootSize.height);
+      ctx.globalAlpha = stale ? 0.5 : 1;
+      for (const box of boxes) {
+        const hue = (200 + box.depth * 47) % 360;
+        ctx.fillStyle = `hsl(${hue} 70% 55% / 0.25)`;
+        ctx.fillRect(box.x, box.y, box.width, box.height);
+        ctx.strokeStyle = `hsl(${hue} 70% 45%)`;
+        ctx.lineWidth = 1 / scale;
+        const inset = 0.5 / scale;
+        ctx.strokeRect(box.x + inset, box.y + inset, Math.max(0, box.width - 2 * inset), Math.max(0, box.height - 2 * inset));
+      }
+      if (hot !== null) {
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#0969da";
+        ctx.lineWidth = 2 / scale;
+        const gap = 2 / scale;
+        ctx.strokeRect(hot.x - gap, hot.y - gap, hot.width + 2 * gap, hot.height + 2 * gap);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function boxAt(cssX: number, cssY: number): Box | null {
+      const x = cssX / scale;
+      const y = cssY / scale;
+      let found: Box | null = null;
+      for (const box of boxes) {
+        if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) found = box;
+      }
+      return found;
+    }
+
+    function setHot(box: Box | null): void {
+      if (hot === box) return;
+      if (hot !== null) for (const line of hot.lines) code.children[line]?.classList.remove("hot");
+      hot = box;
+      draw();
+      if (box === null) {
+        status.textContent = summary;
+        return;
+      }
+      for (const line of box.lines) code.children[line]?.classList.add("hot");
+      const n = box.node;
+      const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(2));
+      status.textContent =
+        `left ${fmt(n.getComputedLeft())}  top ${fmt(n.getComputedTop())}  ` +
+        `width ${fmt(n.getComputedWidth())}  height ${fmt(n.getComputedHeight())}`;
+    }
+
+    function update(): void {
+      const source = editor.value;
+      const lines = new LineIndex(source);
+      setHot(null);
+      let built: Box[] = [];
+      let root: Node;
+      let parsed;
+      try {
+        parsed = parse(source);
+        root = build(parsed.root, 0, built, lines);
+      } catch (error) {
+        if (!(error instanceof ParseError)) throw error;
+        code.innerHTML = highlight(source, error.tokens);
+        status.textContent = `Line ${lines.lineOf(error.offset) + 1}: ${error.message}`;
+        status.classList.add("error");
+        stale = true;
+        draw();
+        return;
+      }
+      code.innerHTML = highlight(source, parsed.tokens);
+      root.calculateLayout(undefined, undefined, Direction.LTR);
+      boxes = built;
+      boxOf = new Map(built.map((b) => [b.node, b]));
+      place(built[0]!, 0, 0);
+      rootSize = { width: root.getComputedWidth(), height: root.getComputedHeight() };
+      stale = false;
+      draw();
+      summary = `${built.length} node${built.length === 1 ? "" : "s"} · root ${rootSize.width}×${rootSize.height}`;
+      status.textContent = summary;
+      status.classList.remove("error");
+    }
+
+    editor.addEventListener("input", update);
+    editor.addEventListener("scroll", () => {
+      code.parentElement!.scrollTop = editor.scrollTop;
+      code.parentElement!.scrollLeft = editor.scrollLeft;
+    });
+    editor.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      event.preventDefault();
+      editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
+      update();
+    });
+    stage.addEventListener("mousemove", (event) => {
+      const rect = stage.getBoundingClientRect();
+      setHot(boxAt(event.clientX - rect.left, event.clientY - rect.top));
+    });
+    stage.addEventListener("mouseleave", () => setHot(null));
+    new ResizeObserver(() => draw()).observe(preview);
+    update();
+  }
+
+  for (const demo of document.querySelectorAll<HTMLElement>(".demo")) mount(demo);
+</script>

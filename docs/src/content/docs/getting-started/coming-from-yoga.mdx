@@ -1,0 +1,36 @@
+---
+title: Coming from Yoga
+description: What changes when you port a Yoga tree to baba-yaga.
+order: 3
+---
+
+baba-yaga started as a port of [Yoga](https://www.yogalayout.dev) and its test suite is Yoga's, ported. Given the same tree it produces the same boxes. It is not a drop-in replacement though: the API is different, and the defaults follow CSS instead of Yoga.
+
+## Defaults follow CSS
+
+| Property | baba-yaga (and CSS) | Yoga |
+|---|---|---|
+| `flex-direction` | `row` | `column` |
+| `flex-shrink` | `1` | `0` |
+| `align-content` | `stretch` | `flex-start` |
+| `position` | `static` | `relative` |
+| `flex: n` | `n 1 0` | `n 1 0` in web mode, otherwise `n 0 auto` |
+
+A tree written against Yoga's defaults needs `setFlexDirection(FlexDirection.Column)`, `setFlexShrink(0)` and `setAlignContent(Align.FlexStart)` wherever it relied on them. There is no `setUseWebDefaults` because there is nothing left to opt into.
+
+## Absolute positioning
+
+Because `position: static` is the default, an absolutely positioned node is placed relative to the nearest *positioned* ancestor, as in CSS, rather than its parent as in Yoga. Give the parent `position: relative` to get Yoga's behaviour. See [Containing block](../../advanced/containing-block/).
+
+## API differences
+
+- Nodes and configs are created with `new Node()` and `new Config()`. There is no `free()` or `freeRecursive()`; the garbage collector reclaims them.
+- The parent of a node is the `owner` field, and `hasNewLayout` is a field rather than a method. Set it to `false` after applying a node's layout.
+- Measure functions receive `SizingMode` values (`StretchFit`, `MaxContent`, `FitContent`) instead of Yoga's `MeasureMode`, and the node is the last argument rather than the first. See [Measure functions](../../advanced/measure-functions/).
+- Percentages are strings such as `"50%"`, `auto` is the string `"auto"`, and a value is unset with `undefined`.
+- Style getters return the node's own immutable value object, and `getComputedLayout()` returns one shared object, so reading styles and layout allocates nothing.
+- Errata and experimental feature flags are gone.
+
+## One quirk kept on purpose
+
+Flexbox defines an automatic minimum size for flex items, so that `min-width: auto` keeps an item from shrinking below its content. Finding that size needs an extra measure pass, so baba-yaga follows every released Yoga and treats `min-width: auto` and `min-height: auto` as `0`. Set an explicit minimum to keep an item from shrinking below its content.

@@ -1,0 +1,39 @@
+---
+title: Configuration
+description: The one knob baba-yaga has, and the ones it does not.
+order: 2
+---
+
+A **Config** is attached to a node and controls how that part of the tree is laid out. Every node created with `new Node()` shares one default config, so most applications never create their own.
+
+```ts
+import { Config, Node } from "baba-yaga";
+
+const config = new Config();
+// Set it up...
+
+const root = new Node(config);
+```
+
+A node's config can also be swapped later with `setConfig`, and read back with `getConfig`. Configs are plain objects and need no cleanup.
+
+## Point scale factor
+
+Positions are computed on a floating-point grid of "points". Box edges would often land on sub-pixel boundaries, which renders blurry or inconsistently. To avoid that, baba-yaga rounds positions so that edges align with a physical pixel grid.
+
+Tell the config how many physical pixels one point covers, usually the display density. Set it to `0` to disable rounding.
+
+```ts
+const config = new Config();
+config.setPointScaleFactor(window.devicePixelRatio);
+```
+
+The unrounded sizes remain available through `getComputedRawWidth()` and `getComputedRawHeight()`.
+
+## What is not configurable
+
+Yoga's config carries several switches that baba-yaga does not have:
+
+- **Web defaults.** baba-yaga always uses CSS defaults for `flex-direction`, `flex-shrink`, `align-content` and `position`, so there is nothing to opt into. See [Coming from Yoga](../coming-from-yoga/).
+- **Errata.** Yoga can be asked to reproduce its own historical layout bugs for backwards compatibility. baba-yaga only implements the standards-compliant behaviour.
+- **Experimental features.** None are exposed.

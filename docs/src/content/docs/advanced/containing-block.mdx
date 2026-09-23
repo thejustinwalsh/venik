@@ -1,0 +1,34 @@
+---
+title: Containing block
+description: What percentages and absolute insets are measured against.
+order: 2
+---
+import Demo from "../../../components/Demo.astro";
+
+Some properties depend on a node other than the one they are applied to. A percentage length such as `width: "50%"` is half of some other length, and that other length comes from the size of the **containing block**. The idea comes from the [web](https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block), but since baba-yaga implements only a subset of CSS, its containing blocks are simpler.
+
+## Finding the containing block
+
+- If the node's [position type](../../styling/position/) is static or relative, the containing block is the **content box** of its parent, the parent minus margin, padding and border. Every node is a flex container, so every parent establishes a formatting context.
+- If the node is absolute, the containing block is the **padding box** of the nearest ancestor that is not static, that is, the nearest `relative` or `absolute` ancestor. If there is none, it is the root. Since `static` is the default, a bare parent does not form a containing block for its absolute children: give it `position: "relative"` when you want Yoga's parent-relative behaviour.
+- The root has no containing block. It uses the available width and height passed to [`calculateLayout`](../../getting-started/laying-out-a-tree/).
+
+## What it affects
+
+- Percentage lengths resolve against the containing block. Height, top and bottom use its height. Width, left, right, margin and padding use its width.
+- Insets on absolute nodes are measured from the corresponding edge of the containing block.
+
+In the example, the middle node is static, so the absolute node inside it is positioned against the root: its width is half the root's padding box and it sits 10 points above the root's bottom padding edge. Change the middle node to `position: "relative"` to see it become the containing block.
+
+<Demo code={`<Node style={{width: 200, height: 200, padding: 10}}>
+  <Node style={{height: 100, width: 100, position: "static"}}>
+    <Node
+      style={{
+        height: 25,
+        width: "50%",
+        bottom: 10,
+        position: "absolute",
+      }}
+    />
+  </Node>
+</Node>`} />

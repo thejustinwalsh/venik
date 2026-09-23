@@ -1,0 +1,201 @@
+---
+import Base from "./Base.astro";
+import { hrefOf, orderedDocs, sectionOf, sections, type DocEntry } from "../lib/docs.ts";
+
+interface Props {
+  entry: DocEntry;
+}
+const { entry } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const docs = await orderedDocs();
+const index = docs.findIndex((d) => d.id === entry.id);
+const prev = index > 0 ? docs[index - 1] : undefined;
+const next = index < docs.length - 1 ? docs[index + 1] : undefined;
+---
+
+<Base title={entry.data.title}>
+  <div class="docs">
+    <nav class="sidebar" aria-label="Documentation">
+      {sections.map((section) => (
+        <div class="section">
+          <h4>{section.label}</h4>
+          <ul>
+            {docs
+              .filter((d) => sectionOf(d) === section.id)
+              .map((d) => (
+                <li>
+                  <a href={hrefOf(base, d)} aria-current={d.id === entry.id ? "page" : undefined}>
+                    {d.data.title}
+                  </a>
+                </li>
+              ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+    <article class="content">
+      <h1>{entry.data.title}</h1>
+      <slot />
+      <footer class="pager">
+        {prev ? <a class="prev" href={hrefOf(base, prev)}><small>Previous</small>{prev.data.title}</a> : <span />}
+        {next ? <a class="next" href={hrefOf(base, next)}><small>Next</small>{next.data.title}</a> : <span />}
+      </footer>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .docs {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    min-height: 100%;
+  }
+  .sidebar {
+    padding: 28px 24px 28px 0;
+    border-right: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .sidebar .section + .section {
+    margin-top: 20px;
+  }
+  .sidebar h4 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sidebar a {
+    display: block;
+    padding: 4px 10px;
+    margin-left: -10px;
+    border-radius: 6px;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .sidebar a:hover {
+    background: var(--hot);
+  }
+  .sidebar a[aria-current="page"] {
+    background: var(--accent);
+    color: #fff;
+  }
+  .content {
+    padding: 28px 0 56px 40px;
+    line-height: 1.65;
+  }
+  .content h1 {
+    margin: 0 0 16px;
+    font-size: 32px;
+    line-height: 1.2;
+  }
+  .content :global(h2) {
+    margin: 36px 0 12px;
+    font-size: 22px;
+  }
+  .content :global(h3) {
+    margin: 28px 0 8px;
+    font-size: 17px;
+  }
+  .content :global(p),
+  .content :global(ul),
+  .content :global(ol) {
+    margin: 0 0 14px;
+  }
+  .content :global(li) {
+    margin-bottom: 4px;
+  }
+  .content :global(code) {
+    font: 0.92em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--hot);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  .content :global(pre) {
+    margin: 0 0 16px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel) !important;
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .content :global(pre code) {
+    background: none;
+    padding: 0;
+    font: inherit;
+  }
+  .content :global(table) {
+    border-collapse: collapse;
+    margin: 0 0 16px;
+    font-size: 14px;
+  }
+  .content :global(th),
+  .content :global(td) {
+    text-align: left;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .content :global(th) {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .content :global(blockquote) {
+    margin: 0 0 16px;
+    padding: 10px 16px;
+    border-left: 3px solid var(--accent);
+    background: var(--panel);
+    border-radius: 0 8px 8px 0;
+  }
+  .content :global(blockquote p:last-child) {
+    margin: 0;
+  }
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .pager a {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .pager a small {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 12px;
+  }
+  .pager .next {
+    text-align: right;
+    margin-left: auto;
+  }
+  @media (max-width: 800px) {
+    .docs {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sidebar {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .content {
+      padding-left: 0;
+    }
+  }
+</style>
