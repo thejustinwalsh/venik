@@ -3,6 +3,7 @@
 import { getHeapStatistics } from "node:v8";
 import { loadEngine, buildTree, scenarios, snapshot } from "./engines.mjs";
 import { boardScenarios, boardSnapshot } from "./board.mjs";
+import { stressSnapshot } from "./stress.mjs";
 
 const [which, task] = process.argv.slice(2);
 const api = await loadEngine(which);
@@ -79,6 +80,7 @@ if (task === "check") {
   layout(t.root);
   out.layout = snapshot(t).flat();
   out.board = boardSnapshot(api);
+  out.stress = stressSnapshot(api);
 }
 
 process.stdout.write(JSON.stringify(out) + "\n");
