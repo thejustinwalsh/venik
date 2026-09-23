@@ -17,12 +17,12 @@ import {
   Display,
   Edge,
   FlexDirection,
-  type Gutter,
+  Gutter,
   type Justify,
   type SizingMode,
   type Overflow,
   PositionType,
-  type Wrap,
+  Wrap,
 } from "../enums.ts";
 import { Event } from "../event/event.ts";
 import { Style } from "../style/Style.ts";
@@ -78,6 +78,9 @@ export class Node {
 
   // Layout
   calculateLayout(width?: number | "auto", height?: number | "auto", direction?: Direction): void {
+    if (shapeAnchor === null) {
+      anchorShapes();
+    }
     calculateLayout(
       this,
       width === undefined || width === "auto" ? NaN : width,
@@ -1040,6 +1043,62 @@ export class Node {
       this.markDirtyAndPropagate();
     }
   }
+}
+
+// V8 reaches the hidden classes that nodes, styles and layout results end up
+// with through transitions it holds weakly. Once no node is left alive (all
+// trees dropped, as on a scene change), a full collection frees those classes
+// along with the optimized layout code specialized on them, and the next
+// build runs ~10x slower until it is optimized again. This small tree, laid
+// out once and kept for good, keeps every such class alive.
+let shapeAnchor: Node | null = null;
+
+function anchorShapes(): void {
+  // Events are a test-only build (see globals.d.ts): stay out of the counts a
+  // subscriber is keeping, and anchor on a later call instead.
+  if (__EVENTS__ && Event.hasSubscribers()) {
+    return;
+  }
+  const root = new Node();
+  shapeAnchor = root;
+  root.setWidth(100);
+  root.setHeight(100);
+  root.setFlexWrap(Wrap.Wrap);
+  root.setAlignItems(Align.Center);
+  root.setPadding(Edge.All, 1);
+  root.setBorder(Edge.All, 1);
+  root.setGap(Gutter.All, 1);
+  root.setPositionType(PositionType.Relative);
+
+  const item = new Node();
+  item.setWidth("50%");
+  item.setMinWidth(1);
+  item.setMaxHeight(50);
+  item.setMargin(Edge.All, 1);
+  item.setFlexGrow(1);
+  item.setFlexBasis(10);
+  root.insertChild(item, 0);
+
+  const badge = new Node();
+  badge.setPositionType(PositionType.Absolute);
+  badge.setPosition(Edge.Right, 0);
+  badge.setPosition(Edge.Top, "10%");
+  badge.setWidth(5);
+  badge.setHeight(5);
+  root.insertChild(badge, 1);
+
+  const contents = new Node();
+  contents.setDisplay(Display.Contents);
+  root.insertChild(contents, 2);
+  const size = { width: 10, height: 10 };
+  const text = new Node();
+  text.setMeasureFunc(() => size);
+  contents.insertChild(text, 0);
+
+  // Two widths, so that measurements are cached next to the layout.
+  calculateLayout(root, NaN, NaN, Direction.LTR);
+  root.setWidth(90);
+  calculateLayout(root, NaN, NaN, Direction.LTR);
 }
 
 // The result of every `getComputedLayout()` call. Read-only to callers.
