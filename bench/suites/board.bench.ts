@@ -9,9 +9,10 @@ for (const name of names) {
     engines((api) => {
       const { setup, op } = boardScenarios(api)[name];
       const s = setup();
-      // Keeps the engine's hidden classes alive for "build and lay out", whose
-      // setup keeps no tree (see hud.bench.ts).
+      // A laid-out tree kept alive keeps the engine's hidden classes alive
+      // for "build and lay out", whose setup keeps no tree (see hud.bench.ts).
       const live = buildBoard(api, 5, 20);
+      api.layout(live, 120, 40);
       return () => {
         op(s);
         live.getChildCount();
