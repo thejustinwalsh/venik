@@ -1,0 +1,20 @@
+---
+// `/docs/` sends readers to the first page. A page rather than a config
+// redirect so that the destination respects the site's base path.
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const target = `${base}/docs/getting-started/laying-out-a-tree/`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={target} />
+    <title>Docs · baba-yaga</title>
+  </head>
+  <body>
+    <a href={target}>Documentation</a>
+  </body>
+</html>
