@@ -1,5 +1,6 @@
 ---
 import { examples } from "../lib/examples.ts";
+import "../lib/resize.css";
 ---
 
 <div class="playground">
@@ -25,8 +26,18 @@ import { examples } from "../lib/examples.ts";
     <div class="status"></div>
   </section>
   <section class="preview-pane">
-    <div class="preview"><canvas class="stage"></canvas></div>
-    <div class="info"></div>
+    <div class="preview">
+      <canvas class="stage"></canvas>
+      <button type="button" class="sizer-handle" aria-label="Resize the root: drag, or arrow keys (Shift for 10)"></button>
+    </div>
+    <div class="info">
+      <span class="info-text"></span>
+      <span class="sizer-tools">
+        <button type="button" class="sizer-fit" title="Size the root to the preview pane and follow it">Fit</button>
+        <button type="button" class="sizer-fill" title="Fill the viewport; the root tracks its size">Fill</button>
+        <button type="button" class="sizer-reset" title="Back to the example's own size">Reset</button>
+      </span>
+    </div>
   </section>
 </div>
 
@@ -206,7 +217,24 @@ import { examples } from "../lib/examples.ts";
   .status.error {
     color: var(--error);
   }
+  .info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-right: 8px;
+  }
+  /* Fill: the preview alone over the whole viewport. */
+  .preview-pane.is-fill {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: var(--bg);
+  }
   .preview {
+    position: relative;
+    /* The pane is sized by the page, never by the drawn root. */
+    contain: size;
     flex: 1;
     min-height: 0;
     overflow: auto;
@@ -231,6 +259,7 @@ import { examples } from "../lib/examples.ts";
     type StyleEntry,
   } from "../lib/jsx.ts";
   import { applyStyle, StyleError, styleSpec, type StyleSpec } from "../lib/style.ts";
+  import { Sizer } from "../lib/resize.ts";
 
   const $ = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
   const editor = $<HTMLTextAreaElement>(".editor textarea");
@@ -239,7 +268,7 @@ import { examples } from "../lib/examples.ts";
   const preview = $<HTMLElement>(".preview");
   const stage = $<HTMLCanvasElement>(".stage");
   const ctx = stage.getContext("2d")!;
-  const info = $<HTMLElement>(".info");
+  const info = $<HTMLElement>(".info-text");
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>(".examples button"));
   const tweak = $<HTMLElement>(".tweak");
   const tweakKey = $<HTMLElement>(".tweak .key");
@@ -271,6 +300,8 @@ import { examples } from "../lib/examples.ts";
   /** The last successful parse, for the caret-driven controls. */
   let parsedRoot: SourceElement | null = null;
   let lineIndex = new LineIndex("");
+  /** The info bar when no box is hovered: the root's size, which Fill hides the status line for. */
+  let rootInfo = "";
 
   /** A bare node tree for `source`, with no boxes attached. */
   function nodesOnly(source: SourceElement): Node {
@@ -301,6 +332,7 @@ import { examples } from "../lib/examples.ts";
   function timeLayout(source: SourceElement): number {
     return timeAverage(() => {
       const root = nodesOnly(source);
+      sizer.apply(root);
       const t0 = performance.now();
       root.calculateLayout(undefined, undefined, Direction.LTR);
       return performance.now() - t0;
@@ -383,6 +415,7 @@ import { examples } from "../lib/examples.ts";
       ctx.strokeRect(hot.x - gap, hot.y - gap, hot.width + 2 * gap, hot.height + 2 * gap);
     }
     ctx.globalAlpha = 1;
+    sizer.place();
   }
 
   /** The deepest box under a point in canvas CSS pixels, if any. */
@@ -404,7 +437,7 @@ import { examples } from "../lib/examples.ts";
     hot = box;
     draw();
     if (box === null) {
-      info.textContent = "";
+      info.textContent = rootInfo;
       return;
     }
     for (const line of box.lines) code.children[line]?.classList.add("hot");
@@ -440,6 +473,7 @@ import { examples } from "../lib/examples.ts";
     parsedRoot = parsed.root;
     lineIndex = lines;
     code.innerHTML = highlight(source, parsed.tokens);
+    sizer.apply(root);
     root.calculateLayout(undefined, undefined, Direction.LTR);
     const us = timeLayout(parsed.root);
 
@@ -447,6 +481,8 @@ import { examples } from "../lib/examples.ts";
     boxOf = new Map(built.map((b) => [b.node, b]));
     place(built[0]!, 0, 0);
     rootSize = { width: root.getComputedWidth(), height: root.getComputedHeight() };
+    rootInfo = `root ${rootSize.width}×${rootSize.height}${sizer.note}`;
+    if (hot === null) info.textContent = rootInfo;
     stale = false;
     draw();
 
@@ -478,6 +514,7 @@ import { examples } from "../lib/examples.ts";
     editor.scrollTop = 0;
     editor.scrollLeft = 0;
     hideTweak();
+    sizer.forget();
     update();
   }
 
@@ -639,7 +676,11 @@ import { examples } from "../lib/examples.ts";
   });
   document.addEventListener("selectionchange", onCaret);
   editor.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") hideTweak();
+    // Handled here, Escape closes the controls without also leaving Fill.
+    if (event.key === "Escape" && !tweak.hidden) {
+      hideTweak();
+      event.preventDefault();
+    }
   });
   // Clicking elsewhere hides the controls; clicking the controls themselves keeps them.
   editor.addEventListener("blur", (event) => {
@@ -685,8 +726,21 @@ import { examples } from "../lib/examples.ts";
       load(button.dataset.id!);
     });
   }
-  window.addEventListener("resize", draw);
   window.addEventListener("hashchange", () => load(location.hash.slice(1)));
+
+  const sizer = new Sizer({
+    container: $<HTMLElement>(".preview-pane"),
+    preview,
+    stage,
+    handle: $<HTMLElement>(".sizer-handle"),
+    fit: $<HTMLButtonElement>(".sizer-fit"),
+    fill: $<HTMLButtonElement>(".sizer-fill"),
+    reset: $<HTMLButtonElement>(".sizer-reset"),
+    rootSize: () => rootSize,
+    scale: () => scale,
+    relayout: update,
+    redraw: draw,
+  });
 
   load(location.hash.slice(1));
 </script>

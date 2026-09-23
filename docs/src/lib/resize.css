@@ -1,0 +1,58 @@
+/* Controls for lib/resize.ts, shared by the docs demos and the examples page. */
+
+.sizer-tools {
+  display: inline-flex;
+  gap: 4px;
+  flex: none;
+}
+.sizer-tools button {
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  cursor: pointer;
+}
+.sizer-tools button:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--hot);
+}
+.sizer-tools button[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--hot);
+}
+.sizer-tools button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.sizer-tools button:focus-visible,
+.sizer-handle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Sits on the drawn root's bottom-right corner; lib/resize.ts sets left/top. */
+.sizer-handle {
+  position: absolute;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  margin: -10px 0 0 -10px;
+  padding: 0;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background:
+    linear-gradient(135deg, transparent 45%, var(--accent) 45%, var(--accent) 55%, transparent 55%) no-repeat,
+    linear-gradient(135deg, transparent 70%, var(--accent) 70%, var(--accent) 80%, transparent 80%) no-repeat,
+    var(--panel);
+  cursor: nwse-resize;
+  touch-action: none;
+  opacity: 0.7;
+}
+.sizer-handle:hover,
+.sizer-handle:focus-visible,
+.sizer-handle.is-dragging {
+  opacity: 1;
+}

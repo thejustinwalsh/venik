@@ -10,6 +10,7 @@ interface Props {
   minHeight?: number;
 }
 const { code, minHeight = 220 } = Astro.props;
+import "../lib/resize.css";
 ---
 
 <div class="demo" style={`--demo-min-height: ${minHeight}px`}>
@@ -28,8 +29,18 @@ const { code, minHeight = 220 } = Astro.props;
       <select class="options" aria-label="Value"></select>
     </div>
   </div>
-  <div class="preview"><canvas></canvas></div>
-  <div class="status"></div>
+  <div class="preview">
+    <canvas></canvas>
+    <button type="button" class="sizer-handle" aria-label="Resize the root: drag, or arrow keys (Shift for 10)"></button>
+  </div>
+  <div class="status">
+    <span class="status-text"></span>
+    <span class="sizer-tools">
+      <button type="button" class="sizer-fit" title="Size the root to the preview pane and follow it">Fit</button>
+      <button type="button" class="sizer-fill" title="Fill the viewport; the root tracks its size">Fill</button>
+      <button type="button" class="sizer-reset" title="Back to the example's own size">Reset</button>
+    </span>
+  </div>
 </div>
 
 <style>
@@ -150,7 +161,34 @@ const { code, minHeight = 220 } = Astro.props;
     border-radius: 4px;
     padding: 2px 4px;
   }
+  /* Fill: the whole demo over the viewport, editor and preview filling it. */
+  .demo.is-fill {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  @media (max-width: 700px) {
+    .demo.is-fill {
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
+    }
+  }
+  .demo.is-fill .editor,
+  .demo.is-fill .preview {
+    min-height: 0;
+  }
+  .demo.is-fill .editor pre {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+  }
   .preview {
+    position: relative;
+    /* The row is sized by the editor and min-height, never by the drawn root. */
+    contain: size;
     min-height: var(--demo-min-height);
     overflow: auto;
     padding: 16px;
@@ -162,7 +200,11 @@ const { code, minHeight = 220 } = Astro.props;
   }
   .status {
     grid-column: 1 / -1;
-    padding: 5px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 8px 4px 14px;
     border-top: 1px solid var(--border);
     font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     color: var(--muted);
@@ -178,6 +220,7 @@ const { code, minHeight = 220 } = Astro.props;
   import { Direction, Node } from "venik";
   import { highlight, LineIndex, parse, ParseError, type Element as SourceElement, type StyleEntry } from "../lib/jsx.ts";
   import { applyStyle, StyleError, styleSpec, type StyleSpec } from "../lib/style.ts";
+  import { Sizer } from "../lib/resize.ts";
 
   type Box = { node: Node; depth: number; lines: number[]; x: number; y: number; width: number; height: number };
 
@@ -187,6 +230,7 @@ const { code, minHeight = 220 } = Astro.props;
     const preview = demo.querySelector<HTMLElement>(".preview")!;
     const stage = demo.querySelector<HTMLCanvasElement>("canvas")!;
     const status = demo.querySelector<HTMLElement>(".status")!;
+    const statusText = demo.querySelector<HTMLElement>(".status-text")!;
     const ctx = stage.getContext("2d")!;
     const tweak = demo.querySelector<HTMLElement>(".tweak")!;
     const tweakKey = tweak.querySelector<HTMLElement>(".key")!;
@@ -270,6 +314,7 @@ const { code, minHeight = 220 } = Astro.props;
         ctx.strokeRect(hot.x - gap, hot.y - gap, hot.width + 2 * gap, hot.height + 2 * gap);
       }
       ctx.globalAlpha = 1;
+      sizer.place();
     }
 
     function boxAt(cssX: number, cssY: number): Box | null {
@@ -288,13 +333,13 @@ const { code, minHeight = 220 } = Astro.props;
       hot = box;
       draw();
       if (box === null) {
-        status.textContent = summary;
+        statusText.textContent = summary;
         return;
       }
       for (const line of box.lines) code.children[line]?.classList.add("hot");
       const n = box.node;
       const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(2));
-      status.textContent =
+      statusText.textContent =
         `left ${fmt(n.getComputedLeft())}  top ${fmt(n.getComputedTop())}  ` +
         `width ${fmt(n.getComputedWidth())}  height ${fmt(n.getComputedHeight())}`;
     }
@@ -314,7 +359,7 @@ const { code, minHeight = 220 } = Astro.props;
         parsedRoot = null;
         hideTweak();
         code.innerHTML = highlight(source, error.tokens);
-        status.textContent = `Line ${lines.lineOf(error.offset) + 1}: ${error.message}`;
+        statusText.textContent = `Line ${lines.lineOf(error.offset) + 1}: ${error.message}`;
         status.classList.add("error");
         stale = true;
         draw();
@@ -323,6 +368,7 @@ const { code, minHeight = 220 } = Astro.props;
       parsedRoot = parsed.root;
       lineIndex = lines;
       code.innerHTML = highlight(source, parsed.tokens);
+      sizer.apply(root);
       root.calculateLayout(undefined, undefined, Direction.LTR);
       boxes = built;
       boxOf = new Map(built.map((b) => [b.node, b]));
@@ -330,8 +376,8 @@ const { code, minHeight = 220 } = Astro.props;
       rootSize = { width: root.getComputedWidth(), height: root.getComputedHeight() };
       stale = false;
       draw();
-      summary = `${built.length} node${built.length === 1 ? "" : "s"} · root ${rootSize.width}×${rootSize.height}`;
-      status.textContent = summary;
+      summary = `${built.length} node${built.length === 1 ? "" : "s"} · root ${rootSize.width}×${rootSize.height}${sizer.note}`;
+      statusText.textContent = summary;
       status.classList.remove("error");
     }
 
@@ -480,7 +526,11 @@ const { code, minHeight = 220 } = Astro.props;
     });
     document.addEventListener("selectionchange", onCaret);
     editor.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") hideTweak();
+      // Handled here, Escape closes the controls without also leaving Fill.
+      if (event.key === "Escape" && !tweak.hidden) {
+        hideTweak();
+        event.preventDefault();
+      }
     });
     // Clicking elsewhere hides the controls; clicking the controls themselves keeps them.
     editor.addEventListener("blur", (event) => {
@@ -508,7 +558,19 @@ const { code, minHeight = 220 } = Astro.props;
       setHot(boxAt(event.clientX - rect.left, event.clientY - rect.top));
     });
     stage.addEventListener("mouseleave", () => setHot(null));
-    new ResizeObserver(() => draw()).observe(preview);
+    const sizer = new Sizer({
+      container: demo,
+      preview,
+      stage,
+      handle: demo.querySelector<HTMLElement>(".sizer-handle")!,
+      fit: demo.querySelector<HTMLButtonElement>(".sizer-fit")!,
+      fill: demo.querySelector<HTMLButtonElement>(".sizer-fill")!,
+      reset: demo.querySelector<HTMLButtonElement>(".sizer-reset")!,
+      rootSize: () => rootSize,
+      scale: () => scale,
+      relayout: update,
+      redraw: draw,
+    });
     update();
   }
 
