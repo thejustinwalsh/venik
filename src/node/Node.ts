@@ -630,7 +630,10 @@ export class Node {
 
   // Internal API (`yoga::Node` members that have no C API equivalent)
 
-  /** @internal The raw child list, including `display: contents` nodes. */
+  /**
+   * The node's children, including `display: contents` nodes. This is the node's
+   * own list, not a copy: it changes as children are inserted and removed.
+   */
   getChildren(): readonly Node[] {
     return this.children_;
   }
