@@ -2710,10 +2710,11 @@ function calculateLayoutImpl(
     // STEP 11: SIZING AND POSITIONING ABSOLUTE CHILDREN
     // Let the containing block layout its absolute descendants.
     if (style.positionType !== PositionType.Static || depth === 1) {
+      layout.absoluteWalkSizingMode = isMainAxisRow ? sizingModeMainDim : sizingModeCrossDim;
       layoutAbsoluteDescendants(
         node,
         node,
-        isMainAxisRow ? sizingModeMainDim : sizingModeCrossDim,
+        layout.absoluteWalkSizingMode,
         direction,
         layoutMarkerData,
         depth,
@@ -2863,6 +2864,248 @@ function noteResultsLeftByMeasurement(
   }
 }
 
+// Relayout boundaries.
+//
+// A change dirties every owner up to the root, and an owner's pass normally
+// runs the whole flex algorithm again, asking every child about its size. An
+// owner whose own style, children and config are unchanged, though, would ask
+// its children the very questions it asked last time: its pass depends on
+// nothing else. If each dirty child still gives the same answers to those
+// questions (its cache entries hold them), the owner's pass would come out as
+// before, and the owner's own cache entries still hold. Asking a dirty child
+// again also lays it out again, so the subtree below is up to date either way.
+//
+// The child's entries are copied here before the child is asked again, which
+// empties its cache: availableWidth, availableHeight, ownerWidth, ownerHeight,
+// widthSizingMode, heightSizingMode, computedWidth, computedHeight, baseline,
+// flags (see `entryFlags`), mainContentSize.
+const REPLAY_FIELDS = 11;
+const replayScratch: number[] = [];
+
+const FLAG_HAD_OVERFLOW = 1;
+const FLAG_MEASURE_HAD_OVERFLOW = 2;
+const FLAG_RELAXABLE = 4;
+const FLAG_MAIN_SIZE_INVARIANT = 8;
+
+function entryFlags(entry: CachedMeasurement): number {
+  return (
+    (entry.hadOverflow ? FLAG_HAD_OVERFLOW : 0) |
+    (entry.measureHadOverflow ? FLAG_MEASURE_HAD_OVERFLOW : 0) |
+    (entry.relaxable ? FLAG_RELAXABLE : 0) |
+    (entry.mainSizeInvariant ? FLAG_MAIN_SIZE_INVARIANT : 0)
+  );
+}
+
+function pushEntry(entry: CachedMeasurement): void {
+  replayScratch.push(
+    entry.availableWidth,
+    entry.availableHeight,
+    entry.ownerWidth,
+    entry.ownerHeight,
+    entry.widthSizingMode,
+    entry.heightSizingMode,
+    entry.computedWidth,
+    entry.computedHeight,
+    entry.baseline,
+    entryFlags(entry),
+    entry.mainContentSize,
+  );
+}
+
+function sameNumber(a: number, b: number): boolean {
+  return a === b || (a !== a && b !== b);
+}
+
+/** Whether `entry` holds the question copied at `at`, with the same flags a later question reads. */
+function holdsCopiedEntry(entry: CachedMeasurement, at: number): boolean {
+  const s = replayScratch;
+  return (
+    entry.computedWidth >= 0 &&
+    sameNumber(entry.availableWidth, s[at]!) &&
+    sameNumber(entry.availableHeight, s[at + 1]!) &&
+    sameNumber(entry.ownerWidth, s[at + 2]!) &&
+    sameNumber(entry.ownerHeight, s[at + 3]!) &&
+    entry.widthSizingMode === s[at + 4] &&
+    entry.heightSizingMode === s[at + 5] &&
+    ((entryFlags(entry) ^ s[at + 9]!) & (FLAG_RELAXABLE | FLAG_MAIN_SIZE_INVARIANT)) === 0 &&
+    sameNumber(entry.mainContentSize, s[at + 10]!)
+  );
+}
+
+/**
+ * Whether the owner can check a dirty child by asking it again: its own
+ * inputs are unchanged, it takes part in the owner's flex layout, its cache
+ * still holds every question the owner asked (a full cache may have let one
+ * go), and the owner's last pass laid it out once, with the question its
+ * layout entry holds.
+ */
+function canReplay(child: Node): boolean {
+  const style = child.style;
+  const layout = child.layout;
+  return (
+    child.canRevalidate() &&
+    style.display === Display.Flex &&
+    style.positionType !== PositionType.Absolute &&
+    layout.layoutGeneration > 0 &&
+    layout.cachedLayout.computedWidth >= 0 &&
+    layout.nextCachedMeasurementsIndex < LayoutResults.MaxCachedMeasurements
+  );
+}
+
+/**
+ * Asks a dirty child, whose own inputs are unchanged, every question its cache
+ * holds the answer to, measurements first and its layout last, as its owner's
+ * pass does. Returns whether every answer, and every flag its owner reads, is
+ * the same as before.
+ */
+function replayChild(
+  child: Node,
+  ownerDirection: Direction,
+  layoutMarkerData: LayoutData | null,
+  depth: number,
+  generationCount: number,
+): boolean {
+  const layout = child.layout;
+  const count = layout.nextCachedMeasurementsIndex;
+  const contentSized = layout.contentSized;
+  const measureDiffers = layout.measureDiffers;
+  const baselineLayout = layout.baselineLayout;
+  const base = replayScratch.length;
+  for (let i = 0; i < count; i++) {
+    pushEntry(layout.cachedMeasurements[i]!);
+  }
+  // The layout, which the owner asked for last, is asked for last again.
+  pushEntry(layout.cachedLayout);
+
+  let same = true;
+  const s = replayScratch;
+  for (let k = 0; same && k <= count; k++) {
+    const at = base + k * REPLAY_FIELDS;
+    const performLayout = k === count;
+    // Asked again, the child's layout is not one of its owner's passes.
+    const layoutGeneration = layout.layoutGeneration;
+    calculateLayoutInternal(
+      child,
+      s[at]!,
+      s[at + 1]!,
+      ownerDirection,
+      s[at + 4]! as SizingMode,
+      s[at + 5]! as SizingMode,
+      s[at + 2]!,
+      s[at + 3]!,
+      performLayout,
+      performLayout ? LayoutPassReason.FlexLayout : LayoutPassReason.FlexMeasure,
+      layoutMarkerData,
+      depth,
+      generationCount,
+    );
+    layout.layoutGeneration = layoutGeneration;
+    const flags = s[at + 9]!;
+    same =
+      sameNumber(layout.measuredDimensions[Dimension.Width], s[at + 6]!) &&
+      sameNumber(layout.measuredDimensions[Dimension.Height], s[at + 7]!) &&
+      sameNumber(layout.baseline, s[at + 8]!) &&
+      layout.hadOverflow === ((flags & FLAG_HAD_OVERFLOW) !== 0) &&
+      layout.measureHadOverflow === ((flags & FLAG_MEASURE_HAD_OVERFLOW) !== 0);
+  }
+  // The flags a later question to the child is answered by must hold too: an
+  // entry that stopped being relaxable no longer answers the questions it did.
+  for (let k = 0; same && k <= count; k++) {
+    const at = base + k * REPLAY_FIELDS;
+    if ((s[at + 9]! & (FLAG_RELAXABLE | FLAG_MAIN_SIZE_INVARIANT)) === 0) {
+      continue;
+    }
+    let held = holdsCopiedEntry(layout.cachedLayout, at);
+    for (let i = 0; !held && i < layout.nextCachedMeasurementsIndex; i++) {
+      held = holdsCopiedEntry(layout.cachedMeasurements[i]!, at);
+    }
+    same = held;
+  }
+  replayScratch.length = base;
+  return (
+    same &&
+    layout.contentSized === contentSized &&
+    layout.measureDiffers === measureDiffers &&
+    layout.baselineLayout === baselineLayout
+  );
+}
+
+/**
+ * On the first visit of a pass to a node that is dirty only because something
+ * below it changed: asks its dirty children again, and returns whether its
+ * cache still holds, in which case the node is clean again. Otherwise the node
+ * is laid out as usual, and the children answer from what they just computed.
+ */
+function revalidate(
+  node: Node,
+  layoutMarkerData: LayoutData | null,
+  depth: number,
+  generationCount: number,
+): boolean {
+  const layout = node.layout;
+  if (
+    !node.canRevalidate() ||
+    node.hasMeasureFunc() ||
+    node.hasContentsChildren() ||
+    layout.cachedLayout.computedWidth < 0
+  ) {
+    return false;
+  }
+  // A node whose children keep answering otherwise, as when a change changes
+  // their size, is asked less often: each miss doubles the passes it waits.
+  if (layout.revalidationBackoff >= 8) {
+    layout.revalidationBackoff -= 8;
+    return false;
+  }
+  const children = node.getLayoutChildren();
+  // The children's passes see what they would under the node's own pass.
+  const ownerIsBaselineLayout = gOwnerIsBaselineLayout;
+  gOwnerIsBaselineLayout = ownerIsBaselineLayout || layout.baselineLayout;
+  // Every dirty child must be one the node can check, before any is asked.
+  for (let i = 0, length = children.length; i < length; i++) {
+    const child = children[i]!;
+    if (child.isDirty() && !canReplay(child)) {
+      gOwnerIsBaselineLayout = ownerIsBaselineLayout;
+      return false;
+    }
+  }
+  let same = true;
+  for (let i = 0, length = children.length; same && i < length; i++) {
+    const child = children[i]!;
+    if (child.isDirty()) {
+      same = replayChild(child, layout.direction, layoutMarkerData, depth, generationCount);
+    }
+  }
+  gOwnerIsBaselineLayout = ownerIsBaselineLayout;
+  if (!same) {
+    const misses = Math.min((layout.revalidationBackoff & 7) + 1, 6);
+    layout.revalidationBackoff = (((1 << misses) - 1) << 3) | misses;
+    return false;
+  }
+  layout.revalidationBackoff = 0;
+  // As a containing block, the node places its absolute descendants after its
+  // flex pass, and where one without insets goes depends on its parent: the
+  // node's pass is skipped, but not that step. It works on the size the node
+  // was laid out with, which a later measurement may have replaced.
+  if (node.style.positionType !== PositionType.Static || depth === 1) {
+    layout.measuredDimensions[Dimension.Width] = layout.rawDimensions[Dimension.Width];
+    layout.measuredDimensions[Dimension.Height] = layout.rawDimensions[Dimension.Height];
+    layoutAbsoluteDescendants(
+      node,
+      node,
+      layout.absoluteWalkSizingMode,
+      layout.direction,
+      layoutMarkerData,
+      depth,
+      generationCount,
+      0.0,
+      0.0,
+    );
+  }
+  node.setDirty(false);
+  return true;
+}
+
 //
 // This is a wrapper around the calculateLayoutImpl function. It determines
 // whether the layout request is redundant and can be skipped.
@@ -2890,10 +3133,17 @@ export function calculateLayoutInternal(
 
   depth++;
 
-  const needToVisitNode =
-    (node.isDirty() && layout.generationCount !== generationCount) ||
+  const dirtyFirstVisit = node.isDirty() && layout.generationCount !== generationCount;
+  const contextChanged =
     layout.configVersion !== node.getConfig().version ||
     layout.lastOwnerDirection !== ownerDirection;
+  // Whether the node's children were asked again, and its cache held (see
+  // `revalidate`): its subtree changed, though not its own results.
+  const revalidated =
+    dirtyFirstVisit &&
+    !contextChanged &&
+    revalidate(node, layoutMarkerData, depth, generationCount);
+  const needToVisitNode = !revalidated && (dirtyFirstVisit || contextChanged);
 
   if (needToVisitNode) {
     // Invalidate the cached results, flags included.
@@ -2911,6 +3161,8 @@ export function calculateLayoutInternal(
   const ownerIsBaselineLayout = gOwnerIsBaselineLayout;
   // A layout restored with the node's main size set to the one asked for.
   let stretched = false;
+  // A layout restored from the layout entry in another space.
+  let relaxedLayout = false;
 
   // Determine whether the results are already cached. We maintain a separate
   // cache for layouts and measurements. A layout operation modifies the
@@ -3000,6 +3252,7 @@ export function calculateLayoutInternal(
         if (fit !== LAYOUT_MISS) {
           cachedResults = layout.cachedLayout;
           stretched = fit === LAYOUT_STRETCHED;
+          relaxedLayout = true;
         }
       }
     }
@@ -3164,6 +3417,11 @@ export function calculateLayoutInternal(
 
     node.hasNewLayout = true;
     node.setDirty(false);
+    // A second layout in the pass, or one restored in another space.
+    layout.layoutGeneration =
+      relaxedLayout || Math.abs(layout.layoutGeneration) === generationCount
+        ? -generationCount
+        : generationCount;
   }
 
   layout.generationCount = generationCount;
@@ -3181,7 +3439,7 @@ export function calculateLayoutInternal(
     Event.publish(node, Event.NodeLayout, { layoutType });
   }
 
-  return needToVisitNode || cachedResults === null;
+  return needToVisitNode || cachedResults === null || revalidated;
 }
 
 export function calculateLayout(

@@ -48,11 +48,23 @@ export class LayoutResults {
   // descendants cannot change either.
   absoluteWalkGeneration: number = 0;
   absoluteWalkDirection: Direction = Direction.Inherit;
+  // For a containing block, which no such walk goes through, the sizing mode
+  // its own last pass laid out its absolute descendants in.
   absoluteWalkSizingMode: SizingMode = SizingMode.StretchFit;
   absoluteWalkContainingWidth: number = NaN;
   absoluteWalkContainingHeight: number = NaN;
   absoluteWalkLeft: number = NaN;
   absoluteWalkTop: number = NaN;
+  // The pass that last laid the node out on its owner's behalf, negated when
+  // that layout is not the only one of the pass and the question its layout
+  // cache entry holds: a flex layout before the node is stretched, say, or a
+  // layout restored from the entry in another space. Only then can the owner
+  // ask for it again to check that it still holds (see `revalidate` in the
+  // layout algorithm).
+  layoutGeneration: number = 0;
+  // Passes that asked the node's children again to no avail in a row (the low
+  // three bits), and passes to wait before asking again (the rest).
+  revalidationBackoff: number = 0;
 
   // Indexed by `Dimension`.
   readonly dimensions: [number, number] = [NaN, NaN];
@@ -124,6 +136,7 @@ export class LayoutResults {
       this.cachedMeasurements[i]!.reset();
     }
     this.cachedLayout.reset();
+    this.layoutGeneration = 0;
     this.direction = Direction.Inherit;
     this.hadOverflow = false;
     this.absoluteWalkGeneration = 0;

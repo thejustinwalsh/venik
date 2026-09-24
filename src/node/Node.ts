@@ -59,6 +59,11 @@ export class Node {
 
   private isReferenceBaseline_: boolean = false;
   private isDirty_: boolean = true;
+  // Why the node is dirty, beyond something below it having changed: its own
+  // style, children or config changed, or a dirty absolute node sits below it.
+  // Either way its owner must run its own pass again (see `canRevalidate`).
+  private ownInputsChanged_: boolean = true;
+  private absoluteBelowChanged_: boolean = false;
   private measureFunc_: MeasureFunction | null = null;
   private baselineFunc_: BaselineFunction | null = null;
   private dirtiedFunc_: DirtiedFunction | null = null;
@@ -98,7 +103,8 @@ export class Node {
       );
     }
 
-    this.markDirtyAndPropagate();
+    // Only the content changed, not what the owner asks of the node.
+    this.propagateDirty(false);
   }
   setDirtiedFunc(dirtiedFunc: DirtiedFunction | null): void {
     this.dirtiedFunc_ = dirtiedFunc;
@@ -343,7 +349,9 @@ export class Node {
   setPositionType(positionType: PositionType): void {
     if (this.style.positionType !== positionType) {
       this.style.positionType = positionType;
-      this.markDirtyAndPropagate();
+      this.ownInputsChanged_ = true;
+      // Either way, a containing block above gains or loses an absolute node.
+      this.propagateDirty(true);
     }
   }
   getPositionType(): PositionType {
@@ -695,19 +703,52 @@ export class Node {
       return;
     }
     this.isDirty_ = isDirty;
+    if (!isDirty) {
+      this.ownInputsChanged_ = false;
+      this.absoluteBelowChanged_ = false;
+    }
     if (isDirty && this.dirtiedFunc_ !== null) {
       this.dirtiedFunc_(this);
     }
   }
   /** @internal */
   markDirtyAndPropagate(): void {
+    this.ownInputsChanged_ = true;
+    this.propagateDirty(false);
+  }
+  /**
+   * Marks the node and its owners dirty. `absolute` tells the owner that an
+   * absolute node below it changed.
+   */
+  private propagateDirty(absolute: boolean): void {
     if (!this.isDirty_) {
       this.setDirty(true);
       this.layout.computedFlexBasis = NaN;
-      if (this.owner !== null) {
-        this.owner.markDirtyAndPropagate();
-      }
     }
+    const owner = this.owner;
+    if (owner === null) {
+      return;
+    }
+    const absoluteBelow =
+      absolute ||
+      this.absoluteBelowChanged_ ||
+      this.style.positionType === PositionType.Absolute;
+    // An owner already dirty for the same reasons has told its own owners.
+    if (owner.isDirty_ && (!absoluteBelow || owner.absoluteBelowChanged_)) {
+      return;
+    }
+    if (absoluteBelow) {
+      owner.absoluteBelowChanged_ = true;
+    }
+    owner.propagateDirty(false);
+  }
+  /**
+   * @internal Whether the node is dirty only because something below it
+   * changed that its owner can check by asking again: its own style, children
+   * and config are as they were, and no absolute node below it changed.
+   */
+  canRevalidate(): boolean {
+    return !this.ownInputsChanged_ && !this.absoluteBelowChanged_;
   }
   /** @internal Invokes the measure func. */
   measure(
@@ -999,6 +1040,7 @@ export class Node {
     const dirtiedFunc = this.dirtiedFunc_;
     this.dirtiedFunc_ = null;
     this.setDirty(true);
+    this.ownInputsChanged_ = true;
     this.dirtiedFunc_ = dirtiedFunc;
   }
 
