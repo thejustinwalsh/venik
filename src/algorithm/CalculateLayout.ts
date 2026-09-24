@@ -2880,7 +2880,9 @@ function noteResultsLeftByMeasurement(
 // widthSizingMode, heightSizingMode, computedWidth, computedHeight, baseline,
 // flags (see `entryFlags`), mainContentSize.
 const REPLAY_FIELDS = 11;
-const replayScratch: number[] = [];
+// A stack: a replay asks children again, whose own revalidation replays theirs.
+let replayScratch = new Float64Array(REPLAY_FIELDS * 64);
+let replayTop = 0;
 
 const FLAG_HAD_OVERFLOW = 1;
 const FLAG_MEASURE_HAD_OVERFLOW = 2;
@@ -2897,19 +2899,25 @@ function entryFlags(entry: CachedMeasurement): number {
 }
 
 function pushEntry(entry: CachedMeasurement): void {
-  replayScratch.push(
-    entry.availableWidth,
-    entry.availableHeight,
-    entry.ownerWidth,
-    entry.ownerHeight,
-    entry.widthSizingMode,
-    entry.heightSizingMode,
-    entry.computedWidth,
-    entry.computedHeight,
-    entry.baseline,
-    entryFlags(entry),
-    entry.mainContentSize,
-  );
+  if (replayTop + REPLAY_FIELDS > replayScratch.length) {
+    const grown = new Float64Array(replayScratch.length * 2);
+    grown.set(replayScratch);
+    replayScratch = grown;
+  }
+  const s = replayScratch;
+  const at = replayTop;
+  s[at] = entry.availableWidth;
+  s[at + 1] = entry.availableHeight;
+  s[at + 2] = entry.ownerWidth;
+  s[at + 3] = entry.ownerHeight;
+  s[at + 4] = entry.widthSizingMode;
+  s[at + 5] = entry.heightSizingMode;
+  s[at + 6] = entry.computedWidth;
+  s[at + 7] = entry.computedHeight;
+  s[at + 8] = entry.baseline;
+  s[at + 9] = entryFlags(entry);
+  s[at + 10] = entry.mainContentSize;
+  replayTop = at + REPLAY_FIELDS;
 }
 
 function sameNumber(a: number, b: number): boolean {
@@ -2970,7 +2978,7 @@ function replayChild(
   const contentSized = layout.contentSized;
   const measureDiffers = layout.measureDiffers;
   const baselineLayout = layout.baselineLayout;
-  const base = replayScratch.length;
+  const base = replayTop;
   for (let i = 0; i < count; i++) {
     pushEntry(layout.cachedMeasurements[i]!);
   }
@@ -2978,12 +2986,13 @@ function replayChild(
   pushEntry(layout.cachedLayout);
 
   let same = true;
-  const s = replayScratch;
   for (let k = 0; same && k <= count; k++) {
     const at = base + k * REPLAY_FIELDS;
     const performLayout = k === count;
     // Asked again, the child's layout is not one of its owner's passes.
     const layoutGeneration = layout.layoutGeneration;
+    // Read afresh: the child's own replays may have grown the stack.
+    let s = replayScratch;
     calculateLayoutInternal(
       child,
       s[at]!,
@@ -3000,6 +3009,7 @@ function replayChild(
       generationCount,
     );
     layout.layoutGeneration = layoutGeneration;
+    s = replayScratch;
     const flags = s[at + 9]!;
     same =
       sameNumber(layout.measuredDimensions[Dimension.Width], s[at + 6]!) &&
@@ -3010,6 +3020,7 @@ function replayChild(
   }
   // The flags a later question to the child is answered by must hold too: an
   // entry that stopped being relaxable no longer answers the questions it did.
+  const s = replayScratch;
   for (let k = 0; same && k <= count; k++) {
     const at = base + k * REPLAY_FIELDS;
     if ((s[at + 9]! & (FLAG_RELAXABLE | FLAG_MAIN_SIZE_INVARIANT)) === 0) {
@@ -3021,7 +3032,7 @@ function replayChild(
     }
     same = held;
   }
-  replayScratch.length = base;
+  replayTop = base;
   return (
     same &&
     layout.contentSized === contentSized &&
