@@ -14,11 +14,14 @@ const steps = Number(process.env.FUZZ_STEPS ?? 1500);
 
 const seeds = [...new Set([...REGRESSION_SEEDS, ...Array.from({ length: count }, (_, i) => start + i)])];
 
-for (const contents of [false, true]) {
-  for (const seed of seeds) {
-    test(`incremental layout equals from-scratch layout, seed ${seed}${contents ? ", display: contents" : ""}`, () => {
-      const result = fuzzIncremental(seed, { steps, contents });
-      expect(result.badSteps, result.first ? describeMismatch(result, contents) : "").toBe(0);
-    });
+for (const relayoutBoundaries of [false, true]) {
+  for (const contents of [false, true]) {
+    for (const seed of seeds) {
+      const variant = `${contents ? ", display: contents" : ""}${relayoutBoundaries ? ", relayout boundaries" : ""}`;
+      test(`incremental layout equals from-scratch layout, seed ${seed}${variant}`, () => {
+        const result = fuzzIncremental(seed, { steps, contents, relayoutBoundaries });
+        expect(result.badSteps, result.first ? describeMismatch(result, contents) : "").toBe(0);
+      });
+    }
   }
 }

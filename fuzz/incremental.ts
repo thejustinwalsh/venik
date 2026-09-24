@@ -25,6 +25,8 @@ export interface FuzzOptions {
   noRounding?: boolean;
   /** Largest accepted difference in any computed value. */
   tolerance?: number;
+  /** Lay out the incremental tree with relayout boundaries. */
+  relayoutBoundaries?: boolean;
 }
 
 export interface FuzzMismatch {
@@ -121,13 +123,20 @@ function sameValue(a: number, b: number, tolerance: number): boolean {
 }
 
 export function fuzzIncremental(seed: number, options: FuzzOptions = {}): FuzzResult {
-  const { steps = 1500, contents = false, noRounding = false, tolerance = 0.0001 } = options;
+  const {
+    steps = 1500,
+    contents = false,
+    noRounding = false,
+    tolerance = 0.0001,
+    relayoutBoundaries = false,
+  } = options;
   let state = seed >>> 0;
   const rnd = () => ((state = (state * 1664525 + 1013904223) >>> 0) / 4294967296);
   const pick = <T>(a: T[]) => a[Math.floor(rnd() * a.length)]!;
 
   const cfg = new Config();
   if (noRounding) cfg.setPointScaleFactor(0);
+  cfg.setRelayoutBoundaries(relayoutBoundaries);
   const all: Node[] = [];
   const node = () => {
     const n = new Node(cfg);

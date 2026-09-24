@@ -105,7 +105,14 @@ type NodeKeys =
   | `set${"FlexBasis" | "Width" | "Height" | "Position" | "Margin"}Auto`;
 expectTypeOf<keyof Node>().toEqualTypeOf<NodeKeys>();
 
-expectTypeOf<keyof Config>().toEqualTypeOf<"context" | "setPointScaleFactor" | "getPointScaleFactor">();
+expectTypeOf<keyof Config>().toEqualTypeOf<
+  | "context"
+  | "setPointScaleFactor"
+  | "getPointScaleFactor"
+  | "setRelayoutBoundaries"
+  | "getRelayoutBoundaries"
+>();
+expectTypeOf(new Config().getRelayoutBoundaries()).toBeBoolean();
 expectTypeOf(Config.getDefault).returns.toEqualTypeOf<Config>();
 
 // Enums are const objects whose values are their own types.

@@ -2864,6 +2864,38 @@ function noteResultsLeftByMeasurement(
   }
 }
 
+// The sizes of a layout a measure function's node answers from its cache:
+// availableWidth, availableHeight, ownerWidth, ownerHeight. Passed through
+// here because V8 boxes fractional doubles passed to a call it doesn't inline.
+const measuredLayoutRequest = new Float64Array(4);
+
+// Kept out of calculateLayoutInternal, like the helpers after it. Makes the
+// layout entry of a measure function's node the layout it was asked for, with
+// the answer the cache gave: the question its owner asks again to revalidate.
+function recordMeasuredLayout(
+  layout: LayoutResults,
+  answer: CachedMeasurement,
+  widthSizingMode: SizingMode,
+  heightSizingMode: SizingMode,
+): void {
+  const entry = layout.cachedLayout;
+  const request = measuredLayoutRequest;
+  entry.computedWidth = answer.computedWidth;
+  entry.computedHeight = answer.computedHeight;
+  entry.baseline = answer.baseline;
+  entry.hadOverflow = answer.hadOverflow;
+  entry.measureHadOverflow = answer.measureHadOverflow;
+  entry.availableWidth = request[0]!;
+  entry.availableHeight = request[1]!;
+  entry.ownerWidth = request[2]!;
+  entry.ownerHeight = request[3]!;
+  entry.widthSizingMode = widthSizingMode;
+  entry.heightSizingMode = heightSizingMode;
+  entry.relaxable = false;
+  entry.mainSizeInvariant = false;
+  entry.mainContentSize = NaN;
+}
+
 // Relayout boundaries.
 //
 // A change dirties every owner up to the root, and an owner's pass normally
@@ -3144,15 +3176,16 @@ export function calculateLayoutInternal(
 
   depth++;
 
+  const config = node.getConfig();
   const dirtyFirstVisit = node.isDirty() && layout.generationCount !== generationCount;
   const contextChanged =
-    layout.configVersion !== node.getConfig().version ||
-    layout.lastOwnerDirection !== ownerDirection;
+    layout.configVersion !== config.version || layout.lastOwnerDirection !== ownerDirection;
   // Whether the node's children were asked again, and its cache held (see
   // `revalidate`): its subtree changed, though not its own results.
   const revalidated =
     dirtyFirstVisit &&
     !contextChanged &&
+    config.relayoutBoundaries &&
     revalidate(node, layoutMarkerData, depth, generationCount);
   const needToVisitNode = !revalidated && (dirtyFirstVisit || contextChanged);
 
@@ -3281,6 +3314,20 @@ export function calculateLayoutInternal(
       setStretchedMainSize(node, availableWidth, availableHeight);
     }
     restoreCachedResults(layout, cachedResults, performLayout);
+    // A measure function's node answers a layout from any entry that fits,
+    // which leaves the layout entry holding another question.
+    if (performLayout && node.hasMeasureFunc()) {
+      if (config.relayoutBoundaries) {
+        const request = measuredLayoutRequest;
+        request[0] = availableWidth;
+        request[1] = availableHeight;
+        request[2] = ownerWidth;
+        request[3] = ownerHeight;
+        recordMeasuredLayout(layout, cachedResults, widthSizingMode, heightSizingMode);
+      } else {
+        relaxedLayout = true;
+      }
+    }
 
     if (__EVENTS__ && layoutMarkerData !== null) {
       if (performLayout) {

@@ -1,7 +1,8 @@
-import { expect, test } from "vitest";
+import { afterEach, expect, test } from "vitest";
 import {
   Align,
   BoxSizing,
+  Config,
   Direction,
   Display,
   Edge,
@@ -12,6 +13,9 @@ import {
   PositionType,
   Wrap,
 } from "../src/index.ts";
+
+// The random tests below turn relayout boundaries on for the default config.
+afterEach(() => Config.getDefault().setRelayoutBoundaries(false));
 
 // A layout that reuses what earlier passes cached must equal the layout of a
 // new tree with the same styles. Every test below changes styles between
@@ -344,7 +348,17 @@ test("hidden_first_child_is_not_the_baseline", () => {
 
 // Random style changes, a few per pass. The seeds are fixed, so a failure names
 // a step that fails again on the next run.
-test.each([1, 2, 3, 4])("random_style_changes_seed_%i", (startSeed) => {
+test.each([
+  [1, false],
+  [2, false],
+  [3, false],
+  [4, false],
+  [1, true],
+  [2, true],
+  [3, true],
+  [4, true],
+])("random_style_changes_seed_%i, relayout boundaries %s", (startSeed, relayoutBoundaries) => {
+  Config.getDefault().setRelayoutBoundaries(relayoutBoundaries);
   let seed = startSeed;
   const random = (): number => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
   const pick = <T>(values: readonly T[]): T => values[Math.floor(random() * values.length)]!;
