@@ -59,6 +59,7 @@ type NodeKeys =
   | "setChildren"
   | "getChild"
   | "getChildCount"
+  | "getChildren"
   | "setConfig"
   | "getConfig"
   | "setMeasureFunc"
@@ -157,6 +158,9 @@ expectTypeOf<Layout>().toEqualTypeOf<{
 // @ts-expect-error the shared layout object is read-only
 node.getComputedLayout().width = 1;
 expectTypeOf(node.getChild(0)).toEqualTypeOf<Node | null>();
+expectTypeOf(node.getChildren()).toEqualTypeOf<readonly Node[]>();
+// @ts-expect-error the child list is the node's own, and read-only
+node.getChildren().push(new Node());
 expectTypeOf(node.owner).toEqualTypeOf<Node | null>();
 
 // Layout.
