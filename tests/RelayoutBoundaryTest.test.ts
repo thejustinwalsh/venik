@@ -91,8 +91,8 @@ function expectSameAsFromScratch(root: Node): void {
   walk(root, fresh, "root");
 }
 
-test("relayout boundaries are off by default", () => {
-  expect(new Config().getRelayoutBoundaries()).toBe(false);
+test("relayout boundaries are on by default", () => {
+  expect(new Config().getRelayoutBoundaries()).toBe(true);
 });
 
 test("a change that keeps sizes lays out only the changed node", () => {
@@ -136,6 +136,7 @@ test("a change that resizes its ancestors still lays them out", () => {
 
 test("turning boundaries on and off needs no relayout", () => {
   const config = new Config();
+  config.setRelayoutBoundaries(false);
   const { root, texts } = buildBoard(config);
   root.calculateLayout(undefined, undefined, Direction.LTR);
   config.setRelayoutBoundaries(true);

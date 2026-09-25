@@ -14,8 +14,8 @@ import {
   Wrap,
 } from "../src/index.ts";
 
-// The random tests below turn relayout boundaries on for the default config.
-afterEach(() => Config.getDefault().setRelayoutBoundaries(false));
+// The random tests below turn relayout boundaries off and on for the default config.
+afterEach(() => Config.getDefault().setRelayoutBoundaries(true));
 
 // A layout that reuses what earlier passes cached must equal the layout of a
 // new tree with the same styles. Every test below changes styles between
