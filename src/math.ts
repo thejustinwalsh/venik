@@ -1,3 +1,5 @@
+import { SizingMode } from "./enums.ts";
+
 /** max(a, b) if both are defined, otherwise whichever one is defined (NaN if neither). */
 export function maxOrDefined(a: number, b: number): number {
   if (a === a && b === b) {
@@ -35,4 +37,17 @@ export function inexactEquals(a: number, b: number): boolean {
  */
 export function sameAvailableSize(a: number, b: number): boolean {
   return inexactEquals(a, b) && a <= 0 === b <= 0;
+}
+
+/**
+ * `sameAvailableSize` for an axis of the given sizing mode. Along an axis
+ * asked for exactly, the node's size is the space it is given (less its
+ * margin, within its bounds), so a result found for another space is off by
+ * the difference, however small: the owner places the node's siblings by the
+ * size it gave, and the node would report the old one. Only the same size is
+ * the same question there. Along an axis sized by its content, a difference
+ * within the epsilon is float noise.
+ */
+export function sameSpace(mode: SizingMode, a: number, b: number): boolean {
+  return mode === SizingMode.StretchFit ? a === b : sameAvailableSize(a, b);
 }

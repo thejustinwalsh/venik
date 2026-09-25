@@ -17,7 +17,7 @@ import { Event, LayoutData, LayoutPassReason, LayoutType } from "../event/event.
 import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
 import { LayoutResults } from "../node/LayoutResults.ts";
 import type { Node } from "../node/Node.ts";
-import { inexactEquals, maxOrDefined, minOrDefined, sameAvailableSize } from "../math.ts";
+import { inexactEquals, maxOrDefined, minOrDefined, sameSpace } from "../math.ts";
 import type { Style } from "../style/Style.ts";
 import type { StyleLength } from "../style/StyleLength.ts";
 import { layoutAbsoluteDescendants } from "./AbsoluteLayout.ts";
@@ -2945,8 +2945,8 @@ export function calculateLayoutInternal(
         if (
           cachedMeasurement.widthSizingMode === widthSizingMode &&
           cachedMeasurement.heightSizingMode === heightSizingMode &&
-          sameAvailableSize(cachedMeasurement.availableWidth, availableWidth) &&
-          sameAvailableSize(cachedMeasurement.availableHeight, availableHeight) &&
+          sameSpace(widthSizingMode, cachedMeasurement.availableWidth, availableWidth) &&
+          sameSpace(heightSizingMode, cachedMeasurement.availableHeight, availableHeight) &&
           (!keyedOnOwnerSize || hasSameOwnerSize(cachedMeasurement, ownerWidth, ownerHeight)) &&
           (relaxed || !cachedMeasurement.fromLayout)
         ) {
@@ -2981,8 +2981,8 @@ export function calculateLayoutInternal(
       if (
         layout.cachedLayout.widthSizingMode === widthSizingMode &&
         layout.cachedLayout.heightSizingMode === heightSizingMode &&
-        sameAvailableSize(layout.cachedLayout.availableWidth, availableWidth) &&
-        sameAvailableSize(layout.cachedLayout.availableHeight, availableHeight) &&
+        sameSpace(widthSizingMode, layout.cachedLayout.availableWidth, availableWidth) &&
+        sameSpace(heightSizingMode, layout.cachedLayout.availableHeight, availableHeight) &&
         (!node.style.dependsOnOwnerSize ||
           hasSameOwnerSize(layout.cachedLayout, ownerWidth, ownerHeight))
       ) {

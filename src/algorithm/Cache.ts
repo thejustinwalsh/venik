@@ -4,7 +4,7 @@ import type { CachedMeasurement } from "../node/CachedMeasurement.ts";
 import type { Node } from "../node/Node.ts";
 import type { LayoutResults } from "../node/LayoutResults.ts";
 import { isRow, PhysicalEdge, resolveDirection } from "./FlexDirection.ts";
-import { inexactEquals, sameAvailableSize } from "../math.ts";
+import { inexactEquals, sameSpace } from "../math.ts";
 import { roundValueToPixelGrid } from "./PixelGrid.ts";
 import { SizingMode } from "../enums.ts";
 
@@ -243,6 +243,11 @@ function relaxedAxisFits(
   );
 }
 
+// `inexactEquals`, except along an axis asked for exactly (see `sameSpace`).
+function sameOrClose(mode: SizingMode, a: number, b: number): boolean {
+  return mode === SizingMode.StretchFit ? a === b : inexactEquals(a, b);
+}
+
 // Whether an axis is settled without the margin: the same question, or two
 // exact sizes that differ, which no rule reconciles.
 const AXIS_SAME = 1;
@@ -254,7 +259,7 @@ function relaxedAxisWithoutMargin(
   lastSizeMode: SizingMode,
   lastSize: number,
 ): number {
-  if (lastSizeMode === sizeMode && sameAvailableSize(lastSize, size)) {
+  if (lastSizeMode === sizeMode && sameSpace(sizeMode, lastSize, size)) {
     return AXIS_SAME;
   }
   if (sizeMode === SizingMode.StretchFit && lastSizeMode === SizingMode.StretchFit) {
@@ -380,8 +385,8 @@ export function findRelaxedMeasurement(
     (!keyedOnOwnerSize || hasSameOwnerSize(cachedLayout, ownerWidth, ownerHeight)) &&
     ((cachedLayout.widthSizingMode === widthMode &&
       cachedLayout.heightSizingMode === heightMode &&
-      inexactEquals(cachedLayout.availableWidth, availableWidth) &&
-      inexactEquals(cachedLayout.availableHeight, availableHeight)) ||
+      sameOrClose(widthMode, cachedLayout.availableWidth, availableWidth) &&
+      sameOrClose(heightMode, cachedLayout.availableHeight, availableHeight)) ||
       relaxableEntryFits(
         cachedLayout,
         widthMode,

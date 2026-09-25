@@ -4,7 +4,7 @@ import { describeMismatch, fuzzIncremental } from "./incremental.ts";
 declare const process: { env: Record<string, string | undefined> };
 
 // Seeds that once exposed a cache bug stay here as regression guards.
-const REGRESSION_SEEDS = [1, 4, 5, 9, 16, 22, 23, 28, 30, 45, 48, 62, 111, 128, 154, 169, 256, 298, 779];
+const REGRESSION_SEEDS = [1, 4, 5, 9, 16, 22, 23, 28, 30, 45, 48, 62, 111, 128, 154, 169, 256, 298, 779, 1140];
 
 // npm run fuzz -- widen or move the sweep with
 //   FUZZ_SEEDS=<count> FUZZ_START=<first seed> FUZZ_STEPS=<passes per seed>
